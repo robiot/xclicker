@@ -6,7 +6,7 @@
   <img alt="GitHub Contributors" src="https://img.shields.io/github/contributors/robiot/XClicker"></a>
 </p>
 
-XClicker is currently one of the most feature-rich autoclickers for x11 desktops. It is currently under heavy development and is not even near a first release.
+XClicker is going to be one of the most feature-rich autoclickers for x11 desktops. It is currently under heavy development and is not even near a first release.
 
 ### Building
 
