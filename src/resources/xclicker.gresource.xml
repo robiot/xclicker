@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/org/gtk/xclicker">
+    <file preprocess="xml-stripblanks">ui/xclicker-window.ui</file>
+  </gresource>
+</gresources>

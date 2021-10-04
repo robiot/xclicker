@@ -1,2 +1,2 @@
 # XClicker
-Functional autoclicker for linux 
+Fast gui autoclicker for linux 
