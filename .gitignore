@@ -2,4 +2,6 @@
 bin/
 obj/
 build/
+*.ui~
+*.ui#
 x-clicker.c

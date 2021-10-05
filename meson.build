@@ -7,8 +7,15 @@ project(
     ],
 )
 
+# For later
+# add_project_arguments(
+#     '-lX11',
+#     language : 'c'
+# )
+
+
 gnome = import('gnome')
-gtkdeps = dependency('gtk4')
+gtkdeps = dependency('gtk+-3.0')
 
 
 subdir('src')
