@@ -48,7 +48,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="minutes_entry">
                     <property name="name">MinutesEntry</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -98,7 +98,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="seconds_entry">
                     <property name="name">SecondsEntry</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -112,7 +112,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="millisecs_entry">
                     <property name="name">MilliEntry</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -128,7 +128,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="hours_entry">
                     <property name="name">HoursEntry</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -197,9 +197,10 @@
                     </child>
                     <child>
                       <object class="GtkCheckButton">
-                        <property name="label" translatable="yes">Repeat only</property>
+                        <property name="label" translatable="yes">Repeat Only</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
+                        <property name="focus-on-click">False</property>
                         <property name="receives-default">False</property>
                         <property name="tooltip-text" translatable="yes">Amount of times to click. Default : repeat until stopped.</property>
                         <property name="draw-indicator">True</property>
@@ -239,7 +240,7 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Mouse options</property>
+                    <property name="label" translatable="yes">Options</property>
                   </object>
                 </child>
               </object>
@@ -263,13 +264,16 @@
                     <property name="margin-end">5</property>
                     <property name="margin-bottom">5</property>
                     <property name="row-spacing">5</property>
+                    <property name="column-spacing">10</property>
                     <property name="row-homogeneous">True</property>
                     <child>
                       <object class="GtkCheckButton">
-                        <property name="label" translatable="yes">Current location</property>
+                        <property name="label" translatable="yes">Custom Location</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
+                        <property name="focus-on-click">False</property>
                         <property name="receives-default">False</property>
+                        <property name="tooltip-text" translatable="yes">Amount of times to click. Default : repeat until stopped.</property>
                         <property name="draw-indicator">True</property>
                       </object>
                       <packing>
@@ -278,10 +282,61 @@
                       </packing>
                     </child>
                     <child>
-                      <placeholder/>
+                      <object class="GtkButton">
+                        <property name="label" translatable="yes">Set</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="focus-on-click">False</property>
+                        <property name="receives-default">True</property>
+                        <property name="hexpand">True</property>
+                        <property name="vexpand">True</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">1</property>
+                      </packing>
                     </child>
                     <child>
-                      <placeholder/>
+                      <!-- n-columns=2 n-rows=1 -->
+                      <object class="GtkGrid">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="column-spacing">10</property>
+                        <child>
+                          <object class="GtkEntry">
+                            <property name="name">HoursEntry</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="hexpand">True</property>
+                            <property name="max-length">9</property>
+                            <property name="width-chars">0</property>
+                            <property name="placeholder-text" translatable="yes">X</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkEntry">
+                            <property name="name">HoursEntry</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="hexpand">True</property>
+                            <property name="max-length">9</property>
+                            <property name="width-chars">0</property>
+                            <property name="placeholder-text" translatable="yes">Y</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">1</property>
+                            <property name="top-attach">0</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">1</property>
+                      </packing>
                     </child>
                     <child>
                       <placeholder/>
@@ -319,11 +374,13 @@
             <property name="row-homogeneous">True</property>
             <property name="column-homogeneous">True</property>
             <child>
-              <object class="GtkButton">
+              <object class="GtkButton" id="start_button">
                 <property name="label" translatable="yes">Start</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
+                <property name="focus-on-click">False</property>
                 <property name="receives-default">True</property>
+                <signal name="pressed" handler="start_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="left-attach">0</property>
@@ -331,11 +388,14 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton">
+              <object class="GtkButton" id="stop_button">
                 <property name="label" translatable="yes">Stop</property>
                 <property name="visible">True</property>
+                <property name="sensitive">False</property>
                 <property name="can-focus">True</property>
+                <property name="focus-on-click">False</property>
                 <property name="receives-default">True</property>
+                <signal name="pressed" handler="stop_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="left-attach">1</property>
@@ -343,10 +403,11 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton">
+              <object class="GtkButton" id="settings_button">
                 <property name="label" translatable="yes">Settings</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
+                <property name="focus-on-click">False</property>
                 <property name="receives-default">True</property>
               </object>
               <packing>
