@@ -23,6 +23,7 @@ run:
 
 .PHONY: install
 install:
+	make build
 	sudo cp -f ./${BUILD_DIR}/src/${BINNAME} /usr/bin/${BINNAME} 
 	sudo cp -f ./${DESKFILE} /usr/share/applications
 	
