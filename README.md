@@ -14,3 +14,10 @@ After cloning the repository, you only have to run this one command. The executa
 ```
 $ make
 ```
+
+### Installing
+
+Installing the application on the system is as easy as running
+```
+$ make install
+```
