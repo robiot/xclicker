@@ -2,7 +2,23 @@
 <!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
-  <object class="GtkListStore" id="liststore1"/>
+  <object class="GtkListStore" id="repeat_amount_lstore">
+    <columns>
+      <!-- column-name gchararray1 -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">Left</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Right</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Middle</col>
+      </row>
+    </data>
+  </object>
   <template class="MainAppWindow" parent="GtkApplicationWindow">
     <property name="can-focus">False</property>
     <property name="title">XClicker</property>
@@ -113,6 +129,21 @@
                   </packing>
                 </child>
                 <child>
+                  <object class="GtkEntry" id="hours_entry">
+                    <property name="name">HoursEntry</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="hexpand">True</property>
+                    <property name="max-length">9</property>
+                    <property name="width-chars">0</property>
+                    <signal name="insert-text" handler="insert_handler" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">0</property>
+                  </packing>
+                </child>
+                <child>
                   <object class="GtkEntry" id="millisecs_entry">
                     <property name="name">MilliEntry</property>
                     <property name="visible">True</property>
@@ -125,21 +156,6 @@
                   </object>
                   <packing>
                     <property name="left-attach">3</property>
-                    <property name="top-attach">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkEntry" id="hours_entry">
-                    <property name="name">HoursEntry</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="hexpand">True</property>
-                    <property name="max-length">9</property>
-                    <property name="width-chars">0</property>
-                    <signal name="insert-text" handler="insert_handler" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="left-attach">0</property>
                     <property name="top-attach">0</property>
                   </packing>
                 </child>
@@ -232,7 +248,21 @@
                       <object class="GtkComboBox">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="model">liststore1</property>
+                        <property name="model">repeat_amount_lstore</property>
+                        <property name="has-entry">True</property>
+                        <property name="entry-text-column">0</property>
+                        <property name="id-column">0</property>
+                        <property name="active-id">0</property>
+                        <child>
+                          <object class="GtkCellRendererText"/>
+                        </child>
+                        <child internal-child="entry">
+                          <object class="GtkEntry">
+                            <property name="can-focus">False</property>
+                            <property name="width-chars">0</property>
+                            <property name="text" translatable="yes">Left</property>
+                          </object>
+                        </child>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>

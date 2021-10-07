@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=XClicker
+GenericName=XClicker
+Comment=Auto Clicker
+Exec=xclicker
+Icon=xclicker
+Terminal=false
+Type=Application
+
+
