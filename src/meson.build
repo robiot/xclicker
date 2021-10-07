@@ -10,7 +10,7 @@ executable('xclicker',
     'main.c', 
     'xclicker-app.c',
     'mainwin.c',
-    'x11.c',
+    'x11api.c',
   
     xclicker_resources,
     dependencies: gtkdeps,

@@ -3,7 +3,7 @@
 
 #include "xclicker-app.h"
 #include "mainwin.h"
-#include "x11.h"
+#include "x11api.h"
 
 struct _MainAppWindow
 {
@@ -27,7 +27,6 @@ struct _MainAppWindow
 G_DEFINE_TYPE(MainAppWindow, main_app_window, GTK_TYPE_APPLICATION_WINDOW);
 
 bool isClicking = false;
-
 struct _click_opts
 {
 	int sleep;
@@ -61,6 +60,7 @@ void *click_handler()
 			}
 		}
 	}
+	// Free?
 	XCloseDisplay(display);
 	g_idle_add(toggle_buttons, false);
 }

@@ -1,5 +1,5 @@
 #include <gtk/gtk.h>
-#include "x11.h"
+#include "x11api.h"
 
 int xevent(Display *display, long mask, XEvent event)
 {
