@@ -16,12 +16,5 @@ project(
 gnome = import('gnome')
 gtkdeps = [dependency('gtk+-3.0'), dependency('x11')]
 
-
-install_data(
-  'xclicker.desktop',
-  #join_paths(get_option('subdir'), 
-)
-
-
 subdir('src')
 
