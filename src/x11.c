@@ -1,10 +1,13 @@
 #include <gtk/gtk.h>
 #include "x11.h"
 
-int xevent(Display *display, XEvent event) {
-    if (XSendEvent(display, PointerWindow, True, ButtonPressMask, &event) == 0)
-        return -1;
-    return 0;
+int xevent(Display *display, long mask, XEvent event)
+{
+    if (!XSendEvent(display, PointerWindow, True, mask, &event))
+        return 0;
+    XFlush(display);
+    usleep(1);
+    return 1;
 }
 
 int click(Display *display, int button)
@@ -27,18 +30,14 @@ int click(Display *display, int button)
 
     // Press
     event.type = ButtonPress;
-    if (!xevent(display, event))
-        return -1;
-    usleep(1);
-
+    if (!xevent(display, ButtonPressMask, event))
+        return 0;
     // Release
     event.type = ButtonRelease;
-    if (!xevent(display, event))
-        return -1;
-    usleep(1);
+    if (!xevent(display, ButtonReleaseMask, event))
+        return 0;
 
-    XFlush(display);
-    return 0;
+    return 1;
 }
 
 Display *get_display()
