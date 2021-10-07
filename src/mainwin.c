@@ -34,8 +34,8 @@ void *click_handler()
   Display *display = get_display();
   while (isClicking)
   {
-    click(display, Button1);
-    usleep(100 * 1000); // Milliseconds
+    click(display, click_opts.button);
+    usleep(click_opts.sleep * 1000); // Milliseconds
   }
   XCloseDisplay(display);
 }
