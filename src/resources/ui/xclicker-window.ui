@@ -196,7 +196,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkCheckButton">
+                      <object class="GtkCheckButton" id="repeat_only_check">
                         <property name="label" translatable="yes">Repeat Only</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
@@ -204,6 +204,7 @@
                         <property name="receives-default">False</property>
                         <property name="tooltip-text" translatable="yes">Amount of times to click. Default : repeat until stopped.</property>
                         <property name="draw-indicator">True</property>
+                        <signal name="toggled" handler="repeat_only_check_toggle" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left-attach">0</property>
@@ -211,13 +212,15 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkEntry">
+                      <object class="GtkEntry" id="repeat_entry">
                         <property name="name">MinutesEntry</property>
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can-focus">True</property>
                         <property name="hexpand">True</property>
                         <property name="max-length">9</property>
                         <property name="width-chars">0</property>
+                        <signal name="insert-text" handler="insert_handler" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
@@ -273,7 +276,6 @@
                         <property name="can-focus">True</property>
                         <property name="focus-on-click">False</property>
                         <property name="receives-default">False</property>
-                        <property name="tooltip-text" translatable="yes">Amount of times to click. Default : repeat until stopped.</property>
                         <property name="draw-indicator">True</property>
                       </object>
                       <packing>
@@ -285,6 +287,7 @@
                       <object class="GtkButton">
                         <property name="label" translatable="yes">Set</property>
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can-focus">True</property>
                         <property name="focus-on-click">False</property>
                         <property name="receives-default">True</property>
@@ -306,6 +309,7 @@
                           <object class="GtkEntry">
                             <property name="name">HoursEntry</property>
                             <property name="visible">True</property>
+                            <property name="sensitive">False</property>
                             <property name="can-focus">True</property>
                             <property name="hexpand">True</property>
                             <property name="max-length">9</property>
@@ -321,6 +325,7 @@
                           <object class="GtkEntry">
                             <property name="name">HoursEntry</property>
                             <property name="visible">True</property>
+                            <property name="sensitive">False</property>
                             <property name="can-focus">True</property>
                             <property name="hexpand">True</property>
                             <property name="max-length">9</property>
