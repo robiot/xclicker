@@ -19,22 +19,10 @@ struct _MainAppWindow
   GtkWidget *start_button;
   GtkWidget *stop_button;
   GtkWidget *settings_button;
-};
+} mainappwindow;
 G_DEFINE_TYPE(MainAppWindow, main_app_window, GTK_TYPE_APPLICATION_WINDOW);
 
 bool isClicking = false;
-struct _inputs {
-  GtkWidget* hours_entry;
-  GtkWidget* minutes_entry;
-  GtkWidget* seconds_entry;
-  GtkWidget* millisecs_entry;
-} inputs;
-
-struct _buttons {
-  GtkWidget* start_button;
-  GtkWidget* stop_button;
-  GtkWidget* settings_button;
-} buttons;
 
 struct _click_opts {
   int sleep;
@@ -46,8 +34,8 @@ void *click_handler()
   Display *display = get_display();
   while (isClicking)
   {
-    click(display, click_opts.button);
-    usleep(click_opts.sleep * 1000); // Milliseconds
+    click(display, Button1);
+    usleep(100 * 1000); // Milliseconds
   }
   XCloseDisplay(display);
 }
@@ -69,13 +57,13 @@ void insert_handler(GtkEditable *editable, const gchar *text)
 void start_clicked(GtkButton *button)
 {
   gtk_widget_set_sensitive(GTK_WIDGET(button), FALSE);
-  gtk_widget_set_sensitive(GTK_WIDGET(buttons.stop_button), TRUE);
+  gtk_widget_set_sensitive(GTK_WIDGET(mainappwindow.stop_button), TRUE);
   isClicking = true;
 
-  int sleep = get_text_to_int(inputs.hours_entry) * 3600000
-    + get_text_to_int(inputs.minutes_entry) * 60000
-    + get_text_to_int(inputs.seconds_entry) * 1000
-    + get_text_to_int(inputs.millisecs_entry);
+  int sleep = get_text_to_int(mainappwindow.hours_entry) * 3600000
+    + get_text_to_int(mainappwindow.minutes_entry) * 60000
+    + get_text_to_int(mainappwindow.seconds_entry) * 1000
+    + get_text_to_int(mainappwindow.millisecs_entry);
 
   click_opts.button = Button1;
   click_opts.sleep = sleep;
@@ -85,7 +73,7 @@ void start_clicked(GtkButton *button)
 void stop_clicked(GtkButton *button)
 {
   gtk_widget_set_sensitive(GTK_WIDGET(button), FALSE);
-  gtk_widget_set_sensitive(GTK_WIDGET(buttons.start_button), TRUE);
+  gtk_widget_set_sensitive(GTK_WIDGET(mainappwindow.start_button), TRUE);
   isClicking = false;
 }
 
@@ -93,15 +81,16 @@ static void main_app_window_init(MainAppWindow *win)
 {
   gtk_widget_init_template(GTK_WIDGET(win));
 
+
   // Inputs
-  inputs.hours_entry = win->hours_entry;
-  inputs.minutes_entry = win->minutes_entry;
-  inputs.seconds_entry = win->seconds_entry;
-  inputs.millisecs_entry = win->millisecs_entry;
+  mainappwindow.hours_entry = win->hours_entry;
+  mainappwindow.minutes_entry = win->minutes_entry;
+  mainappwindow.seconds_entry = win->seconds_entry;
+  mainappwindow.millisecs_entry = win->millisecs_entry;
   // Buttons
-  buttons.start_button = win->start_button;
-  buttons.stop_button = win->stop_button;
-  buttons.settings_button = win->settings_button;
+  mainappwindow.start_button = win->start_button;
+  mainappwindow.stop_button = win->stop_button;
+  mainappwindow.settings_button = win->settings_button;
 }
 
 static void main_app_window_class_init(MainAppWindowClass *class)
