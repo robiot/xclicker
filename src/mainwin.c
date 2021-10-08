@@ -2,6 +2,7 @@
 #include "xclicker-app.h"
 #include "mainwin.h"
 #include "x11api.h"
+#include "settings.h"
 
 struct _MainAppWindow
 {
@@ -36,10 +37,8 @@ struct _click_opts
 } click_opts;
 
 void toggle_buttons() {
-	gboolean activated = isClicking;
-	gtk_widget_set_sensitive(GTK_WIDGET(mainappwindow.start_button), !activated);
-	gtk_widget_set_sensitive(GTK_WIDGET(mainappwindow.stop_button), activated);
-	return TRUE;
+	gtk_widget_set_sensitive(GTK_WIDGET(mainappwindow.start_button), !isClicking);
+	gtk_widget_set_sensitive(GTK_WIDGET(mainappwindow.stop_button), isClicking);
 }
 
 void *click_handler()
@@ -104,7 +103,7 @@ void start_clicked(GtkButton *button)
 	else if (strcmp(selectedtext, "Middle") == 0) 
 		click_opts.button = Button2;
 	else 
-		click_opts.button = Button1;
+		click_opts.button = Button1; 
 
 	click_opts.repeat = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(mainappwindow.repeat_only_check));
 	if (click_opts.repeat)
@@ -113,10 +112,15 @@ void start_clicked(GtkButton *button)
 	g_thread_new("click_handler", click_handler, NULL);
 }
 
-void stop_clicked(GtkButton *button)
+void stop_clicked()
 {
 	isClicking = FALSE;
 	toggle_buttons();
+}
+
+void settings_clicked()
+{
+	settings_dialog_new();
 }
 
 static void main_app_window_init(MainAppWindow *win)
@@ -148,6 +152,7 @@ static void main_app_window_class_init(MainAppWindowClass *class)
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), start_clicked);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), stop_clicked);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), repeat_only_check_toggle);
+	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), settings_clicked);
 
 	// Entries
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, hours_entry);
