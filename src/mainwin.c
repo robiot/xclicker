@@ -1,6 +1,4 @@
 #include <gtk/gtk.h>
-#include <stdbool.h>
-
 #include "xclicker-app.h"
 #include "mainwin.h"
 #include "x11api.h"
@@ -26,7 +24,7 @@ struct _MainAppWindow
 } mainappwindow;
 G_DEFINE_TYPE(MainAppWindow, main_app_window, GTK_TYPE_APPLICATION_WINDOW);
 
-bool isClicking = false;
+gboolean isClicking = FALSE;
 struct _click_opts
 {
 	int sleep;
@@ -36,10 +34,11 @@ struct _click_opts
 	int repeat_times;
 } click_opts;
 
-void toggle_buttons() {
-	bool activated = isClicking;
+gboolean toggle_buttons() {
+	gboolean activated = isClicking;
 	gtk_widget_set_sensitive(GTK_WIDGET(mainappwindow.start_button), !activated);
 	gtk_widget_set_sensitive(GTK_WIDGET(mainappwindow.stop_button), activated);
+	return TRUE;
 }
 
 void *click_handler()
@@ -54,7 +53,7 @@ void *click_handler()
 		{
 			if (count >= click_opts.repeat_times)
 			{
-				isClicking = false;
+				isClicking = FALSE;
 			} else {
 				count++;
 			}
@@ -62,7 +61,8 @@ void *click_handler()
 	}
 	// Free?
 	XCloseDisplay(display);
-	g_idle_add(toggle_buttons, false);
+	g_idle_add(toggle_buttons, NULL);
+	return (void*)0;
 }
 
 int get_text_to_int(GtkWidget *entry)
@@ -87,7 +87,7 @@ void insert_handler(GtkEditable *editable, const gchar *text)
 
 void start_clicked(GtkButton *button)
 {
-	isClicking = true;
+	isClicking = TRUE;
 	toggle_buttons();
 
 	int sleep = get_text_to_int(mainappwindow.hours_entry) * 3600000 + get_text_to_int(mainappwindow.minutes_entry) * 60000 + get_text_to_int(mainappwindow.seconds_entry) * 1000 + get_text_to_int(mainappwindow.millisecs_entry);
@@ -103,7 +103,7 @@ void start_clicked(GtkButton *button)
 
 void stop_clicked(GtkButton *button)
 {
-	isClicking = false;
+	isClicking = FALSE;
 	toggle_buttons();
 }
 
