@@ -13,6 +13,7 @@ struct _MainAppWindow
 	GtkWidget *seconds_entry;
 	GtkWidget *millisecs_entry;
 	GtkWidget *repeat_entry;
+	GtkWidget *mouse_entry;
 
 	// Checkboxes
 	GtkWidget *repeat_only_check;
@@ -34,7 +35,7 @@ struct _click_opts
 	int repeat_times;
 } click_opts;
 
-gboolean toggle_buttons() {
+void toggle_buttons() {
 	gboolean activated = isClicking;
 	gtk_widget_set_sensitive(GTK_WIDGET(mainappwindow.start_button), !activated);
 	gtk_widget_set_sensitive(GTK_WIDGET(mainappwindow.stop_button), activated);
@@ -90,10 +91,21 @@ void start_clicked(GtkButton *button)
 	isClicking = TRUE;
 	toggle_buttons();
 
-	int sleep = get_text_to_int(mainappwindow.hours_entry) * 3600000 + get_text_to_int(mainappwindow.minutes_entry) * 60000 + get_text_to_int(mainappwindow.seconds_entry) * 1000 + get_text_to_int(mainappwindow.millisecs_entry);
+	int sleep = get_text_to_int(mainappwindow.hours_entry) * 3600000
+		+ get_text_to_int(mainappwindow.minutes_entry) * 60000
+		+ get_text_to_int(mainappwindow.seconds_entry) * 1000
+		+ get_text_to_int(mainappwindow.millisecs_entry);
 
-	click_opts.button = Button1;
+	//click_opts.button = Button1;
 	click_opts.sleep = sleep;
+	const gchar *selectedtext = gtk_entry_get_text(GTK_ENTRY(mainappwindow.mouse_entry));
+	if (strcmp(selectedtext, "Right") == 0) 
+		click_opts.button = Button3;
+	else if (strcmp(selectedtext, "Middle") == 0) 
+		click_opts.button = Button2;
+	else 
+		click_opts.button = Button1;
+
 	click_opts.repeat = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(mainappwindow.repeat_only_check));
 	if (click_opts.repeat)
 		click_opts.repeat_times = get_text_to_int(mainappwindow.repeat_entry);
@@ -117,6 +129,8 @@ static void main_app_window_init(MainAppWindow *win)
 	mainappwindow.seconds_entry = win->seconds_entry;
 	mainappwindow.millisecs_entry = win->millisecs_entry;
 	mainappwindow.repeat_entry = win->repeat_entry;
+	mainappwindow.mouse_entry = win->mouse_entry;
+
 
 	// Checkboxes
 	mainappwindow.repeat_only_check = win->repeat_only_check;
@@ -141,6 +155,7 @@ static void main_app_window_class_init(MainAppWindowClass *class)
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, seconds_entry);
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, millisecs_entry);
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, repeat_entry);
+	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, mouse_entry);
 
 	// Checkboxes
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, repeat_only_check);

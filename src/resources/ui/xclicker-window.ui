@@ -252,12 +252,12 @@
                         <property name="has-entry">True</property>
                         <property name="entry-text-column">0</property>
                         <property name="id-column">0</property>
-                        <property name="active-id">0</property>
+                        <property name="active-id">-1</property>
                         <child>
                           <object class="GtkCellRendererText"/>
                         </child>
                         <child internal-child="entry">
-                          <object class="GtkEntry">
+                          <object class="GtkEntry" id="mouse_entry">
                             <property name="can-focus">False</property>
                             <property name="width-chars">0</property>
                             <property name="text" translatable="yes">Left</property>
