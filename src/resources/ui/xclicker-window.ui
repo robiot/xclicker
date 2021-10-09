@@ -446,6 +446,7 @@
                 <property name="can-focus">True</property>
                 <property name="focus-on-click">False</property>
                 <property name="receives-default">True</property>
+                <signal name="pressed" handler="settings_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="left-attach">2</property>

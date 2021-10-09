@@ -2,6 +2,8 @@
 #include "xclicker-app.h"
 #include "mainwin.h"
 #include "x11api.h"
+#include "settings.h"
+#include "macros.h"
 
 struct _MainAppWindow
 {
@@ -36,13 +38,11 @@ struct _click_opts
 } click_opts;
 
 void toggle_buttons() {
-	gboolean activated = isClicking;
-	gtk_widget_set_sensitive(GTK_WIDGET(mainappwindow.start_button), !activated);
-	gtk_widget_set_sensitive(GTK_WIDGET(mainappwindow.stop_button), activated);
-	return TRUE;
+	gtk_widget_set_sensitive(GTK_WIDGET(mainappwindow.start_button), !isClicking);
+	gtk_widget_set_sensitive(GTK_WIDGET(mainappwindow.stop_button), isClicking);
 }
 
-void *click_handler()
+void click_handler()
 {
 	Display *display = get_display();
 	int count = 0;
@@ -63,7 +63,6 @@ void *click_handler()
 	// Free?
 	XCloseDisplay(display);
 	g_idle_add(toggle_buttons, NULL);
-	return (void*)0;
 }
 
 int get_text_to_int(GtkWidget *entry)
@@ -86,15 +85,25 @@ void insert_handler(GtkEditable *editable, const gchar *text)
 	}
 }
 
-void start_clicked(GtkButton *button)
+//GtkButton *button
+void start_clicked()
 {
-	isClicking = TRUE;
-	toggle_buttons();
-
 	int sleep = get_text_to_int(mainappwindow.hours_entry) * 3600000
 		+ get_text_to_int(mainappwindow.minutes_entry) * 60000
 		+ get_text_to_int(mainappwindow.seconds_entry) * 1000
 		+ get_text_to_int(mainappwindow.millisecs_entry);
+
+	if(sleep < 10 && is_safemode()){
+		GtkDialog *dialog = gtk_message_dialog_new(NULL,  GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "Warning");
+		gtk_message_dialog_format_secondary_text(dialog, "Intervals under 10 milliseconds is restricted because of safe mode.");
+
+		gtk_dialog_run(dialog);
+		gtk_widget_destroy(dialog);
+		return;
+	}
+
+	isClicking = TRUE;
+	toggle_buttons();
 
 	//click_opts.button = Button1;
 	click_opts.sleep = sleep;
@@ -104,7 +113,7 @@ void start_clicked(GtkButton *button)
 	else if (strcmp(selectedtext, "Middle") == 0) 
 		click_opts.button = Button2;
 	else 
-		click_opts.button = Button1;
+		click_opts.button = Button1; 
 
 	click_opts.repeat = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(mainappwindow.repeat_only_check));
 	if (click_opts.repeat)
@@ -113,16 +122,22 @@ void start_clicked(GtkButton *button)
 	g_thread_new("click_handler", click_handler, NULL);
 }
 
-void stop_clicked(GtkButton *button)
+void stop_clicked()
 {
 	isClicking = FALSE;
 	toggle_buttons();
 }
 
+void settings_clicked()
+{
+	settings_dialog_new();
+}
+
 static void main_app_window_init(MainAppWindow *win)
 {
 	gtk_widget_init_template(GTK_WIDGET(win));
-
+	config_init();
+	
 	// Entries
 	mainappwindow.hours_entry = win->hours_entry;
 	mainappwindow.minutes_entry = win->minutes_entry;
@@ -148,6 +163,7 @@ static void main_app_window_class_init(MainAppWindowClass *class)
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), start_clicked);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), stop_clicked);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), repeat_only_check_toggle);
+	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), settings_clicked);
 
 	// Entries
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, hours_entry);
@@ -168,9 +184,10 @@ static void main_app_window_class_init(MainAppWindowClass *class)
 
 MainAppWindow *main_app_window_new(XClickerApp *app)
 {
+	//settings_dialog_new();
 	return g_object_new(MAIN_APP_WINDOW_TYPE, "application", app, NULL);
 }
 
-void main_app_window_open(MainAppWindow *win, GFile *file)
+void main_app_window_open(MainAppWindow* UNUSED(win), GFile* UNUSED(file))
 {
 }

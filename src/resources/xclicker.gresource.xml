@@ -2,5 +2,6 @@
 <gresources>
   <gresource prefix="/org/gtk/xclicker">
     <file preprocess="xml-stripblanks">ui/xclicker-window.ui</file>
+    <file preprocess="xml-stripblanks">ui/settings-dialog.ui</file>
   </gresource>
 </gresources>

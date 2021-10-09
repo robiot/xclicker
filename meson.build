@@ -7,10 +7,11 @@ project(
     ],
 )
 
-# add_project_arguments(
-#     '-Wunused-command-line-argument',
-#     language : 'c'
-# )
+add_project_arguments(
+    #'-Wno-unused-parameter',
+    '-Wno-incompatible-pointer-types',
+    language : 'c'
+)
 
 
 gnome = import('gnome')

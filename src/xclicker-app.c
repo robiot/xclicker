@@ -2,6 +2,7 @@
 
 #include "xclicker-app.h"
 #include "mainwin.h"
+#include "macros.h"
 
 struct _XClickerApp
 {
@@ -12,17 +13,16 @@ G_DEFINE_TYPE(XClickerApp, xclicker_app, GTK_TYPE_APPLICATION);
 
 static void xclicker_app_init(XClickerApp *app)
 {
+	(void)app;
 }
 
 static void xclicker_app_activate(GApplication *app)
 {
-	MainAppWindow *win;
-
-	win = main_app_window_new(XCLICKER_APP(app));
+	MainAppWindow *win = main_app_window_new(XCLICKER_APP(app));
 	gtk_window_present(GTK_WINDOW(win));
 }
 
-static void xclicker_app_open(GApplication *app, GFile **files, int n_files, const char *hint)
+static void xclicker_app_open(GApplication *app, GFile **files, int n_files, const char* UNUSED(sus))
 {
 	GList *windows;
 	MainAppWindow *win;
