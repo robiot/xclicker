@@ -5,9 +5,12 @@
   <object class="GtkDialog" id="dialog">
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">Settings</property>
+    <property name="resizable">False</property>
     <property name="window-position">center</property>
-    <property name="default-width">350</property>
+    <property name="default-width">300</property>
+    <property name="destroy-with-parent">True</property>
     <property name="type-hint">dialog</property>
+    <property name="urgency-hint">True</property>
     <property name="gravity">static</property>
     <child internal-child="vbox">
       <object class="GtkBox">
@@ -16,6 +19,7 @@
         <property name="margin-end">10</property>
         <property name="margin-top">10</property>
         <property name="margin-bottom">10</property>
+        <property name="orientation">vertical</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox">
             <property name="can-focus">False</property>
@@ -36,8 +40,6 @@
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="margin-left">5</property>
-                <property name="margin-right">5</property>
                 <property name="margin-start">5</property>
                 <property name="margin-end">5</property>
                 <property name="margin-top">5</property>
@@ -47,8 +49,8 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">This prevents you from running
-with under 10 milliseconds interval</property>
+                    <property name="label" translatable="yes">This prevents you from running with under a 10
+milliseconds interval</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -57,13 +59,14 @@ with under 10 milliseconds interval</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkSwitch">
+                  <object class="GtkSwitch" id="safe_mode_switch">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="margin-top">10</property>
                     <property name="margin-bottom">10</property>
                     <property name="hexpand">True</property>
                     <property name="active">True</property>
+                    <signal name="state-set" handler="safe_mode_changed" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
