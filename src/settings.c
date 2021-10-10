@@ -19,13 +19,10 @@ const char *get_config_file_path()
 
 GKeyFile *get_config_keyfile(const char *configpath)
 {
-    //g_print("%d", access(configpath, F_OK));
     GKeyFile *config = g_key_file_new();
     if (!g_key_file_load_from_file(config, configpath, G_KEY_FILE_KEEP_COMMENTS, NULL))
         g_print("Could not load config file. This could mean that you never changed any settings or that the config is corrupted.\n");
     return config;
-    //g_key_file_set_string(config, category, key,  value);
-    //gboolean sucess = g_key_file_save_to_file(config, configpath, NULL);
 }
 
 gboolean is_safemode()
