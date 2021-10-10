@@ -8,6 +8,8 @@
 
 XClicker is going to be one of the most feature-rich autoclickers for x11 desktops. It is currently under heavy development and is not even near a first release.
 
+### Screenshot
+![Example image](https://raw.githubusercontent.com/robiot/XClicker/main/img/example.png)
 ### Building
 
 After cloning the repository, you only have to run this one command. The executable will be placed in **./bin/xclicker**.
