@@ -7,7 +7,7 @@ DESKFILE  = xclicker.desktop
 
 .PHONY: build
 build:
-	meson build
+	@if test -d "./${BUILD_DIR}"; then echo "Build dir is already made"; else meson build; fi
 	meson compile -C build
 	mkdir -p ./${BIN_DIR}
 	cp -f ./${BUILD_DIR}/src/${BINNAME} ${TARGET}

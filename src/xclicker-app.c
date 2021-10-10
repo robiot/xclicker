@@ -22,7 +22,7 @@ static void xclicker_app_activate(GApplication *app)
 	gtk_window_present(GTK_WINDOW(win));
 }
 
-static void xclicker_app_open(GApplication *app, GFile **files, int n_files, const char* UNUSED(sus))
+static void xclicker_app_open(GApplication *app, GFile **files, int n_files, const char *UNUSED(sus))
 {
 	GList *windows;
 	MainAppWindow *win;

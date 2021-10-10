@@ -302,13 +302,14 @@
                     <property name="column-spacing">10</property>
                     <property name="row-homogeneous">True</property>
                     <child>
-                      <object class="GtkCheckButton">
+                      <object class="GtkCheckButton" id="custom_location_check">
                         <property name="label" translatable="yes">Custom Location</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="focus-on-click">False</property>
                         <property name="receives-default">False</property>
                         <property name="draw-indicator">True</property>
+                        <signal name="toggled" handler="custom_location_check_toggle" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left-attach">0</property>
@@ -316,7 +317,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton">
+                      <object class="GtkButton" id="set_button">
                         <property name="label" translatable="yes">Set</property>
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
@@ -338,7 +339,7 @@
                         <property name="can-focus">False</property>
                         <property name="column-spacing">10</property>
                         <child>
-                          <object class="GtkEntry">
+                          <object class="GtkEntry" id="x_entry">
                             <property name="name">HoursEntry</property>
                             <property name="visible">True</property>
                             <property name="sensitive">False</property>
@@ -354,7 +355,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkEntry">
+                          <object class="GtkEntry" id="y_entry">
                             <property name="name">HoursEntry</property>
                             <property name="visible">True</property>
                             <property name="sensitive">False</property>
