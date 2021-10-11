@@ -301,7 +301,6 @@ static void main_app_window_class_init(MainAppWindowClass *class)
 
 MainAppWindow *main_app_window_new(XClickerApp *app)
 {
-	//settings_dialog_new();
 	return g_object_new(MAIN_APP_WINDOW_TYPE, "application", app, NULL);
 }
 
