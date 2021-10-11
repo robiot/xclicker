@@ -6,3 +6,4 @@ buildir/
 *.ui#
 x-clicker.c
 xclicker.conf
+img/saves
