@@ -15,7 +15,7 @@ add_project_arguments(
 
 
 gnome = import('gnome')
-gtkdeps = [dependency('gtk+-3.0'), dependency('x11')]
+gtkdeps = [dependency('gtk+-3.0'), dependency('x11'), dependency('xi')]
 
 subdir('src')
 

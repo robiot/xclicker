@@ -8,6 +8,7 @@
 struct _MainAppWindow
 {
 	GtkApplicationWindow parent;
+	GtkWidget *pwin;
 
 	// Entries
 	GtkWidget *hours_entry;
@@ -31,7 +32,11 @@ struct _MainAppWindow
 } mainappwindow;
 G_DEFINE_TYPE(MainAppWindow, main_app_window, GTK_TYPE_APPLICATION_WINDOW);
 
+
 gboolean isClicking = FALSE;
+gboolean isChoosingLocation = FALSE;
+//gboolean beforeWindowTopmost = FALSE; // For later.
+
 struct _click_opts
 {
 	int sleep;
@@ -72,6 +77,82 @@ void click_handler()
 	XCloseDisplay(display);
 	g_idle_add(toggle_buttons, NULL);
 }
+
+struct _set_coord_args
+{
+	const char *coordx;
+	const char *coordy;
+} set_coord_args;
+
+void set_coords()
+{
+	if (GTK_IS_ENTRY(mainappwindow.x_entry))
+		gtk_entry_set_text(mainappwindow.x_entry, set_coord_args.coordx);
+	if (GTK_IS_ENTRY(mainappwindow.y_entry))
+		gtk_entry_set_text(mainappwindow.y_entry, set_coord_args.coordy);
+}
+
+void get_cursor_pos_click_handler()
+{
+	Display *display = get_display();
+	init_mouse_config(display);
+
+	while (isChoosingLocation)
+	{
+		if (get_mousebutton_state(display) == 1)
+			isChoosingLocation = FALSE;
+	}
+}
+
+// Toggle window settings if choosing location or finished.
+void toggle_window_from_set()
+{
+	switch (isChoosingLocation)
+	{
+	case TRUE:
+		gtk_window_set_keep_above(GTK_WINDOW(mainappwindow.pwin), TRUE);
+		gtk_button_set_label(GTK_BUTTON(mainappwindow.set_button), "Click");
+		gtk_widget_set_sensitive(mainappwindow.set_button, FALSE);
+		break;
+	case FALSE:
+		gtk_window_set_keep_above(GTK_WINDOW(mainappwindow.pwin), FALSE);
+		gtk_button_set_label(GTK_BUTTON(mainappwindow.set_button), "Set");
+		gtk_widget_set_sensitive(mainappwindow.set_button, TRUE);
+		break;
+	}
+}
+
+void get_cursor_pos_handler()
+{
+	Display *display = get_display();
+	char *cur_x, *cur_y;
+	while (isChoosingLocation)
+	{
+		int i_cur_x, i_cur_y;
+		get_mouse_coords(display, &i_cur_x, &i_cur_y);
+		cur_x = (char *)malloc(sizeof(i_cur_x));
+		cur_y = (char *)malloc(sizeof(i_cur_y));
+		sprintf(cur_x, "%d", i_cur_x);
+		sprintf(cur_y, "%d", i_cur_y);
+
+		// TODO: Implement a way of doing this with user_data instead of this.
+		set_coord_args.coordx = cur_x;
+		set_coord_args.coordy = cur_y;
+		g_main_context_invoke(NULL, set_coords, NULL);
+
+		// Old, no thread.
+		// if (strcmp(gtk_entry_get_text(GTK_ENTRY(mainappwindow.x_entry)), cur_x) != 0)
+		// 	gtk_entry_set_text(GTK_ENTRY(mainappwindow.x_entry), cur_x);
+		// if (strcmp(gtk_entry_get_text(GTK_ENTRY(mainappwindow.y_entry)), cur_y) != 0)
+		// 	gtk_entry_set_text(GTK_ENTRY(mainappwindow.y_entry), cur_y);
+		usleep(50000);
+	}
+	free(cur_x);
+	free(cur_y);
+	g_idle_add(toggle_window_from_set, NULL);
+}
+
+
 
 int get_text_to_int(GtkWidget *entry)
 {
@@ -150,10 +231,20 @@ void settings_clicked()
 	settings_dialog_new();
 }
 
+void set_button_clicked()
+{
+	isChoosingLocation = TRUE;
+	toggle_window_from_set();
+	g_thread_new("get_cursor_pos_click_handler", get_cursor_pos_click_handler, NULL);
+	g_thread_new("get_cursor_pos_handler", get_cursor_pos_handler, NULL);
+}
+
 static void main_app_window_init(MainAppWindow *win)
 {
 	gtk_widget_init_template(GTK_WIDGET(win));
 	config_init();
+
+	mainappwindow.pwin = gtk_widget_get_toplevel(win);
 
 	// Entries
 	mainappwindow.hours_entry = win->hours_entry;
@@ -185,6 +276,7 @@ static void main_app_window_class_init(MainAppWindowClass *class)
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), repeat_only_check_toggle);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), settings_clicked);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), custom_location_check_toggle);
+	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), set_button_clicked);
 
 	// Entries
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, hours_entry);
