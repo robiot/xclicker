@@ -131,8 +131,8 @@ void get_cursor_pos_handler()
 	{
 		int i_cur_x, i_cur_y;
 		get_mouse_coords(display, &i_cur_x, &i_cur_y);
-		char *cur_x = (char *)malloc(sizeof(int));
-		char *cur_y = (char *)malloc(sizeof(int));
+		char *cur_x = (char *)malloc(1 + sizeof(i_cur_x));
+		char *cur_y = (char *)malloc(1 +  sizeof(i_cur_y));
 		sprintf(cur_x, "%d", i_cur_x);
 		sprintf(cur_y, "%d", i_cur_y);
 
@@ -147,6 +147,8 @@ void get_cursor_pos_handler()
 		// if (strcmp(gtk_entry_get_text(GTK_ENTRY(mainappwindow.y_entry)), cur_y) != 0)
 		// 	gtk_entry_set_text(GTK_ENTRY(mainappwindow.y_entry), cur_y);
 		usleep(50000);
+		free(cur_x);
+		free(cur_y);
 	}
 	// free(cur_x);
 	// free(cur_y);
