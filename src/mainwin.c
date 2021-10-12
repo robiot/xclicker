@@ -147,8 +147,10 @@ void get_cursor_pos_handler()
 		// 	gtk_entry_set_text(GTK_ENTRY(mainappwindow.y_entry), cur_y);
 		usleep(50000);
 	}
-	free(cur_x);
-	free(cur_y);
+	if (cur_x != NULL)
+		free(cur_x);
+	if (cur_y != NULL)
+		free(cur_y);
 	g_idle_add(toggle_window_from_set, NULL);
 }
 
