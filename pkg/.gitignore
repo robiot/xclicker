@@ -1,0 +1,5 @@
+deb/**
+!deb/control
+
+aur/**
+!aur/PKGBUILD

@@ -1,29 +1,41 @@
-
-BIN_DIR   = bin
 BUILD_DIR = build
+PKG_DIR   = pkg
+
 BINNAME   = xclicker
-TARGET    = ${BIN_DIR}/${BINNAME}
+TARGET    = build/src/${BINNAME}
 DESKFILE  = xclicker.desktop
+
+debpkgdir="./${PKG_DIR}/deb/package"
 
 .PHONY: build
 build:
 	@if test -d "./${BUILD_DIR}"; then echo "Build dir is already made"; else meson build; fi
 	meson compile -C build
-	@mkdir -p ./${BIN_DIR}
-	@cp -f ./${BUILD_DIR}/src/${BINNAME} ${TARGET}
-	
-.PHONY: all
-all: build run
 
 .PHONY: run
 run:
 	./${TARGET}
+	
+.PHONY: all
+all: build run
 
 .PHONY: install
 install: build
-	@sudo cp -f ./${BUILD_DIR}/src/${BINNAME} /usr/bin/${BINNAME} 
-	@sudo cp -f ./${DESKFILE} /usr/share/applications
-	
+	@sudo install -Dm755 ./${BUILD_DIR}/src/${BINNAME} /usr/bin/${BINNAME}
+	@sudo install -Dm755 ./${DESKFILE} /usr/share/applications/xclicker.desktop
+	@echo "Installed XClicker"
+
+.PHONY: deb
+deb: build
+	@rm -rf ${debpkgdir}
+	@mkdir -p ${debpkgdir}
+
+	@install -Dm644 ./${PKG_DIR}/deb/control ${debpkgdir}/DEBIAN/control
+	@install -Dm644 ./${BUILD_DIR}/src/${BINNAME} ${debpkgdir}/bin/${BINNAME}
+	@install -Dm644 ./${DESKFILE} ${debpkgdir}/usr/share/applications/xclicker.desktop
+	@dpkg-deb --build ${debpkgdir}
+	@dpkg-name ${PKG_DIR}/deb/package.deb -o
+
 .PHONY: clean
 clean:
-	@$(RM) -rv $(BIN_DIR) ${BUILD_DIR}
+	@$(RM) -rv ${BUILD_DIR}

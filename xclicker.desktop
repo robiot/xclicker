@@ -1,10 +1,8 @@
 [Desktop Entry]
 Name=XClicker
 GenericName=XClicker
-Comment=Auto Clicker
-Exec=xclicker
+Comment=A blazing fast gui autoclicker for linux
+Exec=/usr/bin/xclicker
 Icon=xclicker
 Terminal=false
 Type=Application
-
-
