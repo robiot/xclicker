@@ -33,9 +33,21 @@ After cloning the repository, you only have to run this one command. The executa
 $ make
 ```
 
-### Installing
+## Installing
 
-Installing the application on the system is as easy as running
+### Recommended
+#### Arch
 ```
-$ make install
+yay -S xclicker
+```
+
+#### Debian / Ubuntu
+```
+wget https://github.com/robiot/XClicker/releases/latest/download/xclicker.deb && sudo apt-get install ./xclicker.deb && rm -f ./xclicker.deb
+```
+
+
+### Not recommended
+```
+make install
 ```
