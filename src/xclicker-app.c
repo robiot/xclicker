@@ -11,9 +11,8 @@ struct _XClickerApp
 
 G_DEFINE_TYPE(XClickerApp, xclicker_app, GTK_TYPE_APPLICATION);
 
-static void xclicker_app_init(XClickerApp *app)
+static void xclicker_app_init(XClickerApp* UNUSED(app))
 {
-	(void)app;
 }
 
 static void xclicker_app_activate(GApplication *app)
