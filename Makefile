@@ -1,3 +1,5 @@
+#@dpkg-name ${PKG_DIR}/deb/package.deb -o
+
 BUILD_DIR = build
 PKG_DIR   = pkg
 
@@ -5,7 +7,7 @@ BINNAME   = xclicker
 TARGET    = build/src/${BINNAME}
 DESKFILE  = xclicker.desktop
 
-debpkgdir="./${PKG_DIR}/deb/package"
+debpkgdir="./${PKG_DIR}/deb/xclicker"
 
 .PHONY: build
 build:
@@ -36,7 +38,6 @@ deb: build
 	@install -Dm 644 ./${DESKFILE} ${debpkgdir}/usr/share/applications/xclicker.desktop
 	@install -Dm 644 ./img/icon.png ${debpkgdir}/usr/share/pixmaps/${BINNAME}.png
 	@dpkg-deb --build ${debpkgdir}
-	@dpkg-name ${PKG_DIR}/deb/package.deb -o
 
 .PHONY: clean
 clean:

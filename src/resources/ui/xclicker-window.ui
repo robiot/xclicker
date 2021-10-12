@@ -72,6 +72,7 @@
                     <property name="hexpand">True</property>
                     <property name="max-length">9</property>
                     <property name="width-chars">0</property>
+                    <signal name="insert-text" handler="insert_handler" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left-attach">1</property>
@@ -122,6 +123,7 @@
                     <property name="hexpand">True</property>
                     <property name="max-length">9</property>
                     <property name="width-chars">0</property>
+                    <signal name="insert-text" handler="insert_handler" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left-attach">2</property>
@@ -349,6 +351,7 @@
                             <property name="max-length">9</property>
                             <property name="width-chars">0</property>
                             <property name="placeholder-text" translatable="yes">X</property>
+                            <signal name="insert-text" handler="insert_handler" swapped="no"/>
                           </object>
                           <packing>
                             <property name="left-attach">0</property>
@@ -365,6 +368,7 @@
                             <property name="max-length">9</property>
                             <property name="width-chars">0</property>
                             <property name="placeholder-text" translatable="yes">Y</property>
+                            <signal name="insert-text" handler="insert_handler" swapped="no"/>
                           </object>
                           <packing>
                             <property name="left-attach">1</property>
