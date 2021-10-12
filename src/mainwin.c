@@ -78,18 +78,20 @@ void click_handler()
 	g_idle_add(toggle_buttons, NULL);
 }
 
-struct _set_coord_args
+struct set_coord_args
 {
 	const char *coordx;
 	const char *coordy;
-} set_coord_args;
+};
 
-void set_coords()
+void set_coords(gpointer *data)
 {
+	struct set_coord_args *args = data;
 	if (GTK_IS_ENTRY(mainappwindow.x_entry))
-		gtk_entry_set_text(mainappwindow.x_entry, set_coord_args.coordx);
+		gtk_entry_set_text(mainappwindow.x_entry, args->coordx);
 	if (GTK_IS_ENTRY(mainappwindow.y_entry))
-		gtk_entry_set_text(mainappwindow.y_entry, set_coord_args.coordy);
+		gtk_entry_set_text(mainappwindow.y_entry, args->coordy);
+	g_free(args);
 }
 
 void get_cursor_pos_click_handler()
@@ -134,10 +136,10 @@ void get_cursor_pos_handler()
 		sprintf(cur_x, "%d", i_cur_x);
 		sprintf(cur_y, "%d", i_cur_y);
 
-		// TODO: Implement a way of doing this with user_data instead of this.
-		set_coord_args.coordx = cur_x;
-		set_coord_args.coordy = cur_y;
-		g_main_context_invoke(NULL, set_coords, NULL);
+		struct set_coord_args *user_data = g_malloc0(sizeof(struct set_coord_args));
+		user_data->coordx = cur_x;
+		user_data->coordy = cur_y;
+		g_main_context_invoke(NULL, set_coords, user_data);
 
 		// Old, no thread.
 		// if (strcmp(gtk_entry_get_text(GTK_ENTRY(mainappwindow.x_entry)), cur_x) != 0)
