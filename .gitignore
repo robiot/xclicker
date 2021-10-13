@@ -1,9 +1,7 @@
 .vscode/settings.json
-bin/
 build/
 buildir/
+img/saves
 *.ui~
 *.ui#
-x-clicker.c
 xclicker.conf
-img/saves

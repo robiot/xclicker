@@ -1,5 +1,3 @@
-#@dpkg-name ${PKG_DIR}/deb/package.deb -o
-
 BUILD_DIR = build
 PKG_DIR   = pkg
 

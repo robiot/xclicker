@@ -8,14 +8,14 @@ project(
 )
 
 add_project_arguments(
-    #'-Wno-unused-parameter',
     '-Wno-incompatible-pointer-types',
     language : 'c'
 )
 
 
+#run_target('run', command: 'src/xclicker')
+
 gnome = import('gnome')
-gtkdeps = [dependency('gtk+-3.0'), dependency('x11'), dependency('xi')]
+deps = [dependency('gtk+-3.0'), dependency('x11'), dependency('xi')]
 
 subdir('src')
-

@@ -14,5 +14,5 @@ executable('xclicker',
     'settings.c',
   
     xclicker_resources,
-    dependencies: gtkdeps,
+    dependencies: deps,
 )
