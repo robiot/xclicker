@@ -38,6 +38,11 @@ deb: build
 	@dpkg-deb --build ${debpkgdir}
 	@dpkg-name ${PKG_DIR}/deb/package.deb -o
 
+.PHONY: portable
+portable: build
+	@mkdir -p ${PKG_DIR}/portable
+	@tar -C ./${BUILD_DIR}/src -czf ${PKG_DIR}/portable/xclicker_portable_amd64.tar.gz ${BINNAME}
+
 .PHONY: clean
 clean:
 	@$(RM) -rv ${BUILD_DIR}

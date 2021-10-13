@@ -1,4 +1,5 @@
 deb/**
 !deb/control
 
+portable/
 aur/
