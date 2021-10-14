@@ -1,11 +1,11 @@
 <p align="center">
-	<img src="https://raw.githubusercontent.com/robiot/XClicker/main/img/banner.png" alt="XClicker">
+	<img src="https://raw.githubusercontent.com/robiot/XClicker/main/img/banner.png" alt="XClicker" />
 </p>
 <p align="center">
-	<img alt="GitHub All Releases" src="https://img.shields.io/github/downloads/robiot/XClicker/total?label=GitHub%20Downloads">
-  	<a href="https://aur.archlinux.org/packages/xclicker"><img alt="AUR version" src="https://img.shields.io/aur/version/xclicker"></a>
-  	<img alt="GitHub Issues" src="https://img.shields.io/github/issues/robiot/XClicker.svg"/>
-  	<img alt="GitHub Contributors" src="https://img.shields.io/github/contributors/robiot/XClicker"></a>
+	<img alt="GitHub All Releases" src="https://img.shields.io/github/downloads/robiot/XClicker/total?label=GitHub%20Downloads" />
+  	<a href="https://aur.archlinux.org/packages/xclicker"><img alt="AUR version" src="https://img.shields.io/aur/version/xclicker" /></a>
+  	<img alt="GitHub Issues" src="https://img.shields.io/github/issues/robiot/XClicker.svg" />
+  	<img alt="GitHub Contributors" src="https://img.shields.io/github/contributors/robiot/XClicker" /></a>
 </p>
 
 ## What is XClicker?
