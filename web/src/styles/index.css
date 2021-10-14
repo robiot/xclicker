@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .h-30rem {
+    min-height: 30rem;
+  }
+
+  .w-description {
+    width: 30rem;
+  }
+
+  .navbar {
+    transition: background-color 0.2s ease;
+  }
+  .navbar.active {
+    background-color: #262626;
+    transition: background-color 0.2s ease;
+  }
+
+  .navbar-item {
+    @apply flex items-center h-full hover:bg-gray-700 bg-opacity-5 p-4;
+  }
+
+  .navbar-item.active:hover {
+    background-color: #33444b;
+  }
+}
