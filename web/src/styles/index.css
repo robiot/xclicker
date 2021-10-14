@@ -26,4 +26,14 @@
   .navbar-item.active:hover {
     background-color: #33444b;
   }
+
+  .loadingsScreen{
+    position:absolute;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    background-color: red;
+    z-index: 10;
+}
 }

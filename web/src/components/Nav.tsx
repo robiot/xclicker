@@ -28,15 +28,19 @@ export default function Nav() {
             </a>
           </Link>
 
-					<div className="hidden md:flex">
-						<Navbar_item href="/downloads" navbar={navbar}>
-							Downloads
-						</Navbar_item>
+          <div className="hidden md:flex">
+            <Navbar_item
+              href="https://github.com/robiot/XClicker/releases/latest"
+              navbar={navbar}
+              external={true}
+            >
+              Downloads
+            </Navbar_item>
 
-						<Navbar_item href="/screenshots" navbar={navbar}>
-							Screenshots
-						</Navbar_item>
-					</div>
+            <Navbar_item href="/test" navbar={navbar}>
+              Test it
+            </Navbar_item>
+          </div>
         </div>
 
         <div className="flex h-full">
