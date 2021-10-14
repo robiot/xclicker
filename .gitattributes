@@ -1,3 +1,4 @@
 pkg/* linguist-vendored
 web/* linguist-vendored
+web/src/* linguist-vendored
 Makefile linguist-vendored
