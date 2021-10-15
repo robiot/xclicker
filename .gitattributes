@@ -1,7 +1,9 @@
 pkg/* linguist-vendored
 web/* linguist-vendored
+web/next-env.d.ts linguist-vendored
 web/src/components/* linguist-vendored
 web/src/pages/* linguist-vendored
+web/src/pages/downloads/* linguist-vendored
 web/src/styles/* linguist-vendored
 
 Makefile linguist-vendored
