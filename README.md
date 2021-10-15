@@ -34,30 +34,7 @@ $ make
 ```
 
 ## Installing
-
-### Recommended
-#### Arch
-```
-yay -S xclicker
-```
-
-#### Debian / Ubuntu
- * Go to the latest [release](https://github.com/robiot/XClicker/releases/latest/) and download the .deb file.
- * Run `sudo apt-get install ./xclicker_version_amd64.deb` where **version** is the version of the downloaded release.
-
-Or even easier, with an install script:
-```
-bash <(curl -s https://raw.githubusercontent.com/robiot/XClicker/main/pkg/deb-install.sh)
-```
-
-#### Other
-Install with the not recommended way or use the portable version.
-
-### Not recommended
-```
-make install
-```
-
+Check out the [Installation Guide](https://github.com/robiot/XClicker/wiki/Installation)
 
 ## License
 XClicker is licensed under GPL-3.0 LICENSE.
