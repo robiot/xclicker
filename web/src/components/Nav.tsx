@@ -8,7 +8,6 @@ export default function Nav() {
 
   const changeNavbar = () => {
     setNavbar(!(window.scrollY <= 10));
-    console.log(navbar);
   };
   useEffect(() => {
     window.addEventListener("scroll", changeNavbar);
@@ -30,9 +29,9 @@ export default function Nav() {
 
           <div className="hidden md:flex">
             <Navbar_item
-              href="https://github.com/robiot/XClicker/releases/latest"
+              href="/downloads"
               navbar={navbar}
-              external={true}
+              external={false}
             >
               Downloads
             </Navbar_item>

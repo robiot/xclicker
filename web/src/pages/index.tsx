@@ -9,7 +9,7 @@ export default function Home({ source }) {
       <div className="bg-gradient-to-br from-gradient-gray to-gradient-gray-less h-screen">
         <Nav />
 
-        <div className="flex justify-between text-white container-xl mx-auto px-10 ">
+        <div className="flex justify-between text-white container-xl mx-auto px-10">
           <div className="mb-10 mt-16">
             <div className="text-3xl font-semibold mb-4">
               Autoclicker For Linux
@@ -27,10 +27,13 @@ export default function Home({ source }) {
             </div>
 
             <div className="flex flex-wrap">
-              <a href="https://github.com/robiot/XClicker/releases/latest" className="bg-blue-400 p-3 rounded-md text-white h-full text-lg mr-3 hidden sm:block">
-                <ArrowDownward />
-                <span className="ml-2">Download</span>
-              </a>
+              <Link href="/downloads">
+                <a className="bg-blue-400 p-3 rounded-md text-white h-full text-lg mr-3 hidden sm:block">
+                  <ArrowDownward />
+                  <span className="ml-2">Download</span>
+                </a>
+              </Link>
+
 
               <a
                 href="https://github.com/robiot/XClicker"

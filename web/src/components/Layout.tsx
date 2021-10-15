@@ -3,7 +3,7 @@ import Head from "next/head";
 
 export function Layout({ children, title, home = false }) {
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-gray-900 text-white">
       <Head>
         <title>{home ? `XClicker - ${title}` : `${title} - XClicker`}</title>
         <meta charSet="utf-8" />

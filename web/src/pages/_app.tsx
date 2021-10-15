@@ -2,6 +2,7 @@ import React from 'react'
 import { AppProps } from 'next/app'
 import Router from "next/router";
 import NProgress from "nprogress";
+import "nprogress/nprogress.css";
 import '../styles/index.css'
 
 Router.events.on('routeChangeStart', () => NProgress.start());
