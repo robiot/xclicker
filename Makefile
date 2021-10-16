@@ -6,6 +6,7 @@ TARGET    = build/src/${BINNAME}
 DESKFILE  = xclicker.desktop
 
 debpkgdir="./${PKG_DIR}/deb/package"
+appimgdir="${PKG_DIR}/AppImage/XClicker.AppDir"
 
 .PHONY: build
 build:
@@ -32,16 +33,21 @@ deb: build
 	@mkdir -p ${debpkgdir}
 
 	@install -Dm 644 ./${PKG_DIR}/deb/control ${debpkgdir}/DEBIAN/control
-	@install -Dm 644 ./${BUILD_DIR}/src/${BINNAME} ${debpkgdir}/bin/${BINNAME}
+	@install -Dm 644 ./${BUILD_DIR}/src/${BINNAME} ${debpkgdir}/usr/bin/${BINNAME}
 	@install -Dm 644 ./${DESKFILE} ${debpkgdir}/usr/share/applications/xclicker.desktop
 	@install -Dm 644 ./img/icon.png ${debpkgdir}/usr/share/pixmaps/${BINNAME}.png
 	@dpkg-deb --build ${debpkgdir}
 	@dpkg-name ${PKG_DIR}/deb/package.deb -o
 
-.PHONY: portable
-portable: build
-	@mkdir -p ${PKG_DIR}/portable
-	@tar -C ./${BUILD_DIR}/src -czf ${PKG_DIR}/portable/xclicker_portable_amd64.tar.gz ${BINNAME}
+.PHONY: appimg
+appimg: build
+	@rm -rf ${appimg}
+	@mkdir -p ${appimgdir}
+	@install -Dm 755 ./${BUILD_DIR}/src/${BINNAME} ${appimgdir}/${BINNAME}
+	@install -Dm 755 ./${DESKFILE} ${appimgdir}/xclicker.desktop
+	@install -Dm 755 ./${PKG_DIR}/AppImage/AppRun ${appimgdir}/AppRun
+	@install -Dm 644 ./img/icon.png ${appimgdir}/${BINNAME}.png
+	@cd ${PKG_DIR}/AppImage; appimagetool ./XClicker.AppDir
 
 .PHONY: clean
 clean:

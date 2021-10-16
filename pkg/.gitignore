@@ -1,5 +1,7 @@
 deb/**
 !deb/control
 
-portable/
+AppImage/**
+!AppImage/AppRun
+
 aur/

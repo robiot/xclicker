@@ -2,7 +2,8 @@
 Name=XClicker
 GenericName=XClicker
 Comment=A blazing fast gui autoclicker for linux
-Exec=/usr/bin/xclicker
+Exec=xclicker
 Icon=xclicker
 Terminal=false
 Type=Application
+Categories=Utility
