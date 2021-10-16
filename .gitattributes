@@ -1,4 +1,4 @@
-pkg/* linguist-vendored
+pkg/** linguist-vendored
 web/** linguist-vendored
 
 
