@@ -8,10 +8,18 @@ export function Layout({ children, title, home = false }) {
         <title>{home ? `XClicker - ${title}` : `${title} - XClicker`}</title>
         <meta charSet="utf-8" />
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
-        <meta name="Description" content="A fast gui autoclicker for linux" />
-        <meta content="https://xclicker.pages.dev" property="og:url" />
-        <meta content="/embed.png" property="og:image" />
-        <meta content="#43B581" data-react-helmet="true" name="theme-color" />
+        <meta name="description" content="A fast gui autoclicker for linux" title="XClicker" />
+        <meta property="og:url" content="https://xclicker.pages.dev" />
+        <meta property="og:image" content="/embed.png" />
+
+        <meta property="og:image" content="/embed.png" />
+        <meta property="og:image:alt" content="A fast gui autoclicker for linux." />
+        <meta property="og:site_name" content="GitHub" />
+        <meta property="og:type" content="profile" />
+        <meta property="og:title" content={`XClicker - ${title}`} />
+        <meta property="og:url" content="https://xclicker.pages.dev" />
+        <meta property="og:description" content="A fast gui autoclicker for linux." />
+
         <link rel="icon" href="/favicon.ico" />
       </Head>
 

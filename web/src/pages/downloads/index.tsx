@@ -36,7 +36,7 @@ export default function Home() {
     grab();
   }, []);
   return (
-    <Layout title="Autoclicker For Linux">
+    <Layout title="Downloads">
       <div className="bg-gradient-gray h-screen">
         <Nav />
 
