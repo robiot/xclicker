@@ -104,7 +104,7 @@ milliseconds interval</property>
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
-                <property name="label" translatable="yes">v1.0.0</property>
+                <property name="label">v1.0.1</property>
               </object>
               <packing>
                 <property name="left-attach">0</property>
