@@ -28,7 +28,7 @@ Friendly reminder: With 0 millisecond interval your xorg might freeze.
 
 ## Building
 
-After cloning the repository, you only have to run this one command. The executable will be placed in **./bin/xclicker**.
+After cloning the repository, you only have to run this one command. The executable will be placed in **./build/src/xclicker**.
 ```
 $ make
 ```
