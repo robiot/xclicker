@@ -1,7 +1,5 @@
 pkg/* linguist-vendored
-web/* linguist-vendored
-web/src/components/* linguist-vendored
-web/src/pages/* linguist-vendored
-web/src/styles/* linguist-vendored
+web/** linguist-vendored
+
 
 Makefile linguist-vendored
