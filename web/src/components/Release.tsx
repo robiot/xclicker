@@ -1,7 +1,7 @@
 import React from "react";
 
 
-export function Release({ children, latestRelease, latestReleaseAssets }) {
+export function Release({ children, latestRelease }) {
     return (
         <div className="mt-10 p-3 bg-gradient-gray-less rounded-md">
         <div className="font-semibold text-2xl mb-2">
