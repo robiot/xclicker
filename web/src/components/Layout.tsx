@@ -9,9 +9,8 @@ export function Layout({ children, title, home = false }) {
         <meta charSet="utf-8" />
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
         <meta name="description" content="A fast gui autoclicker for linux" title="XClicker" />
+        <meta name="google-site-verification" content="Os3AHOTtsSa11E20RzYkB2-I9MWf2zUEJuKyHyHYUEk" />
         <meta property="og:url" content="https://xclicker.pages.dev" />
-        <meta property="og:image" content="/embed.png" />
-
         <meta property="og:image" content="/embed.png" />
         <meta property="og:image:alt" content="A fast gui autoclicker for linux." />
         <meta property="og:site_name" content="GitHub" />
