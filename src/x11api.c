@@ -13,7 +13,7 @@ void get_mouse_coords(Display *display, int *x, int *y)
     *y = event.xbutton.y;
 }
 
-void init_mouse_config(Display *display)
+void init_mask_config(Display *display)
 {
     XIEventMask mask[2];
     XIEventMask *m;
@@ -24,12 +24,14 @@ void init_mouse_config(Display *display)
     m->mask_len = XIMaskLen(XI_LASTEVENT);
     m->mask = calloc(m->mask_len, sizeof(char));
     XISetMask(m->mask, XI_ButtonPress);
+    XISetMask(m->mask, XI_KeyPress);
 
     m = &mask[1];
     m->deviceid = XIAllMasterDevices;
     m->mask_len = XIMaskLen(XI_LASTEVENT);
     m->mask = calloc(m->mask_len, sizeof(char));
     XISetMask(m->mask, XI_RawButtonPress);
+    XISetMask(m->mask, XI_RawKeyPress);
 
     XISelectEvents(display, win, &mask[0], 2);
     XSync(display, FALSE);
@@ -38,12 +40,13 @@ void init_mouse_config(Display *display)
     free(mask[1].mask);
 }
 
+
 int get_event_button_id(XIDeviceEvent *event)
 {
     return event->detail;
 }
 
-int get_mousebutton_state(Display *display)
+int get_button_state(Display *display)
 {
 
     XEvent event;

@@ -97,11 +97,11 @@ void set_coords(gpointer *data)
 void get_cursor_pos_click_handler()
 {
 	Display *display = get_display();
-	init_mouse_config(display);
+	init_mask_config(display);
 
 	while (isChoosingLocation)
 	{
-		if (get_mousebutton_state(display) == 1)
+		if (get_button_state(display) == 1)
 			isChoosingLocation = FALSE;
 	}
 }
@@ -239,6 +239,28 @@ void set_button_clicked()
 	toggle_window_from_set();
 	g_thread_new("get_cursor_pos_click_handler", get_cursor_pos_click_handler, NULL);
 	g_thread_new("get_cursor_pos_handler", get_cursor_pos_handler, NULL);
+}
+
+// Has to be here since it calls start_clicked
+void get_start_stop_key_handler()
+{
+    Display *display = get_display();
+    init_mask_config(display);
+
+    while (1)
+    {
+        // Convert https://newbedev.com/convert-ascii-character-to-x11-keycode
+        int state = get_button_state(display);
+        //g_print("%s, %d\n", keycode_to_string(display, state), state);
+        
+        if (state == 73)
+        {
+            g_print("sus\n");
+            g_idle_add(start_clicked, NULL);
+            return;
+        }
+    }
+    XCloseDisplay(display);
 }
 
 static void main_app_window_init(MainAppWindow *win)
