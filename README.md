@@ -22,9 +22,8 @@ XClicker is a open-source, easy to use, feature-rich, **blazing fast** Autoclick
  * Click on a specified location only;
 
 ### How much cps?
-The highest I have got with it was **800**, but that was still with 1 millisecond interval.
-
-Friendly reminder: With 0 millisecond interval your xorg might freeze.
+The highest I have got with it was around **750cps**, but that was still with 1 millisecond interval.\
+With 0 millisecond interval, the focused application may freeze.
 
 ## Building
 
