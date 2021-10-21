@@ -133,23 +133,24 @@ void get_hotkeys_handler()
         {
             button2 = state;
             const char *key_str = keycode_to_string(display, state);
-            char *text;
+            struct set_buttons_entry_struct *user_data = g_malloc0(sizeof(struct set_buttons_entry_struct));
+            
 
             if (hasPreKey == TRUE)
             {
                 const char *buttons_entry_text = gtk_entry_get_text(GTK_ENTRY(items.buttons_entry));
-                text = malloc(strlen(buttons_entry_text) + strlen(key_str));
+                char *text = malloc(1 + strlen(buttons_entry_text) + strlen(key_str));
                 sprintf(text, "%s%s", buttons_entry_text, key_str);
+                user_data->text = text;
             }
             else 
             {
                 button1 = -1;
-                text = malloc(strlen(key_str));
+                char *text = (char *)malloc(1 + strlen(key_str));
                 strcpy(text, key_str);
+                user_data->text = text;
             }
             // Text is freed in the set_buttons_entry_text function
-            struct set_buttons_entry_struct *user_data = g_malloc0(sizeof(struct set_buttons_entry_struct));
-		    user_data->text = text;
             g_idle_add(set_buttons_entry_text, user_data);
             break;
         }
