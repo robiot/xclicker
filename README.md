@@ -27,9 +27,9 @@ With 0 millisecond interval, the focused application may freeze.
 
 ## Building
 
-After cloning the repository, you only have to run this one command. The executable will be placed in **./build/src/xclicker**.
+After cloning the repository, you only have to run this one command. The executable will be placed in **./build/release/src/xclicker**.
 ```
-$ make
+$ make release
 ```
 
 ## Installing
