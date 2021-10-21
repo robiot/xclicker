@@ -325,7 +325,7 @@ void set_start_stop_button_keybind_text()
 	With this free you can either get
 	"corrupted size vs. prev_size" or "free(): invalid next size (fast)""
 	if you use Shift + Numpad as keys.
-	This is wh numpad is disabled.
+	This is why numpad is disabled.
 	*/
 	free(start_text);
 	free(stop_text);
