@@ -20,6 +20,7 @@ XClicker is a open-source, easy to use, feature-rich, **blazing fast** Autoclick
  * Choose mouse button [Left/Right/Middle];
  * Repeat until stopped or repeat a given amount of times;
  * Click on a specified location only;
+ * Start / Stop with a custom hotkey;
 
 ### How much cps?
 The highest I have got with it was around **750cps**, but that was still with 1 millisecond interval.\
