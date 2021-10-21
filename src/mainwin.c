@@ -1,4 +1,5 @@
 #include <gtk/gtk.h>
+#include <sys/time.h>
 #include "xclicker-app.h"
 #include "mainwin.h"
 #include "x11api.h"
@@ -32,10 +33,9 @@ struct _MainAppWindow
 } mainappwindow;
 G_DEFINE_TYPE(MainAppWindow, main_app_window, GTK_TYPE_APPLICATION_WINDOW);
 
-
 gboolean isClicking = FALSE;
 gboolean isChoosingLocation = FALSE;
-//gboolean beforeWindowTopmost = FALSE; // For later.
+// gboolean beforeWindowTopmost = FALSE; // For later.
 
 struct _click_opts
 {
@@ -97,13 +97,14 @@ void set_coords(gpointer *data)
 void get_cursor_pos_click_handler()
 {
 	Display *display = get_display();
-	init_mask_config(display);
+	mask_config(display, 1); // 1 is for only mouse.
 
 	while (isChoosingLocation)
 	{
 		if (get_button_state(display) == 1)
 			isChoosingLocation = FALSE;
 	}
+	XCloseDisplay(display);
 }
 
 // Toggle window settings if choosing location or finished.
@@ -141,20 +142,13 @@ void get_cursor_pos_handler()
 		user_data->coordy = cur_y;
 		g_main_context_invoke(NULL, set_coords, user_data);
 
-		// Old, no thread.
-		// if (strcmp(gtk_entry_get_text(GTK_ENTRY(mainappwindow.x_entry)), cur_x) != 0)
-		// 	gtk_entry_set_text(GTK_ENTRY(mainappwindow.x_entry), cur_x);
-		// if (strcmp(gtk_entry_get_text(GTK_ENTRY(mainappwindow.y_entry)), cur_y) != 0)
-		// 	gtk_entry_set_text(GTK_ENTRY(mainappwindow.y_entry), cur_y);
 		usleep(50000);
 		free(cur_x);
 		free(cur_y);
 	}
-
+	XCloseDisplay(display);
 	g_idle_add(toggle_window_from_set, NULL);
 }
-
-
 
 int get_text_to_int(GtkWidget *entry)
 {
@@ -184,7 +178,7 @@ void insert_handler(GtkEditable *editable, const gchar *text)
 	}
 }
 
-//GtkButton *button
+// GtkButton *button
 void start_clicked()
 {
 	int sleep = get_text_to_int(mainappwindow.hours_entry) * 3600000 + get_text_to_int(mainappwindow.minutes_entry) * 60000 + get_text_to_int(mainappwindow.seconds_entry) * 1000 + get_text_to_int(mainappwindow.millisecs_entry);
@@ -201,7 +195,7 @@ void start_clicked()
 	isClicking = TRUE;
 	toggle_buttons();
 
-	//click_opts.button = Button1;
+	// click_opts.button = Button1;
 	click_opts.sleep = sleep;
 	const gchar *selectedtext = gtk_entry_get_text(GTK_ENTRY(mainappwindow.mouse_entry));
 	if (strcmp(selectedtext, "Right") == 0)
@@ -241,32 +235,108 @@ void set_button_clicked()
 	g_thread_new("get_cursor_pos_handler", get_cursor_pos_handler, NULL);
 }
 
+void toggle_clicking()
+{
+	if (isClicking)
+		stop_clicked();
+	else
+		start_clicked();
+}
+
 // Has to be here since it calls start_clicked
 void get_start_stop_key_handler()
 {
-    Display *display = get_display();
-    init_mask_config(display);
+	Display *display = get_display();
+	mask_config(display, 2); // 2 Is for only keyboard keys.
 
-    while (1)
-    {
-        // Convert https://newbedev.com/convert-ascii-character-to-x11-keycode
-        int state = get_button_state(display);
-        //g_print("%s, %d\n", keycode_to_string(display, state), state);
-        
-        if (state == 73)
-        {
-            g_print("sus\n");
-            g_idle_add(start_clicked, NULL);
-            return;
-        }
-    }
-    XCloseDisplay(display);
+	// 50 = shift
+	struct timeval start, stop;
+	double secs = 0;
+	int before = 0;
+	while (1)
+	{
+		int state = get_button_state(display);
+		if (isChoosingHotkey == TRUE)
+			continue;
+		// g_print("%s, %d\n", keycode_to_string(display, state), state);
+
+		// F8, 74
+		if (state == button1 || state == button2)
+		{
+			// Two buttons
+			if (button1 != -1)
+			{
+				if ((before == button1 || before == button2) && before != state)
+				{
+					gettimeofday(&stop, NULL);
+					secs = (double)(stop.tv_usec - start.tv_usec) / 1000000 + (double)(stop.tv_sec - start.tv_sec);
+					if (secs < 0.1)
+						toggle_clicking();
+
+					before = 0;
+				}
+				else
+				{
+					gettimeofday(&start, NULL);
+					before = state;
+				}
+			}
+			// One button
+			else
+				toggle_clicking();
+		}
+	}
+	XCloseDisplay(display);
+}
+
+void set_start_stop_button_keybind_text()
+{
+	Display *display = get_display();
+	const char *start_text_1 = "Start";
+	const char *stop_text_1 = "Stop";
+
+	// Button2 should always be defined
+	const char *button_2_key = keycode_to_string(display, button2);
+
+	char *start_text;
+	char *stop_text;
+
+	// If 2 keys
+	if (button1 != -1)
+	{
+		const char *button_1_key = keycode_to_string(display, button1);
+		start_text = malloc(strlen(start_text_1) + strlen(button_1_key) + strlen(button_2_key) + 4);
+		stop_text = malloc(strlen(stop_text_1) + strlen(button_1_key) + strlen(button_2_key) + 4);
+		sprintf(start_text, "%s (%s+%s)", start_text_1, button_1_key, button_2_key);
+		sprintf(stop_text, "%s (%s+%s)", stop_text_1, button_1_key, button_2_key);
+	}
+	// Only one key
+	else
+	{
+		start_text = malloc(strlen(start_text_1) + strlen(button_2_key) + 3);
+		stop_text = malloc(strlen(stop_text_1) + strlen(button_2_key) + 3);
+		sprintf(start_text, "%s (%s)", start_text_1, button_2_key);
+		sprintf(stop_text, "%s (%s)", stop_text_1, button_2_key);
+	}
+
+	gtk_button_set_label(GTK_BUTTON(mainappwindow.start_button), start_text);
+	gtk_button_set_label(GTK_BUTTON(mainappwindow.stop_button), stop_text);
+	/* 
+	With this free you can either get
+	"corrupted size vs. prev_size" or "free(): invalid next size (fast)""
+	if you use Shift + Numpad as keys.
+	This is wh numpad is disabled.
+	*/
+	free(start_text);
+	free(stop_text);
+	XCloseDisplay(display);
 }
 
 static void main_app_window_init(MainAppWindow *win)
 {
 	gtk_widget_init_template(GTK_WIDGET(win));
 	config_init();
+	load_start_stop_keybinds();
 
 	mainappwindow.pwin = gtk_widget_get_toplevel(win);
 
@@ -289,6 +359,9 @@ static void main_app_window_init(MainAppWindow *win)
 	mainappwindow.stop_button = win->stop_button;
 	mainappwindow.settings_button = win->settings_button;
 	mainappwindow.set_button = win->set_button;
+
+	set_start_stop_button_keybind_text();
+	g_thread_new("get_start_stop_key_handler", get_start_stop_key_handler, NULL);
 }
 
 static void main_app_window_class_init(MainAppWindowClass *class)

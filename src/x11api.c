@@ -13,7 +13,10 @@ void get_mouse_coords(Display *display, int *x, int *y)
     *y = event.xbutton.y;
 }
 
-void init_mask_config(Display *display)
+// Mode:
+// 1: Only mouse
+// 2: Only keyboard keys
+void mask_config(Display *display, int mode)
 {
     XIEventMask mask[2];
     XIEventMask *m;
@@ -23,15 +26,19 @@ void init_mask_config(Display *display)
     m->deviceid = XIAllDevices;
     m->mask_len = XIMaskLen(XI_LASTEVENT);
     m->mask = calloc(m->mask_len, sizeof(char));
-    XISetMask(m->mask, XI_ButtonPress);
-    XISetMask(m->mask, XI_KeyPress);
+
+    if (mode == 1)
+        XISetMask(m->mask, XI_ButtonPress);
+    else if (mode == 2)
+        XISetMask(m->mask, XI_KeyPress);
 
     m = &mask[1];
     m->deviceid = XIAllMasterDevices;
     m->mask_len = XIMaskLen(XI_LASTEVENT);
     m->mask = calloc(m->mask_len, sizeof(char));
-    XISetMask(m->mask, XI_RawButtonPress);
-    XISetMask(m->mask, XI_RawKeyPress);
+    if (mode == 1)
+        XISetMask(m->mask, XI_RawButtonPress);
+    //XISetMask(m->mask, XI_RawKeyPress); // Not needed, makes input doubled
 
     XISelectEvents(display, win, &mask[0], 2);
     XSync(display, FALSE);
@@ -48,17 +55,17 @@ int get_event_button_id(XIDeviceEvent *event)
 
 int get_button_state(Display *display)
 {
-
+    int button = 0;
     XEvent event;
     XGenericEventCookie *cookie = (XGenericEventCookie *)&event.xcookie;
     XNextEvent(display, (XEvent *)&event);
 
     // while (1)
     if (XGetEventData(display, cookie) && cookie->type == GenericEvent)
-    {
-        return get_event_button_id(cookie->data);
-    }
-    return 0;
+        button = get_event_button_id(cookie->data);
+    
+    XFreeEventData(display, cookie);
+    return button;
 }
 
 // Move mouse pointer to given coords
@@ -109,6 +116,13 @@ int click(Display *display, int button)
         return 0;
 
     return 1;
+}
+
+// https://stackoverflow.com/questions/9838385/replace-of-xkeycodetokeysym
+// https://linux.die.net/man/3/xkbkeycodetokeysym
+char *keycode_to_string(Display *display, int keycode)
+{
+    return XKeysymToString(XkbKeycodeToKeysym(display, keycode, 0, 0));
 }
 
 Display *get_display()

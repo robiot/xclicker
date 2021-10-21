@@ -20,6 +20,7 @@
         <property name="margin-top">10</property>
         <property name="margin-bottom">10</property>
         <property name="orientation">vertical</property>
+        <property name="spacing">5</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox">
             <property name="can-focus">False</property>
@@ -92,7 +93,63 @@ milliseconds interval</property>
           </packing>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkFrame">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label-xalign">0</property>
+            <property name="shadow-type">in</property>
+            <child>
+              <object class="GtkBox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="margin-start">5</property>
+                <property name="margin-end">5</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+                <property name="spacing">10</property>
+                <property name="homogeneous">True</property>
+                <child>
+                  <object class="GtkButton" id="start_button">
+                    <property name="label" translatable="yes">Start</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <signal name="pressed" handler="start_button_pressed" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="buttons_entry">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="editable">False</property>
+                    <property name="caps-lock-warning">False</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+            </child>
+            <child type="label">
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Start/Stop Hotkey</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">2</property>
+          </packing>
         </child>
         <child>
           <!-- n-columns=1 n-rows=2 -->
@@ -104,7 +161,7 @@ milliseconds interval</property>
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
-                <property name="label">v1.0.1</property>
+                <property name="label">v1.1.0</property>
               </object>
               <packing>
                 <property name="left-attach">0</property>

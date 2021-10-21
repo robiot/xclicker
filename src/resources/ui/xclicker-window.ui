@@ -411,18 +411,18 @@
           <object class="GtkGrid">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="margin-top">20</property>
+            <property name="margin-top">15</property>
             <property name="margin-bottom">20</property>
             <property name="column-spacing">15</property>
             <property name="row-homogeneous">True</property>
-            <property name="column-homogeneous">True</property>
             <child>
               <object class="GtkButton" id="start_button">
-                <property name="label" translatable="yes">Start</property>
+                <property name="label" translatable="yes">Start </property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="focus-on-click">False</property>
                 <property name="receives-default">True</property>
+                <property name="hexpand">True</property>
                 <signal name="pressed" handler="start_clicked" swapped="no"/>
               </object>
               <packing>
@@ -438,6 +438,7 @@
                 <property name="can-focus">True</property>
                 <property name="focus-on-click">False</property>
                 <property name="receives-default">True</property>
+                <property name="hexpand">True</property>
                 <signal name="pressed" handler="stop_clicked" swapped="no"/>
               </object>
               <packing>
@@ -452,6 +453,7 @@
                 <property name="can-focus">True</property>
                 <property name="focus-on-click">False</property>
                 <property name="receives-default">True</property>
+                <property name="hexpand">True</property>
                 <signal name="pressed" handler="settings_clicked" swapped="no"/>
               </object>
               <packing>
