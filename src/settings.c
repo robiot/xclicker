@@ -5,6 +5,7 @@
 #include "settings.h"
 #include "x11api.h"
 #include "mainwin.h"
+#include "version.h"
 
 // Todo: Maybe use XKeysymToKeycode since keycodes varies
 const int DEFAULT_BUTTON1 = -1; // Nothing
@@ -190,6 +191,9 @@ void settings_dialog_new()
     gtk_builder_add_callback_symbol(builder, "safe_mode_changed", safe_mode_changed);
     gtk_builder_add_callback_symbol(builder, "start_button_pressed", start_button_pressed);
     gtk_builder_connect_signals(builder, NULL);
+
+    // Load version
+    gtk_label_set_text(GTK_LABEL(gtk_builder_get_object(builder, "version_label")), XCLICKER_VERSION);
 
     // Fill struct
     items.buttons_entry = gtk_builder_get_object(builder, "buttons_entry");

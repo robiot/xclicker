@@ -1,5 +1,5 @@
 Package: xclicker
-Version: 1.1.0
+Version: %VERSION%
 Section: base
 Priority: optional
 Vcs-Git: https://github.com/robiot/rustcat
