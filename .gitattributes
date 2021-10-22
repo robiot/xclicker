@@ -1,5 +1,2 @@
 pkg/** linguist-vendored
 web/** linguist-vendored
-
-
-Makefile linguist-vendored
