@@ -29,5 +29,5 @@ static void xclicker_app_class_init(XClickerAppClass *class)
 
 XClickerApp *xclicker_app_new(void)
 {
-	return g_object_new(XCLICKER_APP_TYPE, "application-id", "org.gtk.xclicker", "flags", G_APPLICATION_HANDLES_OPEN, NULL);
+	return g_object_new(XCLICKER_APP_TYPE, NULL);
 }
