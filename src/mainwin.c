@@ -178,17 +178,23 @@ void insert_handler(GtkEditable *editable, const gchar *text)
 	}
 }
 
+void open_safe_mode_dialog()
+{
+	GtkDialog *dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "Warning");
+	gtk_message_dialog_format_secondary_text(dialog, "Intervals under 10 milliseconds is restricted because of safe mode.");
+	gtk_dialog_run(dialog);
+	gtk_widget_destroy(dialog);
+}
+
 // GtkButton *button
 void start_clicked()
 {
+	// This is ran inside another thread when used
 	int sleep = get_text_to_int(mainappwindow.hours_entry) * 3600000 + get_text_to_int(mainappwindow.minutes_entry) * 60000 + get_text_to_int(mainappwindow.seconds_entry) * 1000 + get_text_to_int(mainappwindow.millisecs_entry);
 
 	if (sleep < 10 && is_safemode())
 	{
-		GtkDialog *dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "Warning");
-		gtk_message_dialog_format_secondary_text(dialog, "Intervals under 10 milliseconds is restricted because of safe mode.");
-		gtk_dialog_run(dialog);
-		gtk_widget_destroy(dialog);
+		g_idle_add(open_safe_mode_dialog, NULL);
 		return;
 	}
 
@@ -272,7 +278,6 @@ void get_start_stop_key_handler()
 					secs = (double)(stop.tv_usec - start.tv_usec) / 1000000 + (double)(stop.tv_sec - start.tv_sec);
 					if (secs < 0.1)
 						toggle_clicking();
-
 					before = 0;
 				}
 				else
@@ -321,7 +326,7 @@ void set_start_stop_button_keybind_text()
 
 	gtk_button_set_label(GTK_BUTTON(mainappwindow.start_button), start_text);
 	gtk_button_set_label(GTK_BUTTON(mainappwindow.stop_button), stop_text);
-	/* 
+	/*
 	With this free you can either get
 	"corrupted size vs. prev_size" or "free(): invalid next size (fast)""
 	if you use Shift + Numpad as keys.
