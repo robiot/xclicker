@@ -73,7 +73,7 @@ void move_to(Display *display, int x, int y)
 {
     int cur_x, cur_y;
     get_mouse_coords(display, &cur_x, &cur_y);
-    XWarpPointer(display, None, None, 0, 0, 0, 0, -cur_x, -cur_y);
+    XWarpPointer(display, None, None, 0, 0, 0, 0, -cur_x, -cur_y); // For absolute position
     XWarpPointer(display, None, None, 0, 0, 0, 0, x, y);
     usleep(1);
 }
@@ -86,6 +86,9 @@ int cxevent(Display *display, long mask, XEvent event)
     usleep(1);
     return 1;
 }
+
+//https://github.dev/jordansissel/xdotool/blob/c3a3bf29120f295caaec5d401d77956860a82363/cmd_click.c
+// int _xdo_mousebutton
 
 // Click on current mouse position with given button
 int click(Display *display, int button)

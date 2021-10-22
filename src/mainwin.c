@@ -186,7 +186,6 @@ void open_safe_mode_dialog()
 	gtk_widget_destroy(dialog);
 }
 
-// GtkButton *button
 void start_clicked()
 {
 	// This is ran inside another thread when used
