@@ -87,9 +87,6 @@ int cxevent(Display *display, long mask, XEvent event)
     return 1;
 }
 
-//https://github.dev/jordansissel/xdotool/blob/c3a3bf29120f295caaec5d401d77956860a82363/cmd_click.c
-// int _xdo_mousebutton
-
 // Click on current mouse position with given button
 int click(Display *display, int button)
 {
