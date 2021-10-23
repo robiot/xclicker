@@ -319,8 +319,8 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="set_button">
-                        <property name="label" translatable="yes">Set</property>
+                      <object class="GtkButton" id="get_button">
+                        <property name="label" translatable="yes">Get</property>
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="can-focus">True</property>
@@ -328,7 +328,7 @@
                         <property name="receives-default">True</property>
                         <property name="hexpand">True</property>
                         <property name="vexpand">True</property>
-                        <signal name="pressed" handler="set_button_clicked" swapped="no"/>
+                        <signal name="pressed" handler="get_button_clicked" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
