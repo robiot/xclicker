@@ -29,7 +29,7 @@ struct _MainAppWindow
 	GtkWidget *start_button;
 	GtkWidget *stop_button;
 	GtkWidget *settings_button;
-	GtkWidget *set_button;
+	GtkWidget *get_button;
 } mainappwindow;
 G_DEFINE_TYPE(MainAppWindow, main_app_window, GTK_TYPE_APPLICATION_WINDOW);
 
@@ -114,13 +114,13 @@ void toggle_window_from_set()
 	{
 	case TRUE:
 		gtk_window_set_keep_above(GTK_WINDOW(mainappwindow.pwin), TRUE);
-		gtk_button_set_label(GTK_BUTTON(mainappwindow.set_button), "Click");
-		gtk_widget_set_sensitive(mainappwindow.set_button, FALSE);
+		gtk_button_set_label(GTK_BUTTON(mainappwindow.get_button), "Click");
+		gtk_widget_set_sensitive(mainappwindow.get_button, FALSE);
 		break;
 	case FALSE:
 		gtk_window_set_keep_above(GTK_WINDOW(mainappwindow.pwin), FALSE);
-		gtk_button_set_label(GTK_BUTTON(mainappwindow.set_button), "Set");
-		gtk_widget_set_sensitive(mainappwindow.set_button, TRUE);
+		gtk_button_set_label(GTK_BUTTON(mainappwindow.get_button), "Set");
+		gtk_widget_set_sensitive(mainappwindow.get_button, TRUE);
 		break;
 	}
 }
@@ -166,7 +166,7 @@ void custom_location_check_toggle(GtkToggleButton *check)
 	gboolean active = gtk_toggle_button_get_active(check);
 	gtk_widget_set_sensitive(mainappwindow.x_entry, active);
 	gtk_widget_set_sensitive(mainappwindow.y_entry, active);
-	gtk_widget_set_sensitive(mainappwindow.set_button, active);
+	gtk_widget_set_sensitive(mainappwindow.get_button, active);
 }
 
 // gint length, gint *position, gpointer user_data
@@ -232,7 +232,7 @@ void settings_clicked()
 	settings_dialog_new();
 }
 
-void set_button_clicked()
+void get_button_clicked()
 {
 	isChoosingLocation = TRUE;
 	toggle_window_from_set();
@@ -362,7 +362,7 @@ static void main_app_window_init(MainAppWindow *win)
 	mainappwindow.start_button = win->start_button;
 	mainappwindow.stop_button = win->stop_button;
 	mainappwindow.settings_button = win->settings_button;
-	mainappwindow.set_button = win->set_button;
+	mainappwindow.get_button = win->get_button;
 
 	set_start_stop_button_keybind_text();
 	g_thread_new("get_start_stop_key_handler", get_start_stop_key_handler, NULL);
@@ -377,7 +377,7 @@ static void main_app_window_class_init(MainAppWindowClass *class)
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), repeat_only_check_toggle);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), settings_clicked);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), custom_location_check_toggle);
-	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), set_button_clicked);
+	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), get_button_clicked);
 
 	// Entries
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, hours_entry);
@@ -397,7 +397,7 @@ static void main_app_window_class_init(MainAppWindowClass *class)
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, start_button);
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, stop_button);
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, settings_button);
-	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, set_button);
+	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, get_button);
 }
 
 MainAppWindow *main_app_window_new(XClickerApp *app)
