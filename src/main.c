@@ -1,5 +1,5 @@
 /* XClicker, a x11 autoclicker
-All source files in this repository is licensed under the
+All source files in this repository are licensed under the
 GNU General Public License v3.0
 */
 
