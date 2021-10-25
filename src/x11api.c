@@ -1,21 +1,23 @@
 #include <gtk/gtk.h>
+#include <X11/XKBlib.h>
+#include <X11/extensions/XInput.h>
+#include <X11/extensions/XInput2.h>
+#include <X11/extensions/XTest.h>
 #include "x11api.h"
 
 void get_mouse_coords(Display *display, int *x, int *y)
 {
-    XEvent event;
+    XButtonEvent event;
     XQueryPointer(display, DefaultRootWindow(display),
-                  &event.xbutton.root, &event.xbutton.window,
-                  &event.xbutton.x_root, &event.xbutton.y_root,
-                  &event.xbutton.x, &event.xbutton.y,
-                  &event.xbutton.state);
-    *x = event.xbutton.x;
-    *y = event.xbutton.y;
+                  &event.root, &event.window,
+                  &event.x_root, &event.y_root,
+                  &event.x, &event.y,
+                  &event.state);
+    *x = event.x;
+    *y = event.y;
 }
 
-// Mode:
-// 1: Only mouse
-// 2: Only keyboard keys
+// Configure XInput masks for given display
 void mask_config(Display *display, int mode)
 {
     XIEventMask mask[2];
@@ -27,18 +29,17 @@ void mask_config(Display *display, int mode)
     m->mask_len = XIMaskLen(XI_LASTEVENT);
     m->mask = calloc(m->mask_len, sizeof(char));
 
-    if (mode == 1)
+    if (mode == MASK_CONFIG_MOUSE)
         XISetMask(m->mask, XI_ButtonPress);
-    else if (mode == 2)
+    else if (mode == MASK_CONFIG_KEYBOARD)
         XISetMask(m->mask, XI_KeyPress);
 
     m = &mask[1];
     m->deviceid = XIAllMasterDevices;
     m->mask_len = XIMaskLen(XI_LASTEVENT);
     m->mask = calloc(m->mask_len, sizeof(char));
-    if (mode == 1)
+    if (mode == MASK_CONFIG_MOUSE)
         XISetMask(m->mask, XI_RawButtonPress);
-    //XISetMask(m->mask, XI_RawKeyPress); // Not needed, makes input doubled
 
     XISelectEvents(display, win, &mask[0], 2);
     XSync(display, FALSE);
@@ -46,7 +47,6 @@ void mask_config(Display *display, int mode)
     free(mask[0].mask);
     free(mask[1].mask);
 }
-
 
 int get_event_button_id(XIDeviceEvent *event)
 {
@@ -60,10 +60,9 @@ int get_button_state(Display *display)
     XGenericEventCookie *cookie = (XGenericEventCookie *)&event.xcookie;
     XNextEvent(display, (XEvent *)&event);
 
-    // while (1)
     if (XGetEventData(display, cookie) && cookie->type == GenericEvent)
         button = get_event_button_id(cookie->data);
-    
+
     XFreeEventData(display, cookie);
     return button;
 }
@@ -78,44 +77,57 @@ void move_to(Display *display, int x, int y)
     usleep(1);
 }
 
-int cxevent(Display *display, long mask, XEvent event)
+int cxevent(Display *display, long mask, XButtonEvent event)
 {
-    if (!XSendEvent(display, PointerWindow, True, mask, &event))
-        return 0;
+    if (!XSendEvent(display, PointerWindow, True, mask, (XEvent *)&event))
+        return FALSE;
     XFlush(display);
     usleep(1);
-    return 1;
+    return TRUE;
 }
 
 // Click on current mouse position with given button
-int click(Display *display, int button)
+int click(Display *display, int button, int mode)
 {
-    // Create event
-    XEvent event;
-    memset(&event, 0, sizeof(event));
-    event.xbutton.button = button;
-    event.xbutton.same_screen = True;
-    event.xbutton.subwindow = DefaultRootWindow(display);
-    while (event.xbutton.subwindow)
+    switch (mode)
     {
-        event.xbutton.window = event.xbutton.subwindow;
-        XQueryPointer(display, event.xbutton.window,
-                      &event.xbutton.root, &event.xbutton.subwindow,
-                      &event.xbutton.x_root, &event.xbutton.y_root,
-                      &event.xbutton.x, &event.xbutton.y,
-                      &event.xbutton.state);
+    case CLICK_MODE_XEVENT:
+        XButtonEvent event;
+        memset(&event, 0, sizeof(event));
+        event.button = button;
+        event.same_screen = True;
+        event.subwindow = DefaultRootWindow(display);
+
+        while (event.subwindow)
+        {
+            event.window = event.subwindow;
+            XQueryPointer(display, event.window,
+                          &event.root, &event.subwindow,
+                          &event.x_root, &event.y_root,
+                          &event.x, &event.y,
+                          &event.state);
+        }
+
+        // Press
+        event.type = ButtonPress;
+        if (!cxevent(display, ButtonPressMask, event))
+            return FALSE;
+
+        // Release
+        event.type = ButtonRelease;
+        if (!cxevent(display, ButtonReleaseMask, event))
+            return FALSE;
+        break;
+
+    case CLICK_MODE_XTEST:
+        XTestFakeButtonEvent(display, button, True, CurrentTime);
+        XFlush(display);
+        usleep(1);
+        XTestFakeButtonEvent(display, button, False, CurrentTime);
+        XFlush(display);
     }
 
-    // Press
-    event.type = ButtonPress;
-    if (!cxevent(display, ButtonPressMask, event))
-        return 0;
-    // Release
-    event.type = ButtonRelease;
-    if (!cxevent(display, ButtonReleaseMask, event))
-        return 0;
-
-    return 1;
+    return TRUE;
 }
 
 // https://stackoverflow.com/questions/9838385/replace-of-xkeycodetokeysym

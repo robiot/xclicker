@@ -6,6 +6,7 @@ extern int button2;
 extern gboolean isChoosingHotkey;
 
 gboolean is_safemode();
+gboolean is_using_xevent();
 void config_init();
 void load_start_stop_keybinds();
 void settings_dialog_new();

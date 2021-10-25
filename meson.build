@@ -13,9 +13,7 @@ add_project_arguments(
 )
 
 
-#run_target('run', command: 'src/xclicker')
-
 gnome = import('gnome')
-deps = [dependency('gtk+-3.0'), dependency('x11'), dependency('xi')]
+deps = [dependency('gtk+-3.0'), dependency('x11'), dependency('xi'), dependency('xtst')]
 
 subdir('src')

@@ -23,6 +23,7 @@ struct _items
 {
     GtkWidget *buttons_entry;
     GtkWidget *start_button;
+    GtkWidget *xevent_switch;
 } items;
 
 const char *get_config_file_path()
@@ -52,6 +53,11 @@ gboolean is_safemode()
     if (access(configpath, F_OK))
         return TRUE;
     return FALSE;
+}
+
+gboolean is_using_xevent()
+{
+    return g_key_file_get_boolean(config, "Options", "USE_XEVENT", NULL);
 }
 
 void config_init()
@@ -101,7 +107,7 @@ void hotkey_finished()
 void get_hotkeys_handler()
 {
     Display *display = get_display();
-    mask_config(display, 2);
+    mask_config(display, MASK_CONFIG_KEYBOARD);
 
     gboolean hasPreKey = FALSE;
     while (1)
@@ -175,6 +181,13 @@ void safe_mode_changed(GtkSwitch *self, gboolean state)
     gtk_switch_set_active(self, state);
 }
 
+void xevent_switch_changed(GtkSwitch *self, gboolean state)
+{
+    g_key_file_set_boolean(config, "Options", "USE_XEVENT", state);
+    g_key_file_save_to_file(config, configpath, NULL);
+    gtk_switch_set_active(self, state);
+}
+
 void start_button_pressed(GtkButton *self)
 {
     isChoosingHotkey = TRUE;
@@ -189,6 +202,7 @@ void settings_dialog_new()
     GtkDialog *dialog = GTK_DIALOG(gtk_builder_get_object(builder, "dialog"));
 
     gtk_builder_add_callback_symbol(builder, "safe_mode_changed", safe_mode_changed);
+    gtk_builder_add_callback_symbol(builder, "xevent_switch_changed", xevent_switch_changed);
     gtk_builder_add_callback_symbol(builder, "start_button_pressed", start_button_pressed);
     gtk_builder_connect_signals(builder, NULL);
 
@@ -198,9 +212,11 @@ void settings_dialog_new()
     // Fill struct
     items.buttons_entry = gtk_builder_get_object(builder, "buttons_entry");
     items.start_button = gtk_builder_get_object(builder, "start_button");
-    
+    items.xevent_switch = gtk_builder_get_object(builder, "xevent_switch");
+
     // Load
     gtk_switch_set_active(GTK_SWITCH(gtk_builder_get_object(builder, "safe_mode_switch")), is_safemode());
+    gtk_switch_set_active(GTK_SWITCH(items.xevent_switch), is_using_xevent());
 
     // Load hotkeys
     Display *display = get_display();
@@ -220,6 +236,7 @@ void settings_dialog_new()
         sprintf(hotkeys, "%s", button_2_key);
     }
     gtk_entry_set_text(GTK_ENTRY(items.buttons_entry), hotkeys);
+
     free(hotkeys);
     XCloseDisplay(display);
 

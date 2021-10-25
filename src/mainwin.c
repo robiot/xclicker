@@ -37,7 +37,7 @@ gboolean isClicking = FALSE;
 gboolean isChoosingLocation = FALSE;
 // gboolean beforeWindowTopmost = FALSE; // For later.
 
-struct _click_opts
+struct click_opts
 {
 	int sleep;
 	int button;
@@ -47,7 +47,7 @@ struct _click_opts
 
 	gboolean custom_location;
 	int custom_x, custom_y;
-} click_opts;
+};
 
 void toggle_buttons()
 {
@@ -55,25 +55,29 @@ void toggle_buttons()
 	gtk_widget_set_sensitive(GTK_WIDGET(mainappwindow.stop_button), isClicking);
 }
 
-void click_handler()
+void click_handler(gpointer *data)
 {
+	struct click_opts *args = data;
 	Display *display = get_display();
 	int count = 0;
 	while (isClicking)
 	{
-		if (click_opts.custom_location)
-			move_to(display, click_opts.custom_x, click_opts.custom_y);
-		click(display, click_opts.button);
-		usleep(click_opts.sleep * 1000); // Milliseconds
-		if (click_opts.repeat)
+		if (args->custom_location)
+			move_to(display, args->custom_x, args->custom_y);
+		
+		if (click(display, args->button, is_using_xevent()) == FALSE)
+			g_printerr("Error when sending click");
+
+		usleep(args->sleep * 1000); // Milliseconds
+		if (args->repeat)
 		{
-			if (count >= click_opts.repeat_times)
+			if (count >= args->repeat_times)
 				isClicking = FALSE;
 			else
 				count++;
 		}
 	}
-	// Free?
+	g_free(data);
 	XCloseDisplay(display);
 	g_idle_add(toggle_buttons, NULL);
 }
@@ -97,7 +101,7 @@ void set_coords(gpointer *data)
 void get_cursor_pos_click_handler()
 {
 	Display *display = get_display();
-	mask_config(display, 1); // 1 is for only mouse.
+	mask_config(display, MASK_CONFIG_MOUSE);
 
 	while (isChoosingLocation)
 	{
@@ -119,7 +123,7 @@ void toggle_window_from_set()
 		break;
 	case FALSE:
 		gtk_window_set_keep_above(GTK_WINDOW(mainappwindow.pwin), FALSE);
-		gtk_button_set_label(GTK_BUTTON(mainappwindow.get_button), "Set");
+		gtk_button_set_label(GTK_BUTTON(mainappwindow.get_button), "Get");
 		gtk_widget_set_sensitive(mainappwindow.get_button, TRUE);
 		break;
 	}
@@ -137,10 +141,10 @@ void get_cursor_pos_handler()
 		sprintf(cur_x, "%d", i_cur_x);
 		sprintf(cur_y, "%d", i_cur_y);
 
-		struct set_coord_args *user_data = g_malloc0(sizeof(struct set_coord_args));
-		user_data->coordx = cur_x;
-		user_data->coordy = cur_y;
-		g_main_context_invoke(NULL, set_coords, user_data);
+		struct set_coord_args *data = g_malloc0(sizeof(struct set_coord_args));
+		data->coordx = cur_x;
+		data->coordy = cur_y;
+		g_idle_add(set_coords, data);
 
 		usleep(50000);
 		free(cur_x);
@@ -201,24 +205,26 @@ void start_clicked()
 	toggle_buttons();
 
 	// click_opts.button = Button1;
-	click_opts.sleep = sleep;
+	struct click_opts *data = g_malloc0(sizeof(struct click_opts));
+
+	data->sleep = sleep;
 	const gchar *selectedtext = gtk_entry_get_text(GTK_ENTRY(mainappwindow.mouse_entry));
 	if (strcmp(selectedtext, "Right") == 0)
-		click_opts.button = Button3;
+		data->button = Button3;
 	else if (strcmp(selectedtext, "Middle") == 0)
-		click_opts.button = Button2;
+		data->button = Button2;
 	else
-		click_opts.button = Button1;
+		data->button = Button1;
 
-	if ((click_opts.repeat = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(mainappwindow.repeat_only_check))))
-		click_opts.repeat_times = get_text_to_int(mainappwindow.repeat_entry);
+	if ((data->repeat = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(mainappwindow.repeat_only_check))))
+		data->repeat_times = get_text_to_int(mainappwindow.repeat_entry);
 
-	if ((click_opts.custom_location = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(mainappwindow.custom_location_check))))
+	if ((data->custom_location = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(mainappwindow.custom_location_check))))
 	{
-		click_opts.custom_x = get_text_to_int(mainappwindow.x_entry);
-		click_opts.custom_y = get_text_to_int(mainappwindow.y_entry);
+		data->custom_x = get_text_to_int(mainappwindow.x_entry);
+		data->custom_y = get_text_to_int(mainappwindow.y_entry);
 	}
-	g_thread_new("click_handler", click_handler, NULL);
+	g_thread_new("click_handler", click_handler, data);
 }
 
 void stop_clicked()
@@ -252,7 +258,7 @@ void toggle_clicking()
 void get_start_stop_key_handler()
 {
 	Display *display = get_display();
-	mask_config(display, 2); // 2 Is for only keyboard keys.
+	mask_config(display, MASK_CONFIG_KEYBOARD);
 
 	// 50 = shift
 	struct timeval start, stop;
@@ -288,6 +294,7 @@ void get_start_stop_key_handler()
 			// One button
 			else
 				toggle_clicking();
+			usleep(5000);
 		}
 	}
 	XCloseDisplay(display);
