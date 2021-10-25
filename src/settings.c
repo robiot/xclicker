@@ -1,6 +1,8 @@
 #include <gtk/gtk.h>
 #include <pwd.h>
 #include <X11/keysymdef.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include "macros.h"
 #include "settings.h"
 #include "x11api.h"
@@ -28,13 +30,19 @@ struct _items
 
 const char *get_config_file_path()
 {
-    const char *config = "/.config/xclicker.conf";
+    const char *config = "/.config";
     const char *homedir;
     if ((homedir = getenv("HOME")) == NULL)
         homedir = getpwuid(getuid())->pw_dir;
-    char *configfile = (char *)malloc(1 + strlen(homedir) + strlen(config));
-    strcpy(configfile, homedir);
-    strcat(configfile, config);
+    char *configpath = (char *)malloc(1 + strlen(homedir) + strlen(config));
+    strcpy(configpath, homedir);
+    strcat(configpath, config);
+    mkdir(configpath, 0777);
+
+    char *configfile = (char *)malloc(1 + strlen(configpath) + strlen("/xclicker.conf"));
+    strcpy(configfile, configpath);
+    strcat(configfile, "/xclicker.conf");
+    free(configpath);
     return configfile;
 }
 
