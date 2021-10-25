@@ -1,7 +1,6 @@
 #include <gtk/gtk.h>
 #include <pwd.h>
 #include <X11/keysymdef.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 #include "macros.h"
 #include "settings.h"
@@ -9,12 +8,9 @@
 #include "mainwin.h"
 #include "version.h"
 
-// Todo: Maybe use XKeysymToKeycode since keycodes varies
-const int DEFAULT_BUTTON1 = -1; // Nothing
-const int DEFAULT_BUTTON2 = 74; // F8
-
-int button1 = DEFAULT_BUTTON1;
-int button2 = DEFAULT_BUTTON2;
+// Default values, later set by config_init
+int button1 = -1;
+int button2 = 74;
 
 gboolean isChoosingHotkey = FALSE;
 
@@ -70,8 +66,12 @@ gboolean is_using_xevent()
 
 void config_init()
 {
+    Display *display = get_display();
+    button1 = -1;
+    button2 = XKeysymToKeycode(display, XK_F8);
     configpath = get_config_file_path();
     config = get_config_keyfile(configpath);
+    XCloseDisplay(display);
 }
 
 void load_start_stop_keybinds()
