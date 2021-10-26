@@ -80,10 +80,10 @@ void load_start_stop_keybinds()
     const int button_1 = g_key_file_get_integer(config, "Options", "BUTTON1", NULL);
     const int button_2 = g_key_file_get_integer(config, "Options", "BUTTON2", NULL);
 
-    if (button_1 != 0 && button_1 != XKeysymToKeycode(display, XK_Num_Lock))
+    if (button_1 != 0 && button_1)
         button1 = button_1;
 
-    if (button_2 != 0 && button_2 != XKeysymToKeycode(display, XK_Num_Lock))
+    if (button_2 != 0 && button_2)
         button2 = button_2;
     XCloseDisplay(display);
 }
@@ -122,8 +122,8 @@ void get_hotkeys_handler()
     {
         int state = get_button_state(display);
 
-        // Numlock is incredibly buggy and causes memory leaks, pointer errors, free errors and so on.
-        if (state == XKeysymToKeycode(display, XK_Num_Lock))
+        // Numlock & caps lock is incredibly buggy and causes memory leaks, pointer errors, free errors and so on.
+        if (state == XKeysymToKeycode(display, XK_Num_Lock) || state == XKeysymToKeycode(display, XK_Caps_Lock))
             continue;
 
         // If prekey, ex shift, ctrl.
