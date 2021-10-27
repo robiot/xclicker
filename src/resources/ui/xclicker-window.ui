@@ -2,6 +2,20 @@
 <!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
+  <object class="GtkListStore" id="click_type_lstore">
+    <columns>
+      <!-- column-name gchararray1 -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">Single</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Double</col>
+      </row>
+    </data>
+  </object>
   <object class="GtkListStore" id="repeat_amount_lstore">
     <columns>
       <!-- column-name gchararray1 -->
@@ -34,7 +48,6 @@
         <property name="margin-top">10</property>
         <property name="orientation">vertical</property>
         <property name="spacing">10</property>
-        <property name="homogeneous">True</property>
         <child>
           <object class="GtkFrame">
             <property name="visible">True</property>
@@ -107,7 +120,7 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="margin-bottom">10</property>
+                    <property name="margin-bottom">15</property>
                     <property name="label" translatable="yes">Milliseconds</property>
                   </object>
                   <packing>
@@ -148,6 +161,7 @@
                 <child>
                   <object class="GtkEntry" id="millisecs_entry">
                     <property name="name">MilliEntry</property>
+                    <property name="height-request">35</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="hexpand">True</property>
@@ -192,7 +206,7 @@
                 <property name="label-xalign">0</property>
                 <property name="shadow-type">in</property>
                 <child>
-                  <!-- n-columns=2 n-rows=2 -->
+                  <!-- n-columns=2 n-rows=3 -->
                   <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
@@ -221,13 +235,12 @@
                         <property name="can-focus">True</property>
                         <property name="focus-on-click">False</property>
                         <property name="receives-default">False</property>
-                        <property name="tooltip-text" translatable="yes">Amount of times to click. Default : repeat until stopped.</property>
                         <property name="draw-indicator">True</property>
                         <signal name="toggled" handler="repeat_only_check_toggle" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left-attach">0</property>
-                        <property name="top-attach">1</property>
+                        <property name="top-attach">2</property>
                       </packing>
                     </child>
                     <child>
@@ -243,7 +256,7 @@
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
-                        <property name="top-attach">1</property>
+                        <property name="top-attach">2</property>
                       </packing>
                     </child>
                     <child>
@@ -271,6 +284,43 @@
                         <property name="top-attach">0</property>
                       </packing>
                     </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Click type</property>
+                        <property name="xalign">0.07999999821186065</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkComboBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="model">click_type_lstore</property>
+                        <property name="has-entry">True</property>
+                        <property name="entry-text-column">0</property>
+                        <property name="id-column">0</property>
+                        <property name="active-id">-1</property>
+                        <child>
+                          <object class="GtkCellRendererText"/>
+                        </child>
+                        <child internal-child="entry">
+                          <object class="GtkEntry" id="click_type_entry">
+                            <property name="can-focus">True</property>
+                            <property name="width-chars">0</property>
+                            <property name="text" translatable="yes">Single</property>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
                   </object>
                 </child>
                 <child type="label">
@@ -293,7 +343,7 @@
                 <property name="label-xalign">0</property>
                 <property name="shadow-type">in</property>
                 <child>
-                  <!-- n-columns=2 n-rows=2 -->
+                  <!-- n-columns=2 n-rows=3 -->
                   <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
@@ -327,7 +377,6 @@
                         <property name="focus-on-click">False</property>
                         <property name="receives-default">True</property>
                         <property name="hexpand">True</property>
-                        <property name="vexpand">True</property>
                         <signal name="pressed" handler="get_button_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -382,6 +431,39 @@
                       </packing>
                     </child>
                     <child>
+                      <object class="GtkEntry" id="random_interval_entry">
+                        <property name="name">MinutesEntry</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="can-focus">True</property>
+                        <property name="hexpand">True</property>
+                        <property name="max-length">6</property>
+                        <property name="width-chars">0</property>
+                        <property name="placeholder-text" translatable="yes">+/-</property>
+                        <signal name="insert-text" handler="insert_handler" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="random_interval_check">
+                        <property name="label" translatable="yes">Random Interval</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="focus-on-click">False</property>
+                        <property name="receives-default">False</property>
+                        <property name="tooltip-text" translatable="yes">Randomize the interval in milliseconds</property>
+                        <property name="draw-indicator">True</property>
+                        <signal name="toggled" handler="random_interval_check_toggle" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">2</property>
+                      </packing>
+                    </child>
+                    <child>
                       <placeholder/>
                     </child>
                   </object>
@@ -390,7 +472,7 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Mouse Position</property>
+                    <property name="label" translatable="yes">More Options</property>
                   </object>
                 </child>
               </object>
@@ -411,8 +493,8 @@
           <object class="GtkGrid">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="margin-top">15</property>
-            <property name="margin-bottom">20</property>
+            <property name="margin-top">5</property>
+            <property name="margin-bottom">17</property>
             <property name="column-spacing">15</property>
             <property name="row-homogeneous">True</property>
             <child>
@@ -449,11 +531,13 @@
             <child>
               <object class="GtkButton" id="settings_button">
                 <property name="label" translatable="yes">Settings</property>
+                <property name="height-request">60</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="focus-on-click">False</property>
                 <property name="receives-default">True</property>
                 <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
                 <signal name="pressed" handler="settings_clicked" swapped="no"/>
               </object>
               <packing>

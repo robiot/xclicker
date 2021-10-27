@@ -10,5 +10,6 @@ GNU General Public License v3.0
 int main(int argc, char *argv[])
 {
     XInitThreads();
+    srand(time(NULL));
     return g_application_run(G_APPLICATION(xclicker_app_new()), argc, argv);
 }
