@@ -12,7 +12,7 @@
 XClicker is an open-source, easy to use, feature-rich, **blazing fast** Autoclicker for linux desktops using x11.
 
 ![Example image](https://raw.githubusercontent.com/robiot/XClicker/main/img/example.png)
-![forthebadge](https://forthebadge.com/images/badges/made-with-c.svg) ![forthebadge](https://forthebadge.com/images/badges/powered-by-electricity.svg)
+![forthebadge](https://forthebadge.com/images/badges/made-with-c.svg) [![forthebadge](https://forthebadge.com/images/badges/check-it-out.svg)](https://xclicker.pages.dev/downloads)
 
 ## Main features
  * Simple layout;
