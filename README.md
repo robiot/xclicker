@@ -11,7 +11,7 @@
 ## What is XClicker?
 XClicker is an open-source, easy to use, feature-rich, **blazing fast** Autoclicker for linux desktops using x11.
 
-![Example image](https://raw.githubusercontent.com/robiot/XClicker/main/img/newexample.png)
+![Example image](https://raw.githubusercontent.com/robiot/XClicker/main/img/example.png)
 
 ## Main features
  * Simple layout;
