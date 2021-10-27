@@ -46,7 +46,7 @@ export default function Home({ source }) {
             </div>
           </div>
           <div className="mt-10 hidden lg:block">
-            <img src="/window.png" className="h-98" />
+            <img src="/window12.png" className="h-98" />
           </div>
         </div>
       </div>
