@@ -15,12 +15,14 @@ XClicker is an open-source, easy to use, feature-rich, **blazing fast** Autoclic
 ![forthebadge](https://forthebadge.com/images/badges/made-with-c.svg) [![forthebadge](https://forthebadge.com/images/badges/check-it-out.svg)](https://xclicker.pages.dev/downloads)
 
 ## Main features
- * Simple layout;
+ * Fairly simple layout;
  * Safe mode, to protect from unwanted behaviour;
  * Autoclick with a specified amount of time between each click;
  * Choose mouse button [Left/Right/Middle];
+ * Choose click type [Single/Double];
  * Repeat until stopped or repeat a given amount of times;
  * Click on a specified location only;
+ * Randomize the click interval;
  * Start / Stop with a custom hotkey;
 
 ### How much cps?
