@@ -15,25 +15,15 @@
     transition: background-color 0.2s ease;
   }
   .navbar.active {
-    background-color: #262626;
+    @apply bg-custom_gray_light;
     transition: background-color 0.2s ease;
   }
 
   .navbar-item {
-    @apply flex items-center h-full hover:bg-gray-700 bg-opacity-5 p-4;
+    @apply flex items-center h-full hover:bg-gray-700 bg-opacity-5 p-4 rounded-md;
   }
 
   .navbar-item.active:hover {
-    background-color: #33444b;
+    @apply bg-custom_gray_lighter;
   }
-
-  .loadingsScreen{
-    position:absolute;
-    left:0;
-    top:0;
-    width:100%;
-    height:100%;
-    background-color: red;
-    z-index: 10;
-}
 }

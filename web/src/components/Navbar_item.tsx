@@ -1,13 +1,13 @@
 import React from "react";
-import Link from "next/link";
+import { Link } from "react-router-dom";
 
 export function Navbar_item({
   children,
   href,
   navbar,
-  external = false
+  external = false,
 }: {
-  children;
+  children: any;
   href: string;
   navbar: boolean;
   external?: boolean;
@@ -16,13 +16,14 @@ export function Navbar_item({
     <a
       href={href}
       target="_blank"
+      rel="noopener noreferrer"
       className={`navbar-item ${!navbar ? "active" : ""}`}
     >
       {children}
     </a>
   ) : (
-    <Link href={href} passHref>
-      <a className={`navbar-item ${!navbar ? "active" : ""}`}>{children}</a>
+    <Link to={href} className={`navbar-item ${!navbar ? "active" : ""}`}>
+      {children}
     </Link>
   );
 

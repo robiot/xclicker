@@ -1,17 +1,22 @@
-import React from "react";
+import Skeleton from "react-loading-skeleton";
 
-export function Release({ children, latestRelease }) {
+export function Release({ children, latestRelease, isLoading }) {
   return (
-    <div className="mt-10 p-3 bg-gradient-gray-less rounded-md">
+    <div className="mt-10 p-3 bg-gray-600 bg-opacity-30 rounded-md">
       <div className="font-semibold text-2xl mb-2">
-        <a href={latestRelease.html_url} target="_blank">
-          Latest {latestRelease.tag_name}
+        <a
+          href={latestRelease.html_url}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {isLoading ? (
+            <Skeleton />
+          ) : (
+            <div>Latest {latestRelease.tag_name}</div>
+          )}
         </a>
       </div>
-      <div className="bg-white h-1"></div>
-      <div className="mt-2 flex flex-col-reverse divide-y divide-y-reverse ">
-        {children}
-      </div>
+      {children}
     </div>
   );
 }

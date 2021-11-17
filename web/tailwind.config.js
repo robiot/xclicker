@@ -2,15 +2,17 @@ const colors = require("tailwindcss/colors");
 
 module.exports = {
   purge: ['./src/pages/**/*.{js,ts,jsx,tsx}', './src/components/**/*.{js,ts,jsx,tsx}'],
-  darkMode: false, // or 'media' or 'class'
+  darkMode: false,
   theme: {
     extend: {
       colors: {
-        "gradient-gray": "#1e3135",
-        "gradient-gray-less": "#3d5062",
-        "gray": colors.trueGray,
+        "custom_gray": "#171923",
+        "custom_gray_medium": "#1c1e28",
+        "custom_gray_light": "#212530",
+        "custom_gray_lighter": "#292b34",
+        gray: colors.coolGray
       },
-    },
+    },      
   },
   variants: {
     extend: {},

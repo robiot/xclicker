@@ -1,4 +1,3 @@
-## XClicker Website
-![Hosted](https://img.shields.io/github/deployments/robiot/XClicker/github-pages)
+This is the source code for the xclicker website.
 
-This is hosted [here](https://xclicker.pages.dev)
+It is hosted [Here](https://xclicker.xyz/)

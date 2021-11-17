@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import Layout from "../../components/Layout";
-import Nav from "../../components/Nav";
-import { Release } from "../../components/Release";
+import Layout from "../components/Layout";
+import Nav from "../components/Nav";
 
-export default function Home() {
+export default function Test() {
   useEffect(() => {
     var started,
       resetTimeoutHandle,
