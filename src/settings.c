@@ -13,7 +13,6 @@ int button1 = -1;
 int button2 = 74;
 
 gboolean isChoosingHotkey = FALSE;
-
 const char *configpath;
 GKeyFile *config;
 
@@ -108,10 +107,12 @@ void enable_start_button()
 
 void hotkey_finished()
 {
-    set_start_stop_button_keybind_text();
+    set_start_stop_button_hotkey_text();
 }
 
-//  Threads
+/**
+ * Gets the keys pressed when setting hotkey.
+ */
 void get_hotkeys_handler()
 {
     Display *display = get_display();
@@ -120,13 +121,13 @@ void get_hotkeys_handler()
     gboolean hasPreKey = FALSE;
     while (1)
     {
-        int state = get_button_state(display);
+        int state = get_next_key_state(display);
 
-        // Numlock & caps lock is incredibly buggy and causes memory leaks, pointer errors, free errors and so on.
+        // Numlock & caps lock is incredibly buggy and causes memory leaks, pointer errors, free errors...
         if (state == XKeysymToKeycode(display, XK_Num_Lock) || state == XKeysymToKeycode(display, XK_Caps_Lock))
             continue;
 
-        // If prekey, ex shift, ctrl.
+        // If prekey, ex shift, ctrl
         if (state == XKeysymToKeycode(display, XK_Shift_L) || state == XKeysymToKeycode(display, XK_Shift_R) 
             || state == XKeysymToKeycode(display, XK_Alt_L) || state == XKeysymToKeycode(display, XK_Alt_R)
             || state == XKeysymToKeycode(display, XK_Escape) || state == XKeysymToKeycode(display, XK_Control_L)
@@ -180,12 +181,12 @@ void get_hotkeys_handler()
     isChoosingHotkey = FALSE;
 }
 
-// Callback symbols
+
 void safe_mode_changed(GtkSwitch *self, gboolean state)
 {
     g_key_file_set_boolean(config, "Options", "SAFEMODE", state);
     g_key_file_save_to_file(config, configpath, NULL);
-    // Hack to make the background color not glitch?
+    // Hack to make the background color not glitch
     gtk_switch_set_active(self, state);
 }
 
@@ -250,6 +251,5 @@ void settings_dialog_new()
 
     // Run
     gtk_dialog_run(dialog);
-    // Else you will have to click twice to close the dialog
     gtk_widget_destroy(GTK_WIDGET(dialog));
 }

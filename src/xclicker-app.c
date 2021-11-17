@@ -15,6 +15,9 @@ static void xclicker_app_init(XClickerApp* UNUSED(app))
 {
 }
 
+/**
+ * Opens up main window.
+ */
 static void xclicker_app_activate(GApplication *app)
 {
 	MainAppWindow *win = main_app_window_new(XCLICKER_APP(app));
@@ -27,7 +30,7 @@ static void xclicker_app_class_init(XClickerAppClass *class)
 	G_APPLICATION_CLASS(class)->activate = xclicker_app_activate;
 }
 
-XClickerApp *xclicker_app_new(void)
+XClickerApp *xclicker_app_new()
 {
 	return g_object_new(XCLICKER_APP_TYPE, NULL);
 }

@@ -1,23 +1,11 @@
 #include <gtk/gtk.h>
 #include <X11/XKBlib.h>
-#include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
 #include <X11/extensions/XTest.h>
 #include "x11api.h"
 
-void get_mouse_coords(Display *display, int *x, int *y)
-{
-    XButtonEvent event;
-    XQueryPointer(display, DefaultRootWindow(display),
-                  &event.root, &event.window,
-                  &event.x_root, &event.y_root,
-                  &event.x, &event.y,
-                  &event.state);
-    *x = event.x;
-    *y = event.y;
-}
+#define DEFAULT_MICRO_SLEEP 1
 
-// Configure XInput masks for given display
 void mask_config(Display *display, int mode)
 {
     XIEventMask mask[2];
@@ -48,12 +36,7 @@ void mask_config(Display *display, int mode)
     free(mask[1].mask);
 }
 
-int get_event_button_id(XIDeviceEvent *event)
-{
-    return event->detail;
-}
-
-int get_button_state(Display *display)
+int get_next_key_state(Display *display)
 {
     int button = 0;
     XEvent event;
@@ -61,32 +44,49 @@ int get_button_state(Display *display)
     XNextEvent(display, (XEvent *)&event);
 
     if (XGetEventData(display, cookie) && cookie->type == GenericEvent)
-        button = get_event_button_id(cookie->data);
+    {
+        XIDeviceEvent *event = cookie->data;
+        button = event->detail;
+    }
 
     XFreeEventData(display, cookie);
     return button;
 }
 
-// Move mouse pointer to given coords
+void get_cursor_coords(Display *display, int *x, int *y)
+{
+    XButtonEvent event;
+    XQueryPointer(display, DefaultRootWindow(display),
+                  &event.root, &event.window,
+                  &event.x_root, &event.y_root,
+                  &event.x, &event.y,
+                  &event.state);
+    *x = event.x;
+    *y = event.y;
+}
+
 void move_to(Display *display, int x, int y)
 {
     int cur_x, cur_y;
-    get_mouse_coords(display, &cur_x, &cur_y);
+    get_cursor_coords(display, &cur_x, &cur_y);
     XWarpPointer(display, None, None, 0, 0, 0, 0, -cur_x, -cur_y); // For absolute position
     XWarpPointer(display, None, None, 0, 0, 0, 0, x, y);
-    usleep(1);
+    usleep(DEFAULT_MICRO_SLEEP);
 }
 
+/**
+ * Custom Xevent.
+ * Does everything needed for xsendevent.
+ */
 int cxevent(Display *display, long mask, XButtonEvent event)
 {
     if (!XSendEvent(display, PointerWindow, True, mask, (XEvent *)&event))
         return FALSE;
     XFlush(display);
-    usleep(1);
+    usleep(DEFAULT_MICRO_SLEEP);
     return TRUE;
 }
 
-// Click on current mouse position with given button
 int click(Display *display, int button, int mode)
 {
     switch (mode)
@@ -122,7 +122,7 @@ int click(Display *display, int button, int mode)
     case CLICK_MODE_XTEST:
         XTestFakeButtonEvent(display, button, True, CurrentTime);
         XFlush(display);
-        usleep(1);
+        usleep(DEFAULT_MICRO_SLEEP);
         XTestFakeButtonEvent(display, button, False, CurrentTime);
         XFlush(display);
     }
@@ -130,8 +130,6 @@ int click(Display *display, int button, int mode)
     return TRUE;
 }
 
-// https://stackoverflow.com/questions/9838385/replace-of-xkeycodetokeysym
-// https://linux.die.net/man/3/xkbkeycodetokeysym
 char *keycode_to_string(Display *display, int keycode)
 {
     return XKeysymToString(XkbKeycodeToKeysym(display, keycode, 0, 0));

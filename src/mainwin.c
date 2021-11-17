@@ -9,6 +9,9 @@
 #define CLICK_TYPE_SINGLE 0
 #define CLICK_TYPE_DOUBLE 1
 
+gboolean isClicking = FALSE;
+gboolean isChoosingLocation = FALSE;
+
 struct _MainAppWindow
 {
 	GtkApplicationWindow parent;
@@ -39,10 +42,9 @@ struct _MainAppWindow
 } mainappwindow;
 G_DEFINE_TYPE(MainAppWindow, main_app_window, GTK_TYPE_APPLICATION_WINDOW);
 
-gboolean isClicking = FALSE;
-gboolean isChoosingLocation = FALSE;
-// gboolean beforeWindowTopmost = FALSE; // For later.
-
+/**
+ * Options/data given to click_handler thread
+ */
 struct click_opts
 {
 	int sleep;
@@ -59,17 +61,39 @@ struct click_opts
 	int random_interval_ms;
 };
 
+/**
+ * Generates a random integer between given values.
+ * @param lower The lowest value it can generate
+ * @param upper The highest value it can generate
+ */
 int random_between(int lower, int upper)
 {
 	return rand() % ((upper - lower + 1)) + lower;
 }
 
+/**
+ * Convert given entries text to an integer.
+ * @param entry The entry to get text from
+ */
+int get_text_to_int(GtkWidget *entry)
+{
+	return atoi(gtk_entry_get_text(GTK_ENTRY(entry)));
+}
+
+/**
+ * Toggle the start and stop buttons
+ */
 void toggle_buttons()
 {
 	gtk_widget_set_sensitive(GTK_WIDGET(mainappwindow.start_button), !isClicking);
 	gtk_widget_set_sensitive(GTK_WIDGET(mainappwindow.stop_button), isClicking);
 }
 
+/**
+ * Handles the clicking, should be ran from another thread.
+ * @param data Struct of type click_opts which contains the options
+ * @see click_opts
+ */
 void click_handler(gpointer *data)
 {
 	struct click_opts *args = data;
@@ -120,12 +144,24 @@ void click_handler(gpointer *data)
 	g_idle_add(toggle_buttons, NULL);
 }
 
+/**
+ *
+ * Custom Location
+ *
+ */
+
+/**
+ * Data to pass to set_coords.
+ */
 struct set_coord_args
 {
 	const char *coordx;
 	const char *coordy;
 };
 
+/**
+ * Updates the x and y textboxes with the current cursor location.
+ */
 void set_coords(gpointer *data)
 {
 	struct set_coord_args *args = data;
@@ -136,6 +172,10 @@ void set_coords(gpointer *data)
 	g_free(args);
 }
 
+/**
+ * Checks if left mouse button is pressed, then stop capturing
+ * mouse location.
+ */
 void get_cursor_pos_click_handler()
 {
 	Display *display = get_display();
@@ -143,14 +183,16 @@ void get_cursor_pos_click_handler()
 
 	while (isChoosingLocation)
 	{
-		if (get_button_state(display) == 1)
+		if (get_next_key_state(display) == 1) // 1 = Mouse1
 			isChoosingLocation = FALSE;
 	}
 	XCloseDisplay(display);
 }
 
-// Toggle window settings if choosing location or finished.
-void toggle_window_from_set()
+/**
+ * Toggle "Get button sensitive" and window topmost.
+ */
+void toggle_get_active()
 {
 	switch (isChoosingLocation)
 	{
@@ -167,13 +209,18 @@ void toggle_window_from_set()
 	}
 }
 
+/**
+ * Grabs the cursor location and updates the textboxes until
+ * left mouse clicked.
+ * @see get_cursor_pos_click_handler
+ */
 void get_cursor_pos_handler()
 {
 	Display *display = get_display();
 	while (isChoosingLocation)
 	{
 		int i_cur_x, i_cur_y;
-		get_mouse_coords(display, &i_cur_x, &i_cur_y);
+		get_cursor_coords(display, &i_cur_x, &i_cur_y);
 		char *cur_x = (char *)malloc(1 + sizeof(i_cur_x));
 		char *cur_y = (char *)malloc(1 + sizeof(i_cur_y));
 		sprintf(cur_x, "%d", i_cur_x);
@@ -189,15 +236,15 @@ void get_cursor_pos_handler()
 		free(cur_y);
 	}
 	XCloseDisplay(display);
-	g_idle_add(toggle_window_from_set, NULL);
+	g_idle_add(toggle_get_active, NULL);
 }
 
-int get_text_to_int(GtkWidget *entry)
-{
-	return atoi(gtk_entry_get_text(GTK_ENTRY(entry)));
-}
+/**
+ *
+ * Handlers
+ *
+ */
 
-// Handlers
 void repeat_only_check_toggle(GtkToggleButton *check)
 {
 	gtk_widget_set_sensitive(mainappwindow.repeat_entry, gtk_toggle_button_get_active(check));
@@ -211,7 +258,9 @@ void custom_location_check_toggle(GtkToggleButton *check)
 	gtk_widget_set_sensitive(mainappwindow.get_button, active);
 }
 
-// gint length, gint *position, gpointer user_data
+/**
+ * Prevents other input than 0-9
+ */
 void insert_handler(GtkEditable *editable, const gchar *text)
 {
 	if (!g_unichar_isdigit(g_utf8_get_char(text)))
@@ -228,9 +277,12 @@ void open_safe_mode_dialog()
 	gtk_widget_destroy(dialog);
 }
 
+/**
+ * Grab click options from ui and pass them to click_opts, then start click_handler.
+ * @see click_handler
+*/
 void start_clicked()
 {
-	// This is ran inside another thread when used
 	int sleep = get_text_to_int(mainappwindow.hours_entry) * 3600000 + get_text_to_int(mainappwindow.minutes_entry) * 60000 + get_text_to_int(mainappwindow.seconds_entry) * 1000 + get_text_to_int(mainappwindow.millisecs_entry);
 
 	if (sleep < 10 && is_safemode())
@@ -243,7 +295,6 @@ void start_clicked()
 	toggle_buttons();
 
 	struct click_opts *data = g_malloc0(sizeof(struct click_opts));
-
 	data->sleep = sleep;
 	const gchar *mousebutton_text = gtk_entry_get_text(GTK_ENTRY(mainappwindow.mouse_entry));
 	if (strcmp(mousebutton_text, "Right") == 0)
@@ -287,7 +338,7 @@ void settings_clicked()
 void get_button_clicked()
 {
 	isChoosingLocation = TRUE;
-	toggle_window_from_set();
+	toggle_get_active();
 	g_thread_new("get_cursor_pos_click_handler", get_cursor_pos_click_handler, NULL);
 	g_thread_new("get_cursor_pos_handler", get_cursor_pos_handler, NULL);
 }
@@ -300,7 +351,10 @@ void toggle_clicking()
 		start_clicked();
 }
 
-// Has to be here since it calls start_clicked
+/**
+ * Gets if configured hotkey is pressed, if so
+ * toggle clicking.
+ */
 void get_start_stop_key_handler()
 {
 	Display *display = get_display();
@@ -312,12 +366,10 @@ void get_start_stop_key_handler()
 	int before = 0;
 	while (1)
 	{
-		int state = get_button_state(display);
+		int state = get_next_key_state(display);
 		if (isChoosingHotkey == TRUE)
 			continue;
-		// g_print("%s, %d\n", keycode_to_string(display, state), state);
 
-		// F8, 74
 		if (state == button1 || state == button2)
 		{
 			// Two buttons
@@ -346,7 +398,7 @@ void get_start_stop_key_handler()
 	XCloseDisplay(display);
 }
 
-void set_start_stop_button_keybind_text()
+void set_start_stop_button_hotkey_text()
 {
 	Display *display = get_display();
 	const char *start_text_1 = "Start";
@@ -389,12 +441,18 @@ void set_start_stop_button_keybind_text()
 	XCloseDisplay(display);
 }
 
+/**
+ * Toggles the random interval textbox.
+ */
 void random_interval_check_toggle(GtkToggleButton *self)
 {
-	gboolean active = gtk_toggle_button_get_active(self);
-	gtk_widget_set_sensitive(mainappwindow.random_interval_entry, active);
+	gtk_widget_set_sensitive(mainappwindow.random_interval_entry, gtk_toggle_button_get_active(self));
 }
 
+/**
+ * Loads template, configuration, keybinds.
+ * Sets all mainappwindow values to binded win values.
+ */
 static void main_app_window_init(MainAppWindow *win)
 {
 	gtk_widget_init_template(GTK_WIDGET(win));
@@ -426,10 +484,14 @@ static void main_app_window_init(MainAppWindow *win)
 	mainappwindow.settings_button = win->settings_button;
 	mainappwindow.get_button = win->get_button;
 
-	set_start_stop_button_keybind_text();
+	set_start_stop_button_hotkey_text();
 	g_thread_new("get_start_stop_key_handler", get_start_stop_key_handler, NULL);
 }
 
+/**
+ * Initialize the window class.
+ * Binds template childs and callbacks to functions and values.
+ */
 static void main_app_window_class_init(MainAppWindowClass *class)
 {
 	gtk_widget_class_set_template_from_resource(GTK_WIDGET_CLASS(class), "/org/gtk/xclicker/ui/xclicker-window.ui");
@@ -466,11 +528,10 @@ static void main_app_window_class_init(MainAppWindowClass *class)
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, get_button);
 }
 
+/**
+ * Open up the main_app_window.
+ */
 MainAppWindow *main_app_window_new(XClickerApp *app)
 {
 	return g_object_new(MAIN_APP_WINDOW_TYPE, "application", app, NULL);
-}
-
-void main_app_window_open(MainAppWindow *UNUSED(win), GFile *UNUSED(file))
-{
 }
