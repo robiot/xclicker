@@ -274,8 +274,10 @@
                         <child internal-child="entry">
                           <object class="GtkEntry" id="mouse_entry">
                             <property name="can-focus">False</property>
+                            <property name="editable">False</property>
                             <property name="width-chars">0</property>
                             <property name="text" translatable="yes">Left</property>
+                            <property name="caps-lock-warning">False</property>
                           </object>
                         </child>
                       </object>
@@ -288,7 +290,7 @@
                       <object class="GtkLabel">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Click type</property>
+                        <property name="label" translatable="yes">Click Type</property>
                         <property name="xalign">0.07999999821186065</property>
                       </object>
                       <packing>
@@ -310,9 +312,11 @@
                         </child>
                         <child internal-child="entry">
                           <object class="GtkEntry" id="click_type_entry">
-                            <property name="can-focus">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="editable">False</property>
                             <property name="width-chars">0</property>
                             <property name="text" translatable="yes">Single</property>
+                            <property name="caps-lock-warning">False</property>
                           </object>
                         </child>
                       </object>
