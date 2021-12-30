@@ -46,7 +46,8 @@ int get_next_key_state(Display *display)
     if (XGetEventData(display, cookie) && cookie->type == GenericEvent)
     {
         XIDeviceEvent *event = cookie->data;
-        button = event->detail;
+        if (!(event->flags & XIKeyRepeat))
+            button = event->detail;
     }
 
     XFreeEventData(display, cookie);
