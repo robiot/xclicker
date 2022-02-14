@@ -230,7 +230,7 @@
                     </child>
                     <child>
                       <object class="GtkCheckButton" id="repeat_only_check">
-                        <property name="label" translatable="yes">Repeat only:</property>
+                        <property name="label" translatable="yes">Repeat Only</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="focus-on-click">False</property>
@@ -246,10 +246,12 @@
                     <child>
                       <object class="GtkEntry" id="repeat_entry">
                         <property name="name">MinutesEntry</property>
+                        <property name="width-request">105</property>
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="can-focus">True</property>
-                        <property name="hexpand">True</property>
+                        <property name="halign">end</property>
+                        <property name="hexpand">False</property>
                         <property name="max-length">9</property>
                         <property name="width-chars">0</property>
                         <property name="placeholder-text"># of times</property>
