@@ -7,7 +7,8 @@
 #define MASK_CONFIG_MOUSE (0)
 #define MASK_CONFIG_KEYBOARD (1)
 
-enum ClickModes {
+enum ClickModes
+{
     CLICK_MODE_XTEST,
     CLICK_MODE_XEVENT,
 };

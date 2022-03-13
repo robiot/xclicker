@@ -103,6 +103,8 @@ void click_handler(gpointer *data)
 	struct click_opts *args = data;
 	Display *display = get_display();
 	int count = 0;
+	gboolean is_holding = FALSE;
+
 	while (isClicking)
 	{
 		if (args->custom_location)
@@ -124,10 +126,10 @@ void click_handler(gpointer *data)
 				g_printerr("Error when sending click");
 			break;
 		case CLICK_TYPE_HOLD:
-			if (count == 0) // Don't re-send mouse_down if already successfully sent
+			if (is_holding == FALSE) // Don't re-send mouse_down if already successfully sent
 			{
 				if (mouse_event(display, args->button, is_using_xevent(), MOUSE_EVENT_PRESS))
-					count++;
+					is_holding = TRUE;
 				else
 					g_printerr("Error when sending mouse down");
 			}
