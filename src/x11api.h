@@ -7,8 +7,10 @@
 #define MASK_CONFIG_MOUSE (0)
 #define MASK_CONFIG_KEYBOARD (1)
 
-#define CLICK_MODE_XTEST (0) // Default
-#define CLICK_MODE_XEVENT (1)
+enum ClickModes {
+    CLICK_MODE_XTEST,
+    CLICK_MODE_XEVENT,
+};
 
 /**
  * @brief Enumeration of the supported mouse events.
@@ -16,8 +18,8 @@
  */
 enum MouseEvents
 {
-    MOUSE_PRESSED,
-    MOUSE_RELEASED
+    MOUSE_EVENT_PRESS,
+    MOUSE_RELEASE,
 };
 
 /**

@@ -88,39 +88,33 @@ int cxevent(Display *display, long mask, XButtonEvent event)
     return TRUE;
 }
 
-XButtonEvent make_event(Display *display, int button)
-{
-    XButtonEvent event;
-    memset(&event, 0, sizeof(event));
-    event.button = button;
-    event.same_screen = True;
-    event.subwindow = DefaultRootWindow(display);
-
-    while (event.subwindow)
-    {
-        event.window = event.subwindow;
-        XQueryPointer(display, event.window,
-                        &event.root, &event.subwindow,
-                        &event.x_root, &event.y_root,
-                        &event.x, &event.y,
-                        &event.state);
-    }
-    return event;
-}
-
 int mouse_event(Display *display, int button, int mode, enum MouseEvents event_type)
 {
     switch (mode)
     {
     case CLICK_MODE_XEVENT:
-        XButtonEvent event = make_event(display, button);
+        XButtonEvent event;
+        memset(&event, 0, sizeof(event));
+        event.button = button;
+        event.same_screen = True;
+        event.subwindow = DefaultRootWindow(display);
+
+        while (event.subwindow)
+        {
+            event.window = event.subwindow;
+            XQueryPointer(display, event.window,
+                          &event.root, &event.subwindow,
+                          &event.x_root, &event.y_root,
+                          &event.x, &event.y,
+                          &event.state);
+        }
 
         // Press
-        event.type = (event_type == MOUSE_PRESSED) ? ButtonPress : ButtonRelease;
+        event.type = (event_type == MOUSE_EVENT_PRESS) ? ButtonPress : ButtonRelease;
         return cxevent(display, ButtonPressMask, event);
 
     case CLICK_MODE_XTEST:
-        XTestFakeButtonEvent(display, button, (event_type == MOUSE_PRESSED), CurrentTime);
+        XTestFakeButtonEvent(display, button, (event_type == MOUSE_EVENT_PRESS), CurrentTime);
         XFlush(display);
         break;
     }
@@ -129,11 +123,11 @@ int mouse_event(Display *display, int button, int mode, enum MouseEvents event_t
 
 int click(Display *display, int button, int mode)
 {
-    if (!mouse_event(display, button, mode, MOUSE_PRESSED))
+    if (!mouse_event(display, button, mode, MOUSE_EVENT_PRESS))
         return FALSE;
     if (mode == CLICK_MODE_XTEST)
         usleep(DEFAULT_MICRO_SLEEP);
-    return mouse_event(display, button, mode, MOUSE_RELEASED);
+    return mouse_event(display, button, mode, MOUSE_RELEASE);
 }
 
 char *keycode_to_string(Display *display, int keycode)

@@ -6,9 +6,12 @@
 #include "settings.h"
 #include "macros.h"
 
-#define CLICK_TYPE_SINGLE 0
-#define CLICK_TYPE_DOUBLE 1
-#define CLICK_TYPE_HOLD 2
+enum ClickTypes {
+	CLICK_TYPE_SINGLE,
+	CLICK_TYPE_DOUBLE,
+	CLICK_TYPE_HOLD,
+};
+
 
 gboolean isClicking = FALSE;
 gboolean isChoosingLocation = FALSE;
@@ -123,7 +126,7 @@ void click_handler(gpointer *data)
 		case CLICK_TYPE_HOLD:
 			if (count == 0) // don't re-send mouse_down if already successfully sent
 			{
-				if (mouse_event(display, args->button, is_using_xevent(), MOUSE_PRESSED))
+				if (mouse_event(display, args->button, is_using_xevent(), MOUSE_EVENT_PRESS))
 				{
 					count++;
 				}
@@ -157,7 +160,7 @@ void click_handler(gpointer *data)
 	// If it was a mouse hold, then release the button
 	if (args->click_type == CLICK_TYPE_HOLD)
 	{
-		if (mouse_event(display, args->button, is_using_xevent(), MOUSE_RELEASED) == FALSE)
+		if (mouse_event(display, args->button, is_using_xevent(), MOUSE_RELEASE) == FALSE)
 			g_printerr("Error when sending mouse down");
 	}
 
