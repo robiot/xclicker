@@ -8,6 +8,7 @@
 
 #define CLICK_TYPE_SINGLE 0
 #define CLICK_TYPE_DOUBLE 1
+#define CLICK_TYPE_HOLD 2
 
 gboolean isClicking = FALSE;
 gboolean isChoosingLocation = FALSE;
@@ -119,6 +120,19 @@ void click_handler(gpointer *data)
 			if (click(display, args->button, is_using_xevent()) == FALSE)
 				g_printerr("Error when sending click");
 			break;
+		case CLICK_TYPE_HOLD:
+			if (count == 0) // don't re-send mouse_down if already successfully sent
+			{
+				if (mouse_down(display, args->button, is_using_xevent()))
+				{
+					count++;
+				}
+				else
+				{
+					g_printerr("Error when sending mouse down");
+				}
+			}
+			break;
 		}
 
 		int sleep = args->sleep * 1000;
@@ -139,6 +153,14 @@ void click_handler(gpointer *data)
 				count++;
 		}
 	}
+
+	// If it was a mouse hold, then release the button
+	if (args->click_type == CLICK_TYPE_HOLD)
+	{
+		if (mouse_up(display, args->button, is_using_xevent()) == FALSE)
+			g_printerr("Error when sending mouse down");
+	}
+
 	g_free(data);
 	XCloseDisplay(display);
 	g_idle_add(toggle_buttons, NULL);
@@ -307,8 +329,10 @@ void start_clicked()
 	const gchar *click_type_text = gtk_entry_get_text(GTK_ENTRY(mainappwindow.click_type_entry));
 	if (strcmp(click_type_text, "Single") == 0)
 		data->click_type = CLICK_TYPE_SINGLE;
-	else
+	else if (strcmp(click_type_text, "Double") == 0)
 		data->click_type = CLICK_TYPE_DOUBLE;
+	else
+		data->click_type = CLICK_TYPE_HOLD;
 
 	if ((data->repeat = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(mainappwindow.repeat_only_check))))
 		data->repeat_times = get_text_to_int(mainappwindow.repeat_entry);
@@ -321,6 +345,15 @@ void start_clicked()
 
 	if ((data->random_interval = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(mainappwindow.random_interval_check))))
 		data->random_interval_ms = get_text_to_int(mainappwindow.random_interval_entry);
+
+	// If holding, ignore interval and repeat as it makes no sense. Set an interval of 250ms to prevent cpu high usage
+	if(data->click_type == CLICK_TYPE_HOLD)
+	{
+		data->repeat = FALSE;
+		data->random_interval = FALSE;
+		data->sleep = 250;
+	}
+	
 	g_thread_new("click_handler", click_handler, data);
 }
 
@@ -341,6 +374,25 @@ void get_button_clicked()
 	toggle_get_active();
 	g_thread_new("get_cursor_pos_click_handler", get_cursor_pos_click_handler, NULL);
 	g_thread_new("get_cursor_pos_handler", get_cursor_pos_handler, NULL);
+}
+
+void click_type_entry_changed(/*GtkComboBox* self, gpointer user_data*/)
+{
+	const gchar *click_type_text = gtk_entry_get_text(GTK_ENTRY(mainappwindow.click_type_entry));
+	gboolean active = TRUE;
+	if (strcmp(click_type_text, "Hold") == 0)
+	{
+		active = FALSE;
+	}
+
+	gtk_widget_set_sensitive(mainappwindow.hours_entry, active);
+	gtk_widget_set_sensitive(mainappwindow.minutes_entry, active);
+	gtk_widget_set_sensitive(mainappwindow.seconds_entry, active);
+	gtk_widget_set_sensitive(mainappwindow.millisecs_entry, active);
+	gtk_widget_set_sensitive(mainappwindow.repeat_only_check, active);
+	gtk_widget_set_sensitive(mainappwindow.repeat_entry, active);
+	gtk_widget_set_sensitive(mainappwindow.random_interval_check, active);
+	gtk_widget_set_sensitive(mainappwindow.random_interval_entry, active);
 }
 
 void toggle_clicking()
@@ -498,6 +550,7 @@ static void main_app_window_class_init(MainAppWindowClass *class)
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), insert_handler);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), start_clicked);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), stop_clicked);
+	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), click_type_entry_changed);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), repeat_only_check_toggle);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), settings_clicked);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), custom_location_check_toggle);

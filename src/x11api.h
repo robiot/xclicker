@@ -36,6 +36,26 @@ void get_cursor_coords(Display *display, int *x, int *y);
 void move_to(Display *display, int x, int y);
 
 /**
+ * Mouse down on current mouse position with given button.
+ * There is two modes, xtest and xevent. Xevent is generally more safe since it doesn't interact with gnome-shell, titlebars and gtk_applications.
+ * Xevent also only clicks the currently focused application.
+ * XTest is like mouse_event on windows. It focuses the application the cursor is hovering
+ * over and clicks on everything that xevent can't plus what xevent can.
+ * @param mode The mode to use to click [CLICK_MODE_XTEST/CLICK_MODE_XEVENT]
+ */
+int mouse_down(Display *display, int button, int mode);
+
+/**
+ * Mouse up on current mouse position with given button.
+ * There is two modes, xtest and xevent. Xevent is generally more safe since it doesn't interact with gnome-shell, titlebars and gtk_applications.
+ * Xevent also only clicks the currently focused application.
+ * XTest is like mouse_event on windows. It focuses the application the cursor is hovering
+ * over and clicks on everything that xevent can't plus what xevent can.
+ * @param mode The mode to use to click [CLICK_MODE_XTEST/CLICK_MODE_XEVENT]
+ */
+int mouse_up(Display *display, int button, int mode);
+
+/**
  * Click on current mouse position with given button.
  * There is two modes, xtest and xevent. Xevent is generally more safe since it doesn't interact with gnome-shell, titlebars and gtk_applications.
  * Xevent also only clicks the currently focused application.

@@ -88,47 +88,75 @@ int cxevent(Display *display, long mask, XButtonEvent event)
     return TRUE;
 }
 
-int click(Display *display, int button, int mode)
+XButtonEvent make_event(Display *display, int button)
+{
+    XButtonEvent event;
+    memset(&event, 0, sizeof(event));
+    event.button = button;
+    event.same_screen = True;
+    event.subwindow = DefaultRootWindow(display);
+
+    while (event.subwindow)
+    {
+        event.window = event.subwindow;
+        XQueryPointer(display, event.window,
+                        &event.root, &event.subwindow,
+                        &event.x_root, &event.y_root,
+                        &event.x, &event.y,
+                        &event.state);
+    }
+    return event;
+}
+
+int mouse_down(Display *display, int button, int mode)
 {
     switch (mode)
     {
     case CLICK_MODE_XEVENT:
-        XButtonEvent event;
-        memset(&event, 0, sizeof(event));
-        event.button = button;
-        event.same_screen = True;
-        event.subwindow = DefaultRootWindow(display);
-
-        while (event.subwindow)
-        {
-            event.window = event.subwindow;
-            XQueryPointer(display, event.window,
-                          &event.root, &event.subwindow,
-                          &event.x_root, &event.y_root,
-                          &event.x, &event.y,
-                          &event.state);
-        }
+        XButtonEvent event = make_event(display, button);
 
         // Press
         event.type = ButtonPress;
         if (!cxevent(display, ButtonPressMask, event))
-            return FALSE;
-
-        // Release
-        event.type = ButtonRelease;
-        if (!cxevent(display, ButtonReleaseMask, event))
             return FALSE;
         break;
 
     case CLICK_MODE_XTEST:
         XTestFakeButtonEvent(display, button, True, CurrentTime);
         XFlush(display);
-        usleep(DEFAULT_MICRO_SLEEP);
+    }
+
+    return TRUE;
+}
+
+int mouse_up(Display *display, int button, int mode)
+{
+    switch (mode)
+    {
+    case CLICK_MODE_XEVENT:
+        XButtonEvent event = make_event(display, button);
+
+        // Press
+        event.type = ButtonRelease;
+        if (!cxevent(display, ButtonPressMask, event))
+            return FALSE;
+        break;
+
+    case CLICK_MODE_XTEST:
         XTestFakeButtonEvent(display, button, False, CurrentTime);
         XFlush(display);
     }
 
     return TRUE;
+}
+
+int click(Display *display, int button, int mode)
+{
+    if (!mouse_down(display, button, mode))
+        return FALSE;
+    if (mode == CLICK_MODE_XTEST)
+        usleep(DEFAULT_MICRO_SLEEP);
+    return mouse_up(display, button, mode);
 }
 
 char *keycode_to_string(Display *display, int keycode)

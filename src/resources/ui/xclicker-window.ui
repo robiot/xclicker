@@ -14,6 +14,9 @@
       <row>
         <col id="0" translatable="yes">Double</col>
       </row>
+      <row>
+        <col id="0" translatable="yes">Hold</col>
+      </row>
     </data>
   </object>
   <object class="GtkListStore" id="repeat_amount_lstore">
@@ -322,6 +325,7 @@
                             <property name="caps-lock-warning">False</property>
                           </object>
                         </child>
+                        <signal name="changed" handler="click_type_entry_changed" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
