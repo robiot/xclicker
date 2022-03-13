@@ -123,7 +123,7 @@ void click_handler(gpointer *data)
 		case CLICK_TYPE_HOLD:
 			if (count == 0) // don't re-send mouse_down if already successfully sent
 			{
-				if (mouse_down(display, args->button, is_using_xevent()))
+				if (mouse_event(display, args->button, is_using_xevent(), MOUSE_PRESSED))
 				{
 					count++;
 				}
@@ -157,7 +157,7 @@ void click_handler(gpointer *data)
 	// If it was a mouse hold, then release the button
 	if (args->click_type == CLICK_TYPE_HOLD)
 	{
-		if (mouse_up(display, args->button, is_using_xevent()) == FALSE)
+		if (mouse_event(display, args->button, is_using_xevent(), MOUSE_RELEASED) == FALSE)
 			g_printerr("Error when sending mouse down");
 	}
 

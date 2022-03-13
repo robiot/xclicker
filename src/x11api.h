@@ -11,6 +11,16 @@
 #define CLICK_MODE_XEVENT (1)
 
 /**
+ * @brief Enumeration of the supported mouse events.
+ * @see mouse_event
+ */
+enum MouseEvents
+{
+    MOUSE_PRESSED,
+    MOUSE_RELEASED
+};
+
+/**
  * Configure XInput masks for the given display.
  * @param display The display to configure, get with get_display()
  * @param mode The mode to configure for [MASK_CONFIG_MOUSE/MASK_CONFIG_KEYBOARD]
@@ -36,24 +46,14 @@ void get_cursor_coords(Display *display, int *x, int *y);
 void move_to(Display *display, int x, int y);
 
 /**
- * Mouse down on current mouse position with given button.
+ * Mouse event on current mouse position with given button.
  * There is two modes, xtest and xevent. Xevent is generally more safe since it doesn't interact with gnome-shell, titlebars and gtk_applications.
  * Xevent also only clicks the currently focused application.
  * XTest is like mouse_event on windows. It focuses the application the cursor is hovering
  * over and clicks on everything that xevent can't plus what xevent can.
  * @param mode The mode to use to click [CLICK_MODE_XTEST/CLICK_MODE_XEVENT]
  */
-int mouse_down(Display *display, int button, int mode);
-
-/**
- * Mouse up on current mouse position with given button.
- * There is two modes, xtest and xevent. Xevent is generally more safe since it doesn't interact with gnome-shell, titlebars and gtk_applications.
- * Xevent also only clicks the currently focused application.
- * XTest is like mouse_event on windows. It focuses the application the cursor is hovering
- * over and clicks on everything that xevent can't plus what xevent can.
- * @param mode The mode to use to click [CLICK_MODE_XTEST/CLICK_MODE_XEVENT]
- */
-int mouse_up(Display *display, int button, int mode);
+int mouse_event(Display *display, int button, int mode, enum MouseEvents event_type);
 
 /**
  * Click on current mouse position with given button.
