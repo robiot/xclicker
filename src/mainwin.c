@@ -6,12 +6,12 @@
 #include "settings.h"
 #include "macros.h"
 
-enum ClickTypes {
+enum ClickTypes
+{
 	CLICK_TYPE_SINGLE,
 	CLICK_TYPE_DOUBLE,
 	CLICK_TYPE_HOLD,
 };
-
 
 gboolean isClicking = FALSE;
 gboolean isChoosingLocation = FALSE;
@@ -124,16 +124,12 @@ void click_handler(gpointer *data)
 				g_printerr("Error when sending click");
 			break;
 		case CLICK_TYPE_HOLD:
-			if (count == 0) // don't re-send mouse_down if already successfully sent
+			if (count == 0) // Don't re-send mouse_down if already successfully sent
 			{
 				if (mouse_event(display, args->button, is_using_xevent(), MOUSE_EVENT_PRESS))
-				{
 					count++;
-				}
 				else
-				{
 					g_printerr("Error when sending mouse down");
-				}
 			}
 			break;
 		}
@@ -305,7 +301,7 @@ void open_safe_mode_dialog()
 /**
  * Grab click options from ui and pass them to click_opts, then start click_handler.
  * @see click_handler
-*/
+ */
 void start_clicked()
 {
 	int sleep = get_text_to_int(mainappwindow.hours_entry) * 3600000 + get_text_to_int(mainappwindow.minutes_entry) * 60000 + get_text_to_int(mainappwindow.seconds_entry) * 1000 + get_text_to_int(mainappwindow.millisecs_entry);
@@ -350,13 +346,13 @@ void start_clicked()
 		data->random_interval_ms = get_text_to_int(mainappwindow.random_interval_entry);
 
 	// If holding, ignore interval and repeat as it makes no sense. Set an interval of 250ms to prevent cpu high usage
-	if(data->click_type == CLICK_TYPE_HOLD)
+	if (data->click_type == CLICK_TYPE_HOLD)
 	{
 		data->repeat = FALSE;
 		data->random_interval = FALSE;
 		data->sleep = 250;
 	}
-	
+
 	g_thread_new("click_handler", click_handler, data);
 }
 
