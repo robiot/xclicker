@@ -117,15 +117,13 @@ int mouse_down(Display *display, int button, int mode)
 
         // Press
         event.type = ButtonPress;
-        if (!cxevent(display, ButtonPressMask, event))
-            return FALSE;
-        break;
+        return cxevent(display, ButtonPressMask, event);
 
     case CLICK_MODE_XTEST:
         XTestFakeButtonEvent(display, button, True, CurrentTime);
         XFlush(display);
+        break;
     }
-
     return TRUE;
 }
 
@@ -138,15 +136,13 @@ int mouse_up(Display *display, int button, int mode)
 
         // Press
         event.type = ButtonRelease;
-        if (!cxevent(display, ButtonPressMask, event))
-            return FALSE;
-        break;
+        return cxevent(display, ButtonPressMask, event);
 
     case CLICK_MODE_XTEST:
         XTestFakeButtonEvent(display, button, False, CurrentTime);
         XFlush(display);
+        break;
     }
-
     return TRUE;
 }
 

@@ -376,7 +376,7 @@ void get_button_clicked()
 	g_thread_new("get_cursor_pos_handler", get_cursor_pos_handler, NULL);
 }
 
-void click_type_entry_changed(/*GtkComboBox* self, gpointer user_data*/)
+void click_type_entry_changed()
 {
 	const gchar *click_type_text = gtk_entry_get_text(GTK_ENTRY(mainappwindow.click_type_entry));
 	gboolean active = TRUE;
