@@ -31,7 +31,7 @@ XClicker is an open-source, easy to use, feature-rich, **blazing fast** Autoclic
  * Safe mode, to protect from unwanted behaviour;
  * Autoclick with a specified amount of time between each click;
  * Choose mouse button [Left/Right/Middle];
- * Choose click type [Single/Double];
+ * Choose click type [Single/Double/Hold];
  * Repeat until stopped or repeat a given amount of times;
  * Click on a specified location only;
  * Randomize the click interval;

@@ -88,7 +88,7 @@ int cxevent(Display *display, long mask, XButtonEvent event)
     return TRUE;
 }
 
-int click(Display *display, int button, int mode)
+int mouse_event(Display *display, int button, int mode, enum MouseEvents event_type)
 {
     switch (mode)
     {
@@ -110,25 +110,24 @@ int click(Display *display, int button, int mode)
         }
 
         // Press
-        event.type = ButtonPress;
-        if (!cxevent(display, ButtonPressMask, event))
-            return FALSE;
-
-        // Release
-        event.type = ButtonRelease;
-        if (!cxevent(display, ButtonReleaseMask, event))
-            return FALSE;
-        break;
+        event.type = (event_type == MOUSE_EVENT_PRESS) ? ButtonPress : ButtonRelease;
+        return cxevent(display, ButtonPressMask, event);
 
     case CLICK_MODE_XTEST:
-        XTestFakeButtonEvent(display, button, True, CurrentTime);
+        XTestFakeButtonEvent(display, button, (event_type == MOUSE_EVENT_PRESS), CurrentTime);
         XFlush(display);
-        usleep(DEFAULT_MICRO_SLEEP);
-        XTestFakeButtonEvent(display, button, False, CurrentTime);
-        XFlush(display);
+        break;
     }
-
     return TRUE;
+}
+
+int click(Display *display, int button, int mode)
+{
+    if (!mouse_event(display, button, mode, MOUSE_EVENT_PRESS))
+        return FALSE;
+    if (mode == CLICK_MODE_XTEST)
+        usleep(DEFAULT_MICRO_SLEEP);
+    return mouse_event(display, button, mode, MOUSE_EVENT_RELEASE);
 }
 
 char *keycode_to_string(Display *display, int keycode)
