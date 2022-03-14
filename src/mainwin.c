@@ -158,7 +158,7 @@ void click_handler(gpointer *data)
 	// If it was a mouse hold, then release the button
 	if (args->click_type == CLICK_TYPE_HOLD)
 	{
-		if (mouse_event(display, args->button, is_using_xevent(), MOUSE_RELEASE) == FALSE)
+		if (mouse_event(display, args->button, is_using_xevent(), MOUSE_EVENT_RELEASE) == FALSE)
 			g_printerr("Error when sending mouse down");
 	}
 

@@ -20,7 +20,7 @@ enum ClickModes
 enum MouseEvents
 {
     MOUSE_EVENT_PRESS,
-    MOUSE_RELEASE,
+    MOUSE_EVENT_RELEASE,
 };
 
 /**
