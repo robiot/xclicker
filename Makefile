@@ -53,7 +53,7 @@ deb: release
 
 	@install -Dm 644 ./${PKG_DIR}/deb/control ${debpkgdir}/DEBIAN/control
 	@sed -i 's/%VERSION%/${VERSION}/g' ${debpkgdir}/DEBIAN/control
-	@install -Dm 644 ./${RELEASE_DIR}/src/${BINNAME} ${debpkgdir}/usr/bin/${BINNAME}
+	@install -Dm 755 ./${RELEASE_DIR}/src/${BINNAME} ${debpkgdir}/usr/bin/${BINNAME}
 	@install -Dm 644 ./${DESKFILE} ${debpkgdir}/usr/share/applications/xclicker.desktop
 	@install -Dm 644 ./img/icon.png ${debpkgdir}/usr/share/pixmaps/${BINNAME}.png
 	@dpkg-deb --build ${debpkgdir}
