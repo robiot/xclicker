@@ -17,8 +17,12 @@ jobs:
       - name: Build x64
         run: |
             mkdir -p outputs
+
             make deb TARGET_ARCH=amd64
             cp pkg/deb/*.deb ../outputs
+            
+            make appimg TARGET_ARCH=amd64
+            cp pkg/AppImage/*.AppImage ../outputs
 
       - uses: actions/upload-artifact@master
         with:
@@ -51,11 +55,18 @@ jobs:
 
           install: |
             apt-get update -y
-            apt-get install -y meson pkg-config gtk+-3.0 libx11-dev libxi-dev libxtst-dev
+            apt-get install -y meson pkg-config gtk+-3.0 libx11-dev libxi-dev libxtst-dev \
+              python3-pip python3-setuptools patchelf desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace fuse wget
+
+            wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O /usr/local/bin/appimagetool
+            chmod +x /usr/local/bin/appimagetool
 
           run: |
             make deb TARGET_ARCH=arm
             cp pkg/deb/*.deb ../outputs
+            
+            make appimg TARGET_ARCH=arm
+            cp pkg/AppImage/*.AppImage ../outputs
     
       - name: Create Release
         uses: softprops/action-gh-release@v0.1.14
@@ -66,5 +77,9 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            outputs/xclicker_${{ github.ref_name }}_amd64
-            outputs/xclicker_${{ github.ref_name }}_arm
+            outputs/xclicker_${{ github.ref_name }}_amd64.deb
+            outputs/xclicker_${{ github.ref_name }}_amd64.AppImage
+            
+            outputs/xclicker_${{ github.ref_name }}_arm.deb
+            outputs/xclicker_${{ github.ref_name }}_arm.AppImage
+            
