@@ -6,8 +6,8 @@ on:
 name: Create Release
 
 jobs:
-  amd64build:
-    name: Build for amd64
+  amd64_build:
+    name: Setup Output and Build for amd64
     runs-on: ubuntu-18.04
     container: robiot/xclicker
     steps:
@@ -26,9 +26,9 @@ jobs:
           path: outputs
     
   build:
-    name: Create Release
+    name: Build for other Architechtures & Create Release
     runs-on: ubuntu-18.04
-    needs: amd64build
+    needs: amd64_build
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -38,9 +38,8 @@ jobs:
           name: output-artifact
           path: outputs
     
-      - name: Build arm
+      - name: Build ARM
         uses: uraimo/run-on-arch-action@v2.1.1
-        id: runcmdarm
         with:
           arch: armv7
           distro: ubuntu18.04
@@ -50,7 +49,6 @@ jobs:
           dockerRunArgs: |
             --volume "${PWD}/outputs:${PWD}/outputs"
 
-          # libxi-dev
           install: |
             apt-get update -y
             apt-get install -y meson pkg-config gtk+-3.0 libx11-dev libxi-dev libxtst-dev
@@ -60,7 +58,6 @@ jobs:
             cp pkg/deb/*.deb ../outputs
     
       - name: Create Release
-        id: create_release
         uses: softprops/action-gh-release@v0.1.14
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
