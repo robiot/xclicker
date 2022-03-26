@@ -19,10 +19,10 @@ jobs:
             mkdir -p outputs
 
             make deb TARGET_ARCH=amd64
-            cp pkg/deb/*.deb ../outputs
+            cp pkg/deb/*.deb outputs/
             
             make appimg TARGET_ARCH=amd64
-            cp pkg/AppImage/*.AppImage ../outputs
+            cp pkg/AppImage/*.AppImage outputs/
 
       - uses: actions/upload-artifact@master
         with:
@@ -65,10 +65,10 @@ jobs:
 
           run: |
             make deb TARGET_ARCH=arm
-            cp pkg/deb/*.deb ../outputs
+            cp pkg/deb/*.deb outputs/
             
             make appimg TARGET_ARCH=arm
-            cp pkg/AppImage/*.AppImage ../outputs
+            cp pkg/AppImage/*.AppImage outputs/
     
       - name: Create Release
         uses: softprops/action-gh-release@v0.1.14
@@ -84,4 +84,3 @@ jobs:
             
             outputs/xclicker_${{ github.ref_name }}_arm.deb
             outputs/xclicker_${{ github.ref_name }}_arm.AppImage
-            
