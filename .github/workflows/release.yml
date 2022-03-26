@@ -58,7 +58,7 @@ jobs:
             apt-get install -y meson pkg-config gtk+-3.0 libx11-dev libxi-dev libxtst-dev \
               python3-pip python3-setuptools patchelf desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace wget
 
-            wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O /opt/appimagetool
+            wget https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-armhf.AppImage -O /opt/appimagetool
             cd /opt/; chmod +x appimagetool; sed -i 's|AI\x02|\x00\x00\x00|' appimagetool; ./appimagetool --appimage-extract
             mv /opt/squashfs-root /opt/appimagetool.AppDir
             ln -s /opt/appimagetool.AppDir/AppRun /usr/local/bin/appimagetool
@@ -68,6 +68,35 @@ jobs:
             cp pkg/deb/*.deb outputs/
             
             make appimg TARGET_ARCH=arm
+            cp pkg/AppImage/*.AppImage outputs/
+
+      # Lots of repeated stuff, but well :\
+      - name: Build aarch64
+        uses: uraimo/run-on-arch-action@v2.1.1
+        with:
+          arch: aarch64
+          distro: ubuntu18.04
+
+          githubToken: ${{ github.token }}
+
+          dockerRunArgs: |
+            --volume "${PWD}/outputs:${PWD}/outputs"
+
+          install: |
+            apt-get update -y
+            apt-get install -y meson pkg-config gtk+-3.0 libx11-dev libxi-dev libxtst-dev \
+              python3-pip python3-setuptools patchelf desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace wget
+
+            wget https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-aarch64.AppImage -O /opt/appimagetool
+            cd /opt/; chmod +x appimagetool; sed -i 's|AI\x02|\x00\x00\x00|' appimagetool; ./appimagetool --appimage-extract
+            mv /opt/squashfs-root /opt/appimagetool.AppDir
+            ln -s /opt/appimagetool.AppDir/AppRun /usr/local/bin/appimagetool
+
+          run: |
+            make deb TARGET_ARCH=aarch64
+            cp pkg/deb/*.deb outputs/
+            
+            make appimg TARGET_ARCH=aarch64
             cp pkg/AppImage/*.AppImage outputs/
     
       - name: Create Release
@@ -79,8 +108,4 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            outputs/xclicker_${{ github.ref_name }}_amd64.deb
-            outputs/xclicker_${{ github.ref_name }}_amd64.AppImage
-            
-            outputs/xclicker_${{ github.ref_name }}_arm.deb
-            outputs/xclicker_${{ github.ref_name }}_arm.AppImage
+            outputs/*
