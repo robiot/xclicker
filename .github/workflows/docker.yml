@@ -4,8 +4,8 @@ on:
   push:
     paths:
       - Dockerfile
-    # branches:
-    #   - master
+    branches:
+       - master
 
 jobs:
   push_to_registry:
