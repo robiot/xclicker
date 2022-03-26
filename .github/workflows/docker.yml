@@ -27,4 +27,3 @@ jobs:
           context: .
           push: true
           tags: robiot/xclicker:latest
-#          labels: ${{ steps.meta.outputs.labels }}
