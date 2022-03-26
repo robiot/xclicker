@@ -93,6 +93,7 @@ jobs:
             ln -s /opt/appimagetool.AppDir/AppRun /usr/local/bin/appimagetool
 
           run: |
+            rm -rf build/
             make deb TARGET_ARCH=aarch64
             cp pkg/deb/*.deb outputs/
             
