@@ -17,9 +17,8 @@ jobs:
       - name: Build x64
         run: |
             mkdir -p outputs
-            meson build
-            cd build && ninja install
-            cp src/xclicker ../outputs/xclicker_1.3.2_amd64
+            make deb TARGET_ARCH=amd64
+            cp pkg/deb/*.deb ../outputs
 
       - uses: actions/upload-artifact@master
         with:
@@ -56,11 +55,9 @@ jobs:
             apt-get update -y
             apt-get install -y meson pkg-config gtk+-3.0 libx11-dev libxi-dev libxtst-dev
 
-          # Meson version is to low to use meson compile -C build
           run: |
-            meson build
-            cd build && ninja install
-            cp src/xclicker ../outputs/xclicker_1.3.2_arm
+            make deb TARGET_ARCH=arm
+            cp pkg/deb/*.deb ../outputs
     
       - name: Create Release
         id: create_release
@@ -72,5 +69,5 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            outputs/xclicker_1.3.2_amd64
-            outputs/xclicker_1.3.2_arm
+            outputs/xclicker_${{ github.ref_name }}_amd64
+            outputs/xclicker_${{ github.ref_name }}_arm
