@@ -93,6 +93,7 @@ int mouse_event(Display *display, int button, int mode, enum MouseEvents event_t
     switch (mode)
     {
     case CLICK_MODE_XEVENT:
+    {
         XButtonEvent event;
         memset(&event, 0, sizeof(event));
         event.button = button;
@@ -112,7 +113,7 @@ int mouse_event(Display *display, int button, int mode, enum MouseEvents event_t
         // Press
         event.type = (event_type == MOUSE_EVENT_PRESS) ? ButtonPress : ButtonRelease;
         return cxevent(display, ButtonPressMask, event);
-
+    }
     case CLICK_MODE_XTEST:
         XTestFakeButtonEvent(display, button, (event_type == MOUSE_EVENT_PRESS), CurrentTime);
         XFlush(display);
