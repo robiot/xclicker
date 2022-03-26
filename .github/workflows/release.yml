@@ -1,0 +1,76 @@
+on:
+  push:
+    tags:
+      - 'v*'
+
+name: Create Release
+
+jobs:
+  amd64build:
+    name: Build for amd64
+    runs-on: ubuntu-18.04
+    container: robiot/xclicker
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build x64
+        run: |
+            mkdir -p outputs
+            meson build
+            cd build && ninja install
+            cp src/xclicker ../outputs/xclicker_1.3.2_amd64
+
+      - uses: actions/upload-artifact@master
+        with:
+          name: output-artifact
+          path: outputs
+    
+  build:
+    name: Create Release
+    runs-on: ubuntu-18.04
+    needs: amd64build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - uses: actions/download-artifact@master
+        with:
+          name: output-artifact
+          path: outputs
+    
+      - name: Build arm
+        uses: uraimo/run-on-arch-action@v2.1.1
+        id: runcmdarm
+        with:
+          arch: armv7
+          distro: ubuntu18.04
+
+          githubToken: ${{ github.token }}
+
+          dockerRunArgs: |
+            --volume "${PWD}/outputs:${PWD}/outputs"
+
+          # libxi-dev
+          install: |
+            apt-get update -y
+            apt-get install -y meson pkg-config gtk+-3.0 libx11-dev libxi-dev libxtst-dev
+
+          # Meson version is to low to use meson compile -C build
+          run: |
+            meson build
+            cd build && ninja install
+            cp src/xclicker ../outputs/xclicker_1.3.2_arm
+    
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v0.1.14
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+          files: |
+            outputs/xclicker_1.3.2_amd64
+            outputs/xclicker_1.3.2_arm
