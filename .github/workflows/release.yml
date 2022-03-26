@@ -7,7 +7,7 @@ name: Create Release
 
 jobs:
   amd64_build:
-    name: Setup Output and Build for amd64
+    name: Setup and Build for amd64
     runs-on: ubuntu-18.04
     container: robiot/xclicker
     steps:
@@ -30,7 +30,7 @@ jobs:
           path: outputs
     
   build:
-    name: Build for other Architechtures & Create Release
+    name: Build for ARM and Create Release
     runs-on: ubuntu-18.04
     needs: amd64_build
     steps:
@@ -56,10 +56,12 @@ jobs:
           install: |
             apt-get update -y
             apt-get install -y meson pkg-config gtk+-3.0 libx11-dev libxi-dev libxtst-dev \
-              python3-pip python3-setuptools patchelf desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace fuse wget
+              python3-pip python3-setuptools patchelf desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace wget
 
-            wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O /usr/local/bin/appimagetool
-            chmod +x /usr/local/bin/appimagetool
+            wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O /opt/appimagetool
+            cd /opt/; chmod +x appimagetool; sed -i 's|AI\x02|\x00\x00\x00|' appimagetool; ./appimagetool --appimage-extract
+            mv /opt/squashfs-root /opt/appimagetool.AppDir
+            ln -s /opt/appimagetool.AppDir/AppRun /usr/local/bin/appimagetool
 
           run: |
             make deb TARGET_ARCH=arm

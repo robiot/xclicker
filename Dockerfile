@@ -6,5 +6,9 @@ RUN apt-get install -y meson pkg-config gtk+-3.0 libx11-dev libxi-dev libxtst-de
     python3-pip python3-setuptools patchelf desktop-file-utils libgdk-pixbuf2.0-dev fakeroot strace fuse wget
 
 # AppImageTool
-RUN wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O /usr/local/bin/appimagetool
-RUN chmod +x /usr/local/bin/appimagetool
+RUN wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O /opt/appimagetool
+
+# Workaround AppImage issues with Docker
+RUN cd /opt/; chmod +x appimagetool; sed -i 's|AI\x02|\x00\x00\x00|' appimagetool; ./appimagetool --appimage-extract
+RUN mv /opt/squashfs-root /opt/appimagetool.AppDir
+RUN ln -s /opt/appimagetool.AppDir/AppRun /usr/local/bin/appimagetool
