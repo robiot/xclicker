@@ -13,10 +13,15 @@ DESKFILE  = xclicker.desktop
 debpkgdir="./${PKG_DIR}/deb/package"
 appimgdir="${PKG_DIR}/AppImage/XClicker.AppDir"
 
+ifeq ($(TARGET_ARCH),)
+TARGET_ARCH := amd64
+endif
+
 .PHONY: build
 build:
 	@if test -d "./${DEBUG_DIR}"; then echo "Build dir is already made"; else meson ${DEBUG_DIR}; fi
-	meson compile -C ${DEBUG_DIR}
+# Not "meson compile" since it doesn't work in workflow
+	ninja install -C ${DEBUG_DIR}
 
 .PHONY: run
 run:
@@ -36,7 +41,7 @@ version:
 .PHONY: release
 release: version
 	@if test -d "./${RELEASE_DIR}"; then echo "Build dir is already made"; else meson ${RELEASE_DIR} --buildtype release; fi
-	meson compile -C ${RELEASE_DIR}
+	ninja install -C ${RELEASE_DIR}
 
 .PHONY: install
 install: release
@@ -53,6 +58,7 @@ deb: release
 
 	@install -Dm 644 ./${PKG_DIR}/deb/control ${debpkgdir}/DEBIAN/control
 	@sed -i 's/%VERSION%/${VERSION}/g' ${debpkgdir}/DEBIAN/control
+	@sed -i 's/%ARCH%/${TARGET_ARCH}/g' ${debpkgdir}/DEBIAN/control
 	@install -Dm 755 ./${RELEASE_DIR}/src/${BINNAME} ${debpkgdir}/usr/bin/${BINNAME}
 	@install -Dm 644 ./${DESKFILE} ${debpkgdir}/usr/share/applications/xclicker.desktop
 	@install -Dm 644 ./img/icon.png ${debpkgdir}/usr/share/pixmaps/${BINNAME}.png
@@ -61,13 +67,13 @@ deb: release
 
 .PHONY: appimg
 appimg: release
-	@rm -rf ${appimg}
+	@rm -rf ${PKG_DIR}/AppImage/*.AppImage
 	@mkdir -p ${appimgdir}
 	@install -Dm 755 ./${RELEASE_DIR}/src/${BINNAME} ${appimgdir}/${BINNAME}
 	@install -Dm 755 ./${DESKFILE} ${appimgdir}/xclicker.desktop
 	@install -Dm 755 ./${PKG_DIR}/AppImage/AppRun ${appimgdir}/AppRun
 	@install -Dm 644 ./img/icon.png ${appimgdir}/${BINNAME}.png
-	@cd ${PKG_DIR}/AppImage; appimagetool ./XClicker.AppDir
+	@cd ${PKG_DIR}/AppImage; appimagetool ./XClicker.AppDir; mv *.AppImage ${BINNAME}_${VERSION}_${TARGET_ARCH}.AppImage
 
 .PHONY: clean
 clean:
