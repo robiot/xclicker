@@ -6,4 +6,4 @@ Exec=xclicker
 Icon=xclicker
 Terminal=false
 Type=Application
-Categories=Utility
+Categories=Utility;
