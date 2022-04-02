@@ -64,10 +64,10 @@ jobs:
             ln -s /opt/appimagetool.AppDir/AppRun /usr/local/bin/appimagetool
 
           run: |
-            make deb TARGET_ARCH=arm
+            make deb TARGET_ARCH=armhf
             cp pkg/deb/*.deb outputs/
             
-            make appimg TARGET_ARCH=arm
+            make appimg TARGET_ARCH=armhf
             cp pkg/AppImage/*.AppImage outputs/
 
       # Lots of repeated stuff, but well :\
