@@ -2,7 +2,7 @@
  * All source files in this repository are licensed under the
  * GNU General Public License v3.0.
  * Dependencies are licensed by their own.
- * 
+ *
  * https://github.com/robiot/xclicker
  */
 
