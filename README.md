@@ -51,6 +51,10 @@ $ make release
 ## Installing
 Check out the [Installation Guide](https://github.com/robiot/XClicker/wiki/Installation)
 
+## All repositories
+- XClicker: https://github.com/robiot/xclicker
+- Web: https://github.com/robiot/xclicker-web
+
 ## Contributing
 All contributions are welcome <3.
 Check out the [Contibuting Guide](https://github.com/robiot/xclicker/wiki/Contibuting) to see how to setup your enviroment.
