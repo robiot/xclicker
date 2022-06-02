@@ -47,7 +47,7 @@ release: version
 install: release
 	@sudo install -Dm 755 ./${RELEASE_DIR}/src/${BINNAME} /usr/bin/${BINNAME}
 	@sudo install -Dm 755 ./${DESKFILE} /usr/share/applications/xclicker.desktop
-	@sudo install -Dm 644 ./img/icon.png /usr/share/pixmaps/${BINNAME}.png
+	@sudo install -Dm 644 ./assets/icon.png /usr/share/pixmaps/${BINNAME}.png
 	@echo "Installed XClicker"
 
 .PHONY: deb
@@ -61,7 +61,7 @@ deb: release
 	@sed -i 's/%ARCH%/${TARGET_ARCH}/g' ${debpkgdir}/DEBIAN/control
 	@install -Dm 755 ./${RELEASE_DIR}/src/${BINNAME} ${debpkgdir}/usr/bin/${BINNAME}
 	@install -Dm 644 ./${DESKFILE} ${debpkgdir}/usr/share/applications/xclicker.desktop
-	@install -Dm 644 ./img/icon.png ${debpkgdir}/usr/share/pixmaps/${BINNAME}.png
+	@install -Dm 644 ./assets/icon.png ${debpkgdir}/usr/share/pixmaps/${BINNAME}.png
 	@dpkg-deb --build ${debpkgdir}
 	@dpkg-name ${PKG_DIR}/deb/package.deb -o
 
@@ -72,7 +72,7 @@ appimg: release
 	@install -Dm 755 ./${RELEASE_DIR}/src/${BINNAME} ${appimgdir}/${BINNAME}
 	@install -Dm 755 ./${DESKFILE} ${appimgdir}/xclicker.desktop
 	@install -Dm 755 ./${PKG_DIR}/AppImage/AppRun ${appimgdir}/AppRun
-	@install -Dm 644 ./img/icon.png ${appimgdir}/${BINNAME}.png
+	@install -Dm 644 ./assets/icon.png ${appimgdir}/${BINNAME}.png
 	@cd ${PKG_DIR}/AppImage; appimagetool ./XClicker.AppDir; mv *.AppImage ${BINNAME}_${VERSION}_${TARGET_ARCH}.AppImage
 
 .PHONY: clean
