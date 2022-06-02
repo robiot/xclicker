@@ -1,6 +1,7 @@
 .vscode/
 build/
 buildir/
-img/saves
+assets/saves/*.png
+assets/saves/*.jpg
 *.ui~
 *.ui#

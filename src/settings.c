@@ -89,12 +89,12 @@ void load_start_stop_keybinds()
 
 struct set_buttons_entry_struct
 {
-	char *text;
+    char *text;
 };
 
 void set_buttons_entry_text(gpointer *data)
 {
-	struct set_buttons_entry_struct *args = data;
+    struct set_buttons_entry_struct *args = data;
     gtk_entry_set_text(GTK_ENTRY(items.buttons_entry), args->text);
     free(args->text);
     g_free(args);
@@ -128,11 +128,7 @@ void get_hotkeys_handler()
             continue;
 
         // If prekey, ex shift, ctrl
-        if (state == XKeysymToKeycode(display, XK_Shift_L) || state == XKeysymToKeycode(display, XK_Shift_R) 
-            || state == XKeysymToKeycode(display, XK_Alt_L) || state == XKeysymToKeycode(display, XK_Alt_R)
-            || state == XKeysymToKeycode(display, XK_Escape) || state == XKeysymToKeycode(display, XK_Control_L)
-            || state == XKeysymToKeycode(display, XK_Control_R) || state == XKeysymToKeycode(display, XK_ISO_Level3_Shift)
-            || state == XKeysymToKeycode(display, XK_Super_L) || state == XKeysymToKeycode(display, XK_Super_R))
+        if (state == XKeysymToKeycode(display, XK_Shift_L) || state == XKeysymToKeycode(display, XK_Shift_R) || state == XKeysymToKeycode(display, XK_Alt_L) || state == XKeysymToKeycode(display, XK_Alt_R) || state == XKeysymToKeycode(display, XK_Escape) || state == XKeysymToKeycode(display, XK_Control_L) || state == XKeysymToKeycode(display, XK_Control_R) || state == XKeysymToKeycode(display, XK_ISO_Level3_Shift) || state == XKeysymToKeycode(display, XK_Super_L) || state == XKeysymToKeycode(display, XK_Super_R))
         {
             hasPreKey = TRUE;
             button1 = state;
@@ -140,17 +136,16 @@ void get_hotkeys_handler()
             const char *plus = " + ";
             char *text = malloc(strlen(key_str) + strlen(plus));
             sprintf(text, "%s%s", key_str, plus);
-            
+
             struct set_buttons_entry_struct *user_data = g_malloc0(sizeof(struct set_buttons_entry_struct));
-		    user_data->text = text;
+            user_data->text = text;
             g_idle_add(set_buttons_entry_text, user_data);
         }
-        else 
+        else
         {
             button2 = state;
             const char *key_str = keycode_to_string(display, state);
             struct set_buttons_entry_struct *user_data = g_malloc0(sizeof(struct set_buttons_entry_struct));
-            
 
             if (hasPreKey == TRUE)
             {
@@ -159,7 +154,7 @@ void get_hotkeys_handler()
                 sprintf(text, "%s%s", buttons_entry_text, key_str);
                 user_data->text = text;
             }
-            else 
+            else
             {
                 button1 = -1;
                 char *text = (char *)malloc(1 + strlen(key_str));
@@ -180,7 +175,6 @@ void get_hotkeys_handler()
     g_key_file_save_to_file(config, configpath, NULL);
     isChoosingHotkey = FALSE;
 }
-
 
 void safe_mode_changed(GtkSwitch *self, gboolean state)
 {
