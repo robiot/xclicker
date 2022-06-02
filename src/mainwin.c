@@ -10,7 +10,8 @@ enum ClickTypes
 {
 	CLICK_TYPE_SINGLE,
 	CLICK_TYPE_DOUBLE,
-	CLICK_TYPE_HOLD,
+	CLICK_TYPE_BUTTON_HOLD,
+	// CLICK_TYPE_HOLD,
 };
 
 gboolean isClicking = FALSE;
@@ -125,7 +126,7 @@ void click_handler(gpointer *data)
 			if (click(display, args->button, is_using_xevent()) == FALSE)
 				g_printerr("Error when sending click");
 			break;
-		case CLICK_TYPE_HOLD:
+		case CLICK_TYPE_BUTTON_HOLD:
 			if (is_holding == FALSE) // Don't re-send mouse_down if already successfully sent
 			{
 				if (mouse_event(display, args->button, is_using_xevent(), MOUSE_EVENT_PRESS))
@@ -156,7 +157,7 @@ void click_handler(gpointer *data)
 	}
 
 	// If it was a mouse hold, then release the button
-	if (args->click_type == CLICK_TYPE_HOLD)
+	if (args->click_type == CLICK_TYPE_BUTTON_HOLD)
 	{
 		if (mouse_event(display, args->button, is_using_xevent(), MOUSE_EVENT_RELEASE) == FALSE)
 			g_printerr("Error when sending mouse down");
@@ -332,8 +333,8 @@ void start_clicked()
 		data->click_type = CLICK_TYPE_SINGLE;
 	else if (strcmp(click_type_text, "Double") == 0)
 		data->click_type = CLICK_TYPE_DOUBLE;
-	else
-		data->click_type = CLICK_TYPE_HOLD;
+	else if (strcmp(click_type_text, "Button Hold") == 0)
+		data->click_type = CLICK_TYPE_BUTTON_HOLD;
 
 	if ((data->repeat = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(mainappwindow.repeat_only_check))))
 		data->repeat_times = get_text_to_int(mainappwindow.repeat_entry);
@@ -348,7 +349,7 @@ void start_clicked()
 		data->random_interval_ms = get_text_to_int(mainappwindow.random_interval_entry);
 
 	// If holding, ignore interval and repeat as it makes no sense. Set an interval of 250ms to prevent cpu high usage
-	if (data->click_type == CLICK_TYPE_HOLD)
+	if (data->click_type == CLICK_TYPE_BUTTON_HOLD)
 	{
 		data->repeat = FALSE;
 		data->random_interval = FALSE;
