@@ -115,7 +115,7 @@ void hotkey_finished()
 void get_hotkeys_handler()
 {
     Display *display = get_display();
-    mask_config(display, MASK_CONFIG_KEYBOARD);
+    mask_config(display, MASK_KEYBOARD_PRESS);
 
     gboolean hasPreKey = FALSE;
     while (1)

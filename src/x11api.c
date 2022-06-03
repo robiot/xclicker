@@ -6,7 +6,7 @@
 
 #define DEFAULT_MICRO_SLEEP 1
 
-void mask_config(Display *display, int mode)
+void mask_config(Display *display, enum MaskFlags flags)
 {
     XIEventMask mask[2];
     XIEventMask *m;
@@ -17,17 +17,21 @@ void mask_config(Display *display, int mode)
     m->mask_len = XIMaskLen(XI_LASTEVENT);
     m->mask = calloc(m->mask_len, sizeof(char));
 
-    if (mode == MASK_CONFIG_MOUSE)
-        XISetMask(m->mask, XI_ButtonPress);
-    else if (mode == MASK_CONFIG_KEYBOARD)
+    if (flags & MASK_KEYBOARD_PRESS)
         XISetMask(m->mask, XI_KeyPress);
+
+    if (flags & MASK_KEYBOARD_RELEASE)
+        XISetMask(m->mask, XI_KeyRelease);
+
+    if (flags & MASK_MOUSE_PRESS) {
+        XISetMask(m->mask, XI_ButtonPress);
+        XISetMask(m->mask, XI_RawButtonPress);
+    }
 
     m = &mask[1];
     m->deviceid = XIAllMasterDevices;
     m->mask_len = XIMaskLen(XI_LASTEVENT);
     m->mask = calloc(m->mask_len, sizeof(char));
-    if (mode == MASK_CONFIG_MOUSE)
-        XISetMask(m->mask, XI_RawButtonPress);
 
     XISelectEvents(display, win, &mask[0], 2);
     XSync(display, FALSE);
@@ -40,8 +44,12 @@ int get_next_key_state(Display *display)
 {
     int button = 0;
     XEvent event;
-    XGenericEventCookie *cookie = (XGenericEventCookie *)&event.xcookie;
-    XNextEvent(display, (XEvent *)&event);
+
+    XNextEvent(display, &event);
+
+    XGenericEventCookie *cookie = &event.xcookie;
+
+    // g_print("%d\n", event.type);
 
     if (XGetEventData(display, cookie) && cookie->type == GenericEvent)
     {
@@ -51,6 +59,7 @@ int get_next_key_state(Display *display)
     }
 
     XFreeEventData(display, cookie);
+
     return button;
 }
 

@@ -11,8 +11,11 @@ enum ClickTypes
 	CLICK_TYPE_SINGLE,
 	CLICK_TYPE_DOUBLE,
 	CLICK_TYPE_BUTTON_HOLD,
-	CLICK_TYPE_HOLD,
+	// CLICK_TYPE_HOLD,
 };
+
+// Temporary
+gboolean holdMode = TRUE;
 
 gboolean isClicking = FALSE;
 gboolean isChoosingLocation = FALSE;
@@ -126,9 +129,9 @@ void click_handler(gpointer *data)
 			if (click(display, args->button, is_using_xevent()) == FALSE)
 				xapp_error("Sending click", -1);
 			break;
-		case CLICK_TYPE_HOLD:
-			// xapp_error("sus", -1);
-			break;
+		// case CLICK_TYPE_HOLD:
+		// 	// xapp_error("sus", -1);
+		// 	break;
 		case CLICK_TYPE_BUTTON_HOLD:
 			if (is_holding == FALSE) // Don't re-send mouse_down if already successfully sent
 			{
@@ -206,7 +209,7 @@ void set_coords(gpointer *data)
 void get_cursor_pos_click_handler()
 {
 	Display *display = get_display();
-	mask_config(display, MASK_CONFIG_MOUSE);
+	mask_config(display, MASK_MOUSE_PRESS);
 
 	while (isChoosingLocation)
 	{
@@ -336,8 +339,8 @@ void start_clicked()
 		data->click_type = CLICK_TYPE_SINGLE;
 	else if (strcmp(click_type_text, "Double") == 0)
 		data->click_type = CLICK_TYPE_DOUBLE;
-	else if (strcmp(click_type_text, "Hold") == 0)
-		data->click_type = CLICK_TYPE_HOLD;
+	// else if (strcmp(click_type_text, "Hold") == 0)
+	// 	data->click_type = CLICK_TYPE_HOLD;
 	else if (strcmp(click_type_text, "Button Hold") == 0)
 		data->click_type = CLICK_TYPE_BUTTON_HOLD;
 	else
@@ -419,7 +422,8 @@ void toggle_clicking()
 void get_start_stop_key_handler()
 {
 	Display *display = get_display();
-	mask_config(display, MASK_CONFIG_KEYBOARD);
+	mask_config(display, MASK_KEYBOARD_PRESS); // | MASK_KEYBOARD_RELEASE
+	// mask_config(display, MASK_KEYBOARD_RELEASE); // For hold
 
 	// 50 = shift
 	struct timeval start, stop;
@@ -431,6 +435,7 @@ void get_start_stop_key_handler()
 		if (isChoosingHotkey == TRUE)
 			continue;
 
+		// g_print("State: %d", state);
 		if (state == button1 || state == button2)
 		{
 			// Two buttons

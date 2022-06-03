@@ -4,8 +4,15 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
-#define MASK_CONFIG_MOUSE (0)
-#define MASK_CONFIG_KEYBOARD (1)
+// #define MASK_CONFIG_MOUSE (0)
+// #define MASK_CONFIG_KEYBOARD (1)
+
+enum MaskFlags
+{
+    MASK_KEYBOARD_PRESS = 1 << 0,
+    MASK_KEYBOARD_RELEASE = 1 << 1,
+    MASK_MOUSE_PRESS = 1 << 2
+};
 
 enum ClickModes
 {
@@ -29,7 +36,7 @@ enum MouseEvents
  * @param mode The mode to configure for [MASK_CONFIG_MOUSE/MASK_CONFIG_KEYBOARD]
  * @see get_display
  */
-void mask_config(Display *display, int mode);
+void mask_config(Display *display, enum MaskFlags flags);
 
 /**
  * Waits until key pressed.
