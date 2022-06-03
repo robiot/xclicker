@@ -340,9 +340,8 @@ void start_clicked()
 	// 	data->click_type = CLICK_TYPE_BUTTON_HOLD;
 	else if (strcmp(click_type_text, "Button Hold") == 0)
 		data->click_type = CLICK_TYPE_BUTTON_HOLD;
-	else {
+	else
 		xapp_error("'Getting the click type'", 1);
-	}
 
 	if ((data->repeat = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(mainappwindow.repeat_only_check))))
 		data->repeat_times = get_text_to_int(mainappwindow.repeat_entry);
