@@ -4,7 +4,7 @@
 #include "mainwin.h"
 #include "x11api.h"
 #include "settings.h"
-#include "macros.h"
+#include "utils.h"
 
 enum ClickTypes
 {
@@ -336,8 +336,8 @@ void start_clicked()
 		data->click_type = CLICK_TYPE_SINGLE;
 	else if (strcmp(click_type_text, "Double") == 0)
 		data->click_type = CLICK_TYPE_DOUBLE;
-	// else if (strcmp(click_type_text, "Hold") == 0)
-	// 	data->click_type = CLICK_TYPE_BUTTON_HOLD;
+	else if (strcmp(click_type_text, "Hold") == 0)
+		data->click_type = CLICK_TYPE_HOLD;
 	else if (strcmp(click_type_text, "Button Hold") == 0)
 		data->click_type = CLICK_TYPE_BUTTON_HOLD;
 	else

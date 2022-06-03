@@ -2,7 +2,6 @@
 #include <pwd.h>
 #include <X11/keysymdef.h>
 #include <sys/stat.h>
-#include "macros.h"
 #include "settings.h"
 #include "x11api.h"
 #include "mainwin.h"

@@ -15,11 +15,11 @@
         <col id="0" translatable="yes">Double</col>
       </row>
       <row>
+        <col id="0" translatable="yes">Hold</col>
+      </row>
+      <row>
         <col id="0" translatable="yes">Button Hold</col>
       </row>
-      <!-- <row>
-        <col id="0" translatable="yes">Hold</col>
-      </row> -->
     </data>
   </object>
   <object class="GtkListStore" id="repeat_amount_lstore">

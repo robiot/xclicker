@@ -2,7 +2,6 @@
 
 #include "xclicker-app.h"
 #include "mainwin.h"
-#include "macros.h"
 
 struct _XClickerApp
 {
@@ -11,7 +10,7 @@ struct _XClickerApp
 
 G_DEFINE_TYPE(XClickerApp, xclicker_app, GTK_TYPE_APPLICATION);
 
-static void xclicker_app_init(XClickerApp* UNUSED(app))
+static void xclicker_app_init()
 {
 }
 
