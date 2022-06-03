@@ -11,7 +11,7 @@ enum ClickTypes
 	CLICK_TYPE_SINGLE,
 	CLICK_TYPE_DOUBLE,
 	CLICK_TYPE_BUTTON_HOLD,
-	// CLICK_TYPE_HOLD,
+	CLICK_TYPE_HOLD,
 };
 
 gboolean isClicking = FALSE;
@@ -115,16 +115,19 @@ void click_handler(gpointer *data)
 		{
 		case CLICK_TYPE_SINGLE:
 			if (click(display, args->button, is_using_xevent()) == FALSE)
-				g_printerr("Error when sending click");
+				xapp_error("Sending click", -1);
 			break;
 		case CLICK_TYPE_DOUBLE:
 			if (click(display, args->button, is_using_xevent()) == FALSE)
-				g_printerr("Error when sending click");
+				xapp_error("Sending click", -1);
 
 			usleep(150000); // 150 milliseconds
 
 			if (click(display, args->button, is_using_xevent()) == FALSE)
-				g_printerr("Error when sending click");
+				xapp_error("Sending click", -1);
+			break;
+		case CLICK_TYPE_HOLD:
+			// xapp_error("sus", -1);
 			break;
 		case CLICK_TYPE_BUTTON_HOLD:
 			if (is_holding == FALSE) // Don't re-send mouse_down if already successfully sent
@@ -132,7 +135,7 @@ void click_handler(gpointer *data)
 				if (mouse_event(display, args->button, is_using_xevent(), MOUSE_EVENT_PRESS))
 					is_holding = TRUE;
 				else
-					g_printerr("Error when sending mouse down");
+					xapp_error("Sending mouse down", -1);
 			}
 			break;
 		}
@@ -160,7 +163,7 @@ void click_handler(gpointer *data)
 	if (args->click_type == CLICK_TYPE_BUTTON_HOLD)
 	{
 		if (mouse_event(display, args->button, is_using_xevent(), MOUSE_EVENT_RELEASE) == FALSE)
-			g_printerr("Error when sending mouse down");
+			xapp_error("Sending mouse down", -1);
 	}
 
 	g_free(data);
@@ -333,8 +336,13 @@ void start_clicked()
 		data->click_type = CLICK_TYPE_SINGLE;
 	else if (strcmp(click_type_text, "Double") == 0)
 		data->click_type = CLICK_TYPE_DOUBLE;
+	// else if (strcmp(click_type_text, "Hold") == 0)
+	// 	data->click_type = CLICK_TYPE_BUTTON_HOLD;
 	else if (strcmp(click_type_text, "Button Hold") == 0)
 		data->click_type = CLICK_TYPE_BUTTON_HOLD;
+	else {
+		xapp_error("'Getting the click type'", 1);
+	}
 
 	if ((data->repeat = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(mainappwindow.repeat_only_check))))
 		data->repeat_times = get_text_to_int(mainappwindow.repeat_entry);
