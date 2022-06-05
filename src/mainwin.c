@@ -13,12 +13,6 @@ enum ClickTypes
 	CLICK_TYPE_HOLD,
 };
 
-enum ClickTypess
-{
-	AAS
-	// CLICK_TYPE_HOLD,
-};
-
 gboolean isClicking = FALSE;
 gboolean isChoosingLocation = FALSE;
 

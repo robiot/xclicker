@@ -8,12 +8,6 @@
 
 void mask_config(Display *display, enum MaskFlags flags)
 {
-    // XSetWindowAttributes attr;
-    // Window win = DefaultRootWindow(display);
-
-    // attr.event_mask &= ~ButtonPressMask;
-    // XSelectInput(display, win, attr.event_mask);
-
     XIEventMask mask[2];
     XIEventMask *m;
     Window win = DefaultRootWindow(display);
@@ -62,7 +56,6 @@ void get_next_key_state(Display *display, KeyState *buffer)
     if (XGetEventData(display, cookie) && cookie->type == GenericEvent)
     {
         XIDeviceEvent *event = cookie->data;
-        // if (event->type == KeyPress)
 
         if (!(event->flags & XIKeyRepeat)) {
             buffer->evtype = event->evtype;

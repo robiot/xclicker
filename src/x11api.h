@@ -43,7 +43,7 @@ typedef struct _KeyState
 {
     int button;
     int evtype;
-} KeyState; // Fix this
+} KeyState;
 
 /**
  * Waits until key pressed.
