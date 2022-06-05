@@ -10,13 +10,14 @@ enum ClickTypes
 {
 	CLICK_TYPE_SINGLE,
 	CLICK_TYPE_DOUBLE,
-	CLICK_TYPE_BUTTON_HOLD,
-	// CLICK_TYPE_HOLD,
+	CLICK_TYPE_HOLD,
 };
 
-// Temporary
-gboolean holdMode = TRUE;
-// gboolean holdMode = FALSE;
+enum ClickTypess
+{
+	AAS
+	// CLICK_TYPE_HOLD,
+};
 
 gboolean isClicking = FALSE;
 gboolean isChoosingLocation = FALSE;
@@ -37,6 +38,7 @@ struct _MainAppWindow
 	GtkWidget *x_entry;
 	GtkWidget *y_entry;
 	GtkWidget *random_interval_entry;
+	GtkWidget *hotkey_type_entry;
 
 	// Checkboxes
 	GtkWidget *repeat_only_check;
@@ -130,10 +132,7 @@ void click_handler(gpointer *data)
 			if (click(display, args->button, is_using_xevent()) == FALSE)
 				xapp_error("Sending click", -1);
 			break;
-		// case CLICK_TYPE_HOLD:
-		// 	// xapp_error("sus", -1);
-		// 	break;
-		case CLICK_TYPE_BUTTON_HOLD:
+		case CLICK_TYPE_HOLD:
 			if (is_holding == FALSE) // Don't re-send mouse_down if already successfully sent
 			{
 				if (mouse_event(display, args->button, is_using_xevent(), MOUSE_EVENT_PRESS))
@@ -164,7 +163,7 @@ void click_handler(gpointer *data)
 	}
 
 	// If it was a mouse hold, then release the button
-	if (args->click_type == CLICK_TYPE_BUTTON_HOLD)
+	if (args->click_type == CLICK_TYPE_HOLD)
 	{
 		if (mouse_event(display, args->button, is_using_xevent(), MOUSE_EVENT_RELEASE) == FALSE)
 			xapp_error("Sending mouse down", -1);
@@ -343,12 +342,10 @@ void start_clicked()
 		data->click_type = CLICK_TYPE_SINGLE;
 	else if (strcmp(click_type_text, "Double") == 0)
 		data->click_type = CLICK_TYPE_DOUBLE;
-	// else if (strcmp(click_type_text, "Hold") == 0)
-	// 	data->click_type = CLICK_TYPE_HOLD;
-	else if (strcmp(click_type_text, "Button Hold") == 0)
-		data->click_type = CLICK_TYPE_BUTTON_HOLD;
+	else if (strcmp(click_type_text, "Hold") == 0)
+		data->click_type = CLICK_TYPE_HOLD;
 	else
-		xapp_error("'Getting the click type'", 1);
+		xapp_error("Getting the click type", 1);
 
 	if ((data->repeat = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(mainappwindow.repeat_only_check))))
 		data->repeat_times = get_text_to_int(mainappwindow.repeat_entry);
@@ -363,7 +360,7 @@ void start_clicked()
 		data->random_interval_ms = get_text_to_int(mainappwindow.random_interval_entry);
 
 	// If holding, ignore interval and repeat as it makes no sense. Set an interval of 250ms to prevent cpu high usage
-	if (data->click_type == CLICK_TYPE_BUTTON_HOLD)
+	if (data->click_type == CLICK_TYPE_HOLD)
 	{
 		data->repeat = FALSE;
 		data->random_interval = FALSE;
@@ -413,7 +410,7 @@ void click_type_entry_changed()
 
 void toggle_clicking(int evtype)
 {
-	if (holdMode)
+	if (strcmp(gtk_entry_get_text(GTK_ENTRY(mainappwindow.hotkey_type_entry)), "Normal"))
 	{
 		if (evtype == KeyPress)
 		{
@@ -550,6 +547,7 @@ static void main_app_window_init(MainAppWindow *win)
 	mainappwindow.x_entry = win->x_entry;
 	mainappwindow.y_entry = win->y_entry;
 	mainappwindow.random_interval_entry = win->random_interval_entry;
+	mainappwindow.hotkey_type_entry = win->hotkey_type_entry;
 
 	// Checkboxes
 	mainappwindow.repeat_only_check = win->repeat_only_check;
@@ -594,6 +592,7 @@ static void main_app_window_class_init(MainAppWindowClass *class)
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, x_entry);
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, y_entry);
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, random_interval_entry);
+	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, hotkey_type_entry);
 
 	// Checkboxes
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, repeat_only_check);
