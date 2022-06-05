@@ -2,7 +2,6 @@
 #include <pwd.h>
 #include <X11/keysymdef.h>
 #include <sys/stat.h>
-#include "macros.h"
 #include "settings.h"
 #include "x11api.h"
 #include "mainwin.h"
@@ -116,12 +115,15 @@ void hotkey_finished()
 void get_hotkeys_handler()
 {
     Display *display = get_display();
-    mask_config(display, MASK_CONFIG_KEYBOARD);
+    mask_config(display, MASK_KEYBOARD_PRESS);
 
     gboolean hasPreKey = FALSE;
     while (1)
     {
-        int state = get_next_key_state(display);
+        KeyState keyState;
+        get_next_key_state(display, &keyState);
+
+        int state = keyState.button;
 
         // Numlock & caps lock is incredibly buggy and causes memory leaks, pointer errors, free errors...
         if (state == XKeysymToKeycode(display, XK_Num_Lock) || state == XKeysymToKeycode(display, XK_Caps_Lock))

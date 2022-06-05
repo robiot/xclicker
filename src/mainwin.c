@@ -4,7 +4,7 @@
 #include "mainwin.h"
 #include "x11api.h"
 #include "settings.h"
-#include "macros.h"
+#include "utils.h"
 
 enum ClickTypes
 {
@@ -32,6 +32,7 @@ struct _MainAppWindow
 	GtkWidget *x_entry;
 	GtkWidget *y_entry;
 	GtkWidget *random_interval_entry;
+	GtkWidget *hotkey_type_entry;
 
 	// Checkboxes
 	GtkWidget *repeat_only_check;
@@ -114,16 +115,16 @@ void click_handler(gpointer *data)
 		{
 		case CLICK_TYPE_SINGLE:
 			if (click(display, args->button, is_using_xevent()) == FALSE)
-				g_printerr("Error when sending click");
+				xapp_error("Sending click", -1);
 			break;
 		case CLICK_TYPE_DOUBLE:
 			if (click(display, args->button, is_using_xevent()) == FALSE)
-				g_printerr("Error when sending click");
+				xapp_error("Sending click", -1);
 
 			usleep(150000); // 150 milliseconds
 
 			if (click(display, args->button, is_using_xevent()) == FALSE)
-				g_printerr("Error when sending click");
+				xapp_error("Sending click", -1);
 			break;
 		case CLICK_TYPE_HOLD:
 			if (is_holding == FALSE) // Don't re-send mouse_down if already successfully sent
@@ -131,7 +132,7 @@ void click_handler(gpointer *data)
 				if (mouse_event(display, args->button, is_using_xevent(), MOUSE_EVENT_PRESS))
 					is_holding = TRUE;
 				else
-					g_printerr("Error when sending mouse down");
+					xapp_error("Sending mouse down", -1);
 			}
 			break;
 		}
@@ -159,7 +160,7 @@ void click_handler(gpointer *data)
 	if (args->click_type == CLICK_TYPE_HOLD)
 	{
 		if (mouse_event(display, args->button, is_using_xevent(), MOUSE_EVENT_RELEASE) == FALSE)
-			g_printerr("Error when sending mouse down");
+			xapp_error("Sending mouse down", -1);
 	}
 
 	g_free(data);
@@ -202,11 +203,14 @@ void set_coords(gpointer *data)
 void get_cursor_pos_click_handler()
 {
 	Display *display = get_display();
-	mask_config(display, MASK_CONFIG_MOUSE);
+	mask_config(display, MASK_MOUSE_PRESS);
 
 	while (isChoosingLocation)
 	{
-		if (get_next_key_state(display) == 1) // 1 = Mouse1
+		KeyState keyState;
+		get_next_key_state(display, &keyState);
+
+		if (keyState.button == Button1) // 1 = Mouse1
 			isChoosingLocation = FALSE;
 	}
 	XCloseDisplay(display);
@@ -332,8 +336,10 @@ void start_clicked()
 		data->click_type = CLICK_TYPE_SINGLE;
 	else if (strcmp(click_type_text, "Double") == 0)
 		data->click_type = CLICK_TYPE_DOUBLE;
-	else
+	else if (strcmp(click_type_text, "Hold") == 0)
 		data->click_type = CLICK_TYPE_HOLD;
+	else
+		xapp_error("Getting the click type", 1);
 
 	if ((data->repeat = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(mainappwindow.repeat_only_check))))
 		data->repeat_times = get_text_to_int(mainappwindow.repeat_entry);
@@ -396,12 +402,26 @@ void click_type_entry_changed()
 	gtk_widget_set_sensitive(mainappwindow.random_interval_entry, active);
 }
 
-void toggle_clicking()
+void toggle_clicking(int evtype)
 {
-	if (isClicking)
-		stop_clicked();
-	else
-		start_clicked();
+	if (strcmp(gtk_entry_get_text(GTK_ENTRY(mainappwindow.hotkey_type_entry)), "Normal"))
+	{
+		if (evtype == KeyPress)
+		{
+			start_clicked();
+		}
+		else
+		{
+			stop_clicked();
+		}
+	}
+	else if (evtype == KeyPress)
+	{
+		if (isClicking)
+			stop_clicked();
+		else
+			start_clicked();
+	}
 }
 
 /**
@@ -411,43 +431,39 @@ void toggle_clicking()
 void get_start_stop_key_handler()
 {
 	Display *display = get_display();
-	mask_config(display, MASK_CONFIG_KEYBOARD);
+	mask_config(display, MASK_KEYBOARD_PRESS | MASK_KEYBOARD_RELEASE);
 
-	// 50 = shift
-	struct timeval start, stop;
-	double secs = 0;
-	int before = 0;
+	gboolean isHolding1 = FALSE;
+	gboolean isHolding2 = FALSE;
+
 	while (1)
 	{
-		int state = get_next_key_state(display);
+		KeyState keyState;
+		get_next_key_state(display, &keyState);
 		if (isChoosingHotkey == TRUE)
 			continue;
 
-		if (state == button1 || state == button2)
+		if (keyState.button == button1 || keyState.button == button2)
 		{
 			// Two buttons
 			if (button1 != -1)
 			{
-				if ((before == button1 || before == button2) && before != state)
+				if (isHolding1 || isHolding2)
 				{
-					gettimeofday(&stop, NULL);
-					secs = (double)(stop.tv_usec - start.tv_usec) / 1000000 + (double)(stop.tv_sec - start.tv_sec);
-					if (secs < 0.1)
-						toggle_clicking();
-					before = 0;
-				}
-				else
-				{
-					gettimeofday(&start, NULL);
-					before = state;
+					toggle_clicking(keyState.evtype);
 				}
 			}
 			// One button
 			else
-				toggle_clicking();
-			usleep(5000);
+			{
+				toggle_clicking(keyState.evtype);
+			}
+
+			isHolding1 = keyState.button == button1 && keyState.evtype == KeyPress;
+			isHolding2 = keyState.button == button2 && keyState.evtype == KeyPress;
 		}
 	}
+
 	XCloseDisplay(display);
 }
 
@@ -525,6 +541,7 @@ static void main_app_window_init(MainAppWindow *win)
 	mainappwindow.x_entry = win->x_entry;
 	mainappwindow.y_entry = win->y_entry;
 	mainappwindow.random_interval_entry = win->random_interval_entry;
+	mainappwindow.hotkey_type_entry = win->hotkey_type_entry;
 
 	// Checkboxes
 	mainappwindow.repeat_only_check = win->repeat_only_check;
@@ -569,6 +586,7 @@ static void main_app_window_class_init(MainAppWindowClass *class)
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, x_entry);
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, y_entry);
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, random_interval_entry);
+	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, hotkey_type_entry);
 
 	// Checkboxes
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, repeat_only_check);

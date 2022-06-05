@@ -4,8 +4,12 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
-#define MASK_CONFIG_MOUSE (0)
-#define MASK_CONFIG_KEYBOARD (1)
+enum MaskFlags
+{
+    MASK_KEYBOARD_PRESS = 1 << 0,
+    MASK_KEYBOARD_RELEASE = 1 << 1,
+    MASK_MOUSE_PRESS = 1 << 2
+};
 
 enum ClickModes
 {
@@ -29,13 +33,23 @@ enum MouseEvents
  * @param mode The mode to configure for [MASK_CONFIG_MOUSE/MASK_CONFIG_KEYBOARD]
  * @see get_display
  */
-void mask_config(Display *display, int mode);
+void mask_config(Display *display, enum MaskFlags flags);
+
+/**
+ * @brief Struct that get_next_key_state returns
+ * @see get_next_key_state
+ */
+typedef struct _KeyState
+{
+    int button;
+    int evtype;
+} KeyState;
 
 /**
  * Waits until key pressed.
- * @returns The keycode for the pressed key
+ * @returns The KeyState in the buffer given
  */
-int get_next_key_state(Display *display);
+void get_next_key_state(Display *display, KeyState *buffer);
 
 /**
  * Get the cursors current location.

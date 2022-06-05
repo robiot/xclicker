@@ -12,7 +12,7 @@ executable('xclicker',
     'mainwin.c',
     'x11api.c',
     'settings.c',
-  
+    'utils.c',
     xclicker_resources,
     dependencies: deps,
 )
