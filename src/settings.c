@@ -124,6 +124,7 @@ void get_hotkeys_handler()
         get_next_key_state(display, &keyState);
 
         int state = keyState.button;
+
         // Numlock & caps lock is incredibly buggy and causes memory leaks, pointer errors, free errors...
         if (state == XKeysymToKeycode(display, XK_Num_Lock) || state == XKeysymToKeycode(display, XK_Caps_Lock))
             continue;

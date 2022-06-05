@@ -50,7 +50,7 @@ void mask_config(Display *display, enum MaskFlags flags)
 void get_next_key_state(Display *display, KeyState *buffer)
 {
     // Initialize with default values
-    buffer->button = -1;
+    buffer->button = 0;
     buffer->evtype = -1;
 
     XEvent event;

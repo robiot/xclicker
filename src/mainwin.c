@@ -16,6 +16,7 @@ enum ClickTypes
 
 // Temporary
 gboolean holdMode = TRUE;
+// gboolean holdMode = FALSE;
 
 gboolean isClicking = FALSE;
 gboolean isChoosingLocation = FALSE;
@@ -410,12 +411,26 @@ void click_type_entry_changed()
 	gtk_widget_set_sensitive(mainappwindow.random_interval_entry, active);
 }
 
-void toggle_clicking()
+void toggle_clicking(int evtype)
 {
-	if (isClicking)
-		stop_clicked();
-	else
-		start_clicked();
+	if (holdMode)
+	{
+		if (evtype == KeyPress)
+		{
+			start_clicked();
+		}
+		else
+		{
+			stop_clicked();
+		}
+	}
+	else if (evtype == KeyPress)
+	{
+		if (isClicking)
+			stop_clicked();
+		else
+			start_clicked();
+	}
 }
 
 /**
@@ -425,13 +440,7 @@ void toggle_clicking()
 void get_start_stop_key_handler()
 {
 	Display *display = get_display();
-	mask_config(display, MASK_KEYBOARD_PRESS); // | MASK_KEYBOARD_RELEASE
-	// mask_config(display, MASK_KEYBOARD_RELEASE); // For hold
-
-	// 50 = shift
-	struct timeval start, stop;
-	double secs = 0;
-	int before = 0;
+	mask_config(display, MASK_KEYBOARD_PRESS | MASK_KEYBOARD_RELEASE);
 
 	gboolean isHolding1 = FALSE;
 	gboolean isHolding2 = FALSE;
@@ -440,42 +449,27 @@ void get_start_stop_key_handler()
 	{
 		KeyState keyState;
 		get_next_key_state(display, &keyState);
-		// if (isChoosingHotkey == TRUE)
+		if (isChoosingHotkey == TRUE)
+			continue;
 
-		// Buggy with 2 buttons with | MASK_KEYBOARD_RELEASE
 		if (keyState.button == button1 || keyState.button == button2)
 		{
 			// Two buttons
 			if (button1 != -1)
 			{
-				// Fill other button isPressed.
-				if (
-					(isHolding1 || (keyState.evtype == KeyRelease && keyState.button == button2))
-
-					&& ((before == button1 || before == button2) && before != keyState.button)
-				)
+				if (isHolding1 || isHolding2)
 				{
-					// gettimeofday(&stop, NULL);
-					// secs = (ldouble)(stop.tv_usec - start.tv_usec) / 1000000 + (double)(stop.tv_sec - start.tv_sec);
-					toggle_clicking();
-					before = 0;
-				}
-				else
-				{
-					before = keyState.button;
+					toggle_clicking(keyState.evtype);
 				}
 			}
+			// One button
 			else
 			{
-				// One button
-				g_print("here");
-				toggle_clicking();
+				toggle_clicking(keyState.evtype);
 			}
 
 			isHolding1 = keyState.button == button1 && keyState.evtype == KeyPress;
 			isHolding2 = keyState.button == button2 && keyState.evtype == KeyPress;
-
-			usleep(5000);
 		}
 	}
 
