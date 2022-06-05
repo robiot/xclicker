@@ -170,7 +170,7 @@
                     <property name="hexpand">True</property>
                     <property name="max-length">9</property>
                     <property name="width-chars">0</property>
-                    <property name="text" translatable="yes">10</property>
+                    <property name="text" translatable="yes">100</property>
                     <signal name="insert-text" handler="insert_handler" swapped="no"/>
                   </object>
                   <packing>
