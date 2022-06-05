@@ -295,7 +295,7 @@ void insert_handler(GtkEditable *editable, const gchar *text)
 void open_safe_mode_dialog()
 {
 	GtkDialog *dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "Warning");
-	gtk_message_dialog_format_secondary_text(dialog, "Intervals under 10 milliseconds is restricted because of safe mode.");
+	gtk_message_dialog_format_secondary_text(dialog, "Intervals under 100 milliseconds is restricted because of safe mode.");
 	gtk_dialog_run(dialog);
 	gtk_widget_destroy(dialog);
 }
@@ -308,7 +308,7 @@ void start_clicked()
 {
 	int sleep = get_text_to_int(mainappwindow.hours_entry) * 3600000 + get_text_to_int(mainappwindow.minutes_entry) * 60000 + get_text_to_int(mainappwindow.seconds_entry) * 1000 + get_text_to_int(mainappwindow.millisecs_entry);
 
-	if (sleep < 10 && is_safemode())
+	if (sleep < 100 && is_safemode())
 	{
 		g_idle_add(open_safe_mode_dialog, NULL);
 		return;
