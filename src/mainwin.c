@@ -213,7 +213,10 @@ void get_cursor_pos_click_handler()
 
 	while (isChoosingLocation)
 	{
-		if (get_next_key_state(display) == 1) // 1 = Mouse1
+		KeyState keyState;
+		get_next_key_state(display, &keyState);
+
+		if (keyState.button == Button1) // 1 = Mouse1
 			isChoosingLocation = FALSE;
 	}
 	XCloseDisplay(display);
@@ -429,38 +432,53 @@ void get_start_stop_key_handler()
 	struct timeval start, stop;
 	double secs = 0;
 	int before = 0;
+
+	gboolean isHolding1 = FALSE;
+	gboolean isHolding2 = FALSE;
+
 	while (1)
 	{
-		int state = get_next_key_state(display);
-		if (isChoosingHotkey == TRUE)
-			continue;
+		KeyState keyState;
+		get_next_key_state(display, &keyState);
+		// if (isChoosingHotkey == TRUE)
 
-		// g_print("State: %d", state);
-		if (state == button1 || state == button2)
+		// Buggy with 2 buttons with | MASK_KEYBOARD_RELEASE
+		if (keyState.button == button1 || keyState.button == button2)
 		{
 			// Two buttons
 			if (button1 != -1)
 			{
-				if ((before == button1 || before == button2) && before != state)
+				// Fill other button isPressed.
+				if (
+					(isHolding1 || (keyState.evtype == KeyRelease && keyState.button == button2))
+
+					&& ((before == button1 || before == button2) && before != keyState.button)
+				)
 				{
-					gettimeofday(&stop, NULL);
-					secs = (double)(stop.tv_usec - start.tv_usec) / 1000000 + (double)(stop.tv_sec - start.tv_sec);
-					if (secs < 0.1)
-						toggle_clicking();
+					// gettimeofday(&stop, NULL);
+					// secs = (ldouble)(stop.tv_usec - start.tv_usec) / 1000000 + (double)(stop.tv_sec - start.tv_sec);
+					toggle_clicking();
 					before = 0;
 				}
 				else
 				{
-					gettimeofday(&start, NULL);
-					before = state;
+					before = keyState.button;
 				}
 			}
-			// One button
 			else
+			{
+				// One button
+				g_print("here");
 				toggle_clicking();
+			}
+
+			isHolding1 = keyState.button == button1 && keyState.evtype == KeyPress;
+			isHolding2 = keyState.button == button2 && keyState.evtype == KeyPress;
+
 			usleep(5000);
 		}
 	}
+
 	XCloseDisplay(display);
 }
 

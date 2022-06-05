@@ -8,6 +8,12 @@
 
 void mask_config(Display *display, enum MaskFlags flags)
 {
+    // XSetWindowAttributes attr;
+    // Window win = DefaultRootWindow(display);
+
+    // attr.event_mask &= ~ButtonPressMask;
+    // XSelectInput(display, win, attr.event_mask);
+
     XIEventMask mask[2];
     XIEventMask *m;
     Window win = DefaultRootWindow(display);
@@ -23,7 +29,8 @@ void mask_config(Display *display, enum MaskFlags flags)
     if (flags & MASK_KEYBOARD_RELEASE)
         XISetMask(m->mask, XI_KeyRelease);
 
-    if (flags & MASK_MOUSE_PRESS) {
+    if (flags & MASK_MOUSE_PRESS)
+    {
         XISetMask(m->mask, XI_ButtonPress);
         XISetMask(m->mask, XI_RawButtonPress);
     }
@@ -40,27 +47,30 @@ void mask_config(Display *display, enum MaskFlags flags)
     free(mask[1].mask);
 }
 
-int get_next_key_state(Display *display)
+void get_next_key_state(Display *display, KeyState *buffer)
 {
-    int button = 0;
+    // Initialize with default values
+    buffer->button = -1;
+    buffer->evtype = -1;
+
     XEvent event;
 
     XNextEvent(display, &event);
 
     XGenericEventCookie *cookie = &event.xcookie;
 
-    // g_print("%d\n", event.type);
-
     if (XGetEventData(display, cookie) && cookie->type == GenericEvent)
     {
         XIDeviceEvent *event = cookie->data;
-        if (!(event->flags & XIKeyRepeat))
-            button = event->detail;
+        // if (event->type == KeyPress)
+
+        if (!(event->flags & XIKeyRepeat)) {
+            buffer->evtype = event->evtype;
+            buffer->button = event->detail;
+        }
     }
 
     XFreeEventData(display, cookie);
-
-    return button;
 }
 
 void get_cursor_coords(Display *display, int *x, int *y)
@@ -82,19 +92,6 @@ void move_to(Display *display, int x, int y)
     XWarpPointer(display, None, None, 0, 0, 0, 0, -cur_x, -cur_y); // For absolute position
     XWarpPointer(display, None, None, 0, 0, 0, 0, x, y);
     usleep(DEFAULT_MICRO_SLEEP);
-}
-
-/**
- * Custom Xevent.
- * Does everything needed for xsendevent.
- */
-int cxevent(Display *display, long mask, XButtonEvent event)
-{
-    if (!XSendEvent(display, PointerWindow, True, mask, (XEvent *)&event))
-        return FALSE;
-    XFlush(display);
-    usleep(DEFAULT_MICRO_SLEEP);
-    return TRUE;
 }
 
 int mouse_event(Display *display, int button, int mode, enum MouseEvents event_type)
@@ -121,7 +118,12 @@ int mouse_event(Display *display, int button, int mode, enum MouseEvents event_t
 
         // Press
         event.type = (event_type == MOUSE_EVENT_PRESS) ? ButtonPress : ButtonRelease;
-        return cxevent(display, ButtonPressMask, event);
+
+        if (!XSendEvent(display, PointerWindow, True, ButtonPressMask, (XEvent *)&event))
+            return FALSE;
+        XFlush(display);
+        usleep(DEFAULT_MICRO_SLEEP);
+        break;
     }
     case CLICK_MODE_XTEST:
         XTestFakeButtonEvent(display, button, (event_type == MOUSE_EVENT_PRESS), CurrentTime);
