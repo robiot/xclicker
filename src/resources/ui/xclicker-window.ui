@@ -460,7 +460,7 @@
                         <property name="column-spacing">10</property>
                         <child>
                           <object class="GtkEntry" id="x_entry">
-                            <property name="name">HoursEntry</property>
+                            <property name="name">X</property>
                             <property name="visible">True</property>
                             <property name="sensitive">False</property>
                             <property name="can-focus">True</property>
@@ -477,7 +477,7 @@
                         </child>
                         <child>
                           <object class="GtkEntry" id="y_entry">
-                            <property name="name">HoursEntry</property>
+                            <property name="name">Y</property>
                             <property name="visible">True</property>
                             <property name="sensitive">False</property>
                             <property name="can-focus">True</property>
@@ -498,23 +498,7 @@
                         <property name="top-attach">1</property>
                       </packing>
                     </child>
-                    <child>
-                      <object class="GtkEntry" id="random_interval_entry">
-                        <property name="name">MinutesEntry</property>
-                        <property name="visible">True</property>
-                        <property name="sensitive">False</property>
-                        <property name="can-focus">True</property>
-                        <property name="hexpand">True</property>
-                        <property name="max-length">6</property>
-                        <property name="width-chars">0</property>
-                        <property name="placeholder-text" translatable="yes">+/-</property>
-                        <signal name="insert-text" handler="insert_handler" swapped="no" />
-                      </object>
-                      <packing>
-                        <property name="left-attach">1</property>
-                        <property name="top-attach">2</property>
-                      </packing>
-                    </child>
+
                     <child>
                       <object class="GtkCheckButton" id="random_interval_check">
                         <property name="label" translatable="yes">Random Interval</property>
@@ -532,8 +516,56 @@
                       </packing>
                     </child>
                     <child>
-                      <placeholder />
+                      <object class="GtkEntry" id="random_interval_entry">
+                        <property name="name">RandomIntervalEntry</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="can-focus">True</property>
+                        <property name="hexpand">True</property>
+                        <property name="max-length">6</property>
+                        <property name="width-chars">0</property>
+                        <property name="placeholder-text" translatable="yes">+/-</property>
+                        <signal name="insert-text" handler="insert_handler" swapped="no" />
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">2</property>
+                      </packing>
                     </child>
+
+                    <child>
+                      <object class="GtkCheckButton" id="hold_time_check">
+                        <property name="label" translatable="yes">Hold Time</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="focus-on-click">False</property>
+                        <property name="receives-default">False</property>
+                        <property name="draw-indicator">True</property>
+                        <signal name="toggled" handler="hold_time_check_toggle" swapped="no" />
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="hold_time_entry">
+                        <property name="name">HoldTime</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="can-focus">True</property>
+                        <property name="hexpand">True</property>
+                        <property name="max-length">6</property>
+                        <property name="width-chars">0</property>
+                        <property name="placeholder-text" translatable="yes">ms</property>
+                        <signal name="insert-text" handler="insert_handler" swapped="no" />
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">3</property>
+                      </packing>
+                    </child>
+
                   </object>
                 </child>
                 <child type="label">

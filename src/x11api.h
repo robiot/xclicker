@@ -80,7 +80,7 @@ int mouse_event(Display *display, int button, int mode, enum MouseEvents event_t
  * over and clicks on everything that xevent can't plus what xevent can.
  * @param mode The mode to use to click [CLICK_MODE_XTEST/CLICK_MODE_XEVENT]
  */
-int click(Display *display, int button, int mode);
+int click(Display *display, int button, int mode, int sleep);
 
 /**
  * Converts a given x11 keycode to a string
