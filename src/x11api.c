@@ -126,13 +126,14 @@ int mouse_event(Display *display, int button, int mode, enum MouseEvents event_t
     return TRUE;
 }
 
-int click(Display *display, int button, int mode)
+int click(Display *display, int button, int mode, int sleep)
 {
     if (!mouse_event(display, button, mode, MOUSE_EVENT_PRESS))
         return FALSE;
-    // if (mode == CLICK_MODE_XTEST)
-    //     usleep(DEFAULT_MICRO_SLEEP);
-    usleep(1000000);
+
+    if (sleep != 0)
+        usleep(sleep);
+
     return mouse_event(display, button, mode, MOUSE_EVENT_RELEASE);
 }
 

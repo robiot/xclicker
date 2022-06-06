@@ -66,6 +66,9 @@ struct click_opts
 
 	gboolean random_interval;
 	int random_interval_ms;
+
+	gboolean hold_time;
+	int hold_time_ms;
 };
 
 /**
@@ -108,6 +111,10 @@ void click_handler(gpointer *data)
 	int count = 0;
 	gboolean is_holding = FALSE;
 
+	gboolean using_xevent = is_using_xevent();
+
+	int hold_type_ms = args->hold_time == TRUE ? args->hold_time_ms * 1000 : 0;
+
 	while (isClicking)
 	{
 		if (args->custom_location)
@@ -116,22 +123,22 @@ void click_handler(gpointer *data)
 		switch (args->click_type)
 		{
 		case CLICK_TYPE_SINGLE:
-			if (click(display, args->button, is_using_xevent()) == FALSE)
+			if (click(display, args->button, using_xevent, hold_type_ms) == FALSE)
 				xapp_error("Sending click", -1);
 			break;
 		case CLICK_TYPE_DOUBLE:
-			if (click(display, args->button, is_using_xevent()) == FALSE)
+			if (click(display, args->button, using_xevent, hold_type_ms) == FALSE)
 				xapp_error("Sending click", -1);
 
 			usleep(150000); // 150 milliseconds
 
-			if (click(display, args->button, is_using_xevent()) == FALSE)
+			if (click(display, args->button, using_xevent, hold_type_ms) == FALSE)
 				xapp_error("Sending click", -1);
 			break;
 		case CLICK_TYPE_HOLD:
 			if (is_holding == FALSE) // Don't re-send mouse_down if already successfully sent
 			{
-				if (mouse_event(display, args->button, is_using_xevent(), MOUSE_EVENT_PRESS))
+				if (mouse_event(display, args->button, using_xevent, MOUSE_EVENT_PRESS))
 					is_holding = TRUE;
 				else
 					xapp_error("Sending mouse down", -1);
@@ -324,6 +331,7 @@ void start_clicked()
 	toggle_buttons();
 
 	struct click_opts *data = g_malloc0(sizeof(struct click_opts));
+
 	data->sleep = sleep;
 	const gchar *mousebutton_text = gtk_entry_get_text(GTK_ENTRY(mainappwindow.mouse_entry));
 	if (strcmp(mousebutton_text, "Right") == 0)
@@ -355,12 +363,16 @@ void start_clicked()
 	if ((data->random_interval = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(mainappwindow.random_interval_check))))
 		data->random_interval_ms = get_text_to_int(mainappwindow.random_interval_entry);
 
-	// If holding, ignore interval and repeat as it makes no sense. Set an interval of 250ms to prevent cpu high usage
+	if ((data->hold_time = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(mainappwindow.hold_time_check))))
+		data->hold_time_ms = get_text_to_int(mainappwindow.hold_time_entry);
+
+	// If holding, ignore interval and repeat as it makes no sense.
 	if (data->click_type == CLICK_TYPE_HOLD)
 	{
 		data->repeat = FALSE;
 		data->random_interval = FALSE;
-		data->sleep = 250;
+		data->hold_time = FALSE;
+		data->sleep = 0;
 	}
 
 	g_thread_new("click_handler", click_handler, data);
