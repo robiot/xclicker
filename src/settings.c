@@ -1,7 +1,9 @@
 #include <gtk/gtk.h>
 #include <pwd.h>
 #include <X11/keysymdef.h>
-#include <sys/stat.h>
+#include <dirent.h>
+#include <unistd.h>
+
 #include "settings.h"
 #include "x11api.h"
 #include "mainwin.h"
@@ -24,27 +26,29 @@ struct _items
 
 const char *get_config_file_path()
 {
-    const char *config = "/.config";
-    const char *homedir;
-    if ((homedir = getenv("HOME")) == NULL)
-        homedir = getpwuid(getuid())->pw_dir;
-    char *configpath = (char *)malloc(1 + strlen(homedir) + strlen(config));
-    strcpy(configpath, homedir);
-    strcat(configpath, config);
-    mkdir(configpath, 0777);
+    const char *config_path = g_get_user_config_dir();
+    const char *file_name = "/xclicker.conf";
 
-    char *configfile = (char *)malloc(1 + strlen(configpath) + strlen("/xclicker.conf"));
-    strcpy(configfile, configpath);
-    strcat(configfile, "/xclicker.conf");
-    free(configpath);
-    return configfile;
+    if (!opendir(config_path)) {
+        g_printerr("Could not find any path to get or store the settings in.\n");
+        return NULL;
+    }
+
+    char *config_file_path = malloc(strlen(config_path) + strlen(file_name) + 1);
+    strcpy(config_file_path, config_path);
+    strcat(config_file_path, "/xclicker.conf");
+
+    return config_file_path;
 }
 
-GKeyFile *get_config_keyfile(const char *configpath)
+GKeyFile *get_config_keyfile(const char *config_path)
 {
     GKeyFile *config = g_key_file_new();
-    if (!g_key_file_load_from_file(config, configpath, G_KEY_FILE_KEEP_COMMENTS, NULL))
-        g_print("Could not load config file. This could mean that you never changed any settings or that the config is corrupted.\n");
+
+    // Reversed boolean
+    if (access(config_path, F_OK) == 0 && !g_key_file_load_from_file(config, config_path, G_KEY_FILE_KEEP_COMMENTS, NULL))
+        g_print("The config file seems to be corrupted.\n");
+
     return config;
 }
 
@@ -54,6 +58,7 @@ gboolean is_safemode()
         return TRUE;
     if (access(configpath, F_OK))
         return TRUE;
+
     return FALSE;
 }
 
@@ -83,6 +88,7 @@ void load_start_stop_keybinds()
 
     if (button_2 != 0 && button_2)
         button2 = button_2;
+
     XCloseDisplay(display);
 }
 
