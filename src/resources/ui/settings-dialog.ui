@@ -237,7 +237,7 @@ gtk applications.</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
                 <property name="relief">none</property>
-                <property name="uri">https://github.com/robiot/XClicker</property>
+                <property name="uri">https://github.com/robiot/xclicker</property>
               </object>
               <packing>
                 <property name="left-attach">0</property>
