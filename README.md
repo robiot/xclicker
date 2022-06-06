@@ -35,6 +35,8 @@ XClicker is an open-source, easy to use, feature-rich, **blazing fast** Autoclic
  * Repeat until stopped or repeat a given amount of times;
  * Click on a specified location only;
  * Randomize the click interval;
+ * Specify hold time per click;
+ * Click while holding hotkey down;
  * Start / Stop with a custom hotkey;
 
 ### How much cps?
