@@ -1,9 +1,9 @@
 <p align="center">
-	<img src="https://raw.githubusercontent.com/robiot/XClicker/main/img/banner.png" alt="XClicker" />
+	<img src="https://raw.githubusercontent.com/robiot/xclicker/master/img/banner.png" alt="XClicker" />
 </p>
 
 <p align="center">
-	<img alt="GitHub All Releases" src="https://img.shields.io/github/downloads/robiot/XClicker/total?label=GitHub%20Downloads" />
+	<img alt="GitHub All Releases" src="https://img.shields.io/github/downloads/robiot/xclicker/total?label=GitHub%20Downloads" />
   	<a href="https://aur.archlinux.org/packages/xclicker"><img alt="AUR version" src="https://img.shields.io/aur/version/xclicker" /></a>
   	<img alt="GitHub Issues" src="https://img.shields.io/github/issues/robiot/XClicker.svg" />
   	<img alt="GitHub Contributors" src="https://img.shields.io/github/contributors/robiot/XClicker" /></a>
@@ -23,7 +23,9 @@
 ## What is XClicker?
 XClicker is an open-source, easy to use, feature-rich, **blazing fast** Autoclicker for linux desktops using x11.
 
-![Example image](https://raw.githubusercontent.com/robiot/XClicker/main/img/example.png)
+![Example image](https://raw.githubusercontent.com/robiot/xclicker/master/img/example.png)
+*v1.4.0*
+
 ![forthebadge](https://forthebadge.com/images/badges/made-with-c.svg) [![forthebadge](https://forthebadge.com/images/badges/check-it-out.svg)](https://xclicker.xyz/downloads)
 
 ## Main features
@@ -51,7 +53,7 @@ $ make release
 ```
 
 ## Installing
-Check out the [Installation Guide](https://github.com/robiot/XClicker/wiki/Installation)
+Check out the [Installation Guide](https://github.com/robiot/xclicker/wiki/Installation)
 
 ## All repositories
 - XClicker: https://github.com/robiot/xclicker
