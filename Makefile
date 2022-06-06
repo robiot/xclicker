@@ -8,7 +8,7 @@ PKG_DIR   = pkg
 
 BINNAME   = xclicker
 TARGET    = build/debug/src/${BINNAME}
-DESKFILE  = xclicker.desktop
+DESKFILE  = assets/xclicker.desktop
 
 debpkgdir="./${PKG_DIR}/deb/package"
 appimgdir="${PKG_DIR}/AppImage/XClicker.AppDir"

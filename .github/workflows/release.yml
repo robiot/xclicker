@@ -1,7 +1,7 @@
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 name: Create Release
 
@@ -16,19 +16,19 @@ jobs:
 
       - name: Build x64
         run: |
-            mkdir -p outputs
+          mkdir -p outputs
 
-            make deb TARGET_ARCH=amd64
-            cp pkg/deb/*.deb outputs/
-            
-            make appimg TARGET_ARCH=amd64
-            cp pkg/AppImage/*.AppImage outputs/
+          make deb TARGET_ARCH=amd64
+          cp pkg/deb/*.deb outputs/
+
+          make appimg TARGET_ARCH=amd64
+          cp pkg/AppImage/*.AppImage outputs/
 
       - uses: actions/upload-artifact@master
         with:
           name: output-artifact
           path: outputs
-    
+
   build:
     name: Build for ARM and Create Release
     runs-on: ubuntu-18.04
@@ -41,7 +41,7 @@ jobs:
         with:
           name: output-artifact
           path: outputs
-    
+
       - name: Build ARM
         uses: uraimo/run-on-arch-action@v2.1.1
         with:
@@ -71,7 +71,7 @@ jobs:
           run: |
             make deb TARGET_ARCH=armhf
             cp pkg/deb/*.deb outputs/
-            
+
             make appimg TARGET_ARCH=armhf
             cp pkg/AppImage/*.AppImage outputs/
 
@@ -106,10 +106,10 @@ jobs:
             rm -rf build/
             make deb TARGET_ARCH=aarch64
             cp pkg/deb/*.deb outputs/
-            
+
             make appimg TARGET_ARCH=aarch64
             cp pkg/AppImage/*.AppImage outputs/
-    
+
       - name: Create Release
         uses: softprops/action-gh-release@v0.1.14
         env:
