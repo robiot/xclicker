@@ -10,7 +10,7 @@ struct _XClickerApp
 
 G_DEFINE_TYPE(XClickerApp, xclicker_app, GTK_TYPE_APPLICATION);
 
-static void xclicker_app_init()
+static void xclicker_app_init(XClickerApp* /*app*/)
 {
 }
 
