@@ -50,6 +50,13 @@ install: release
 	@sudo install -Dm 644 ./assets/icon.png /usr/share/pixmaps/${BINNAME}.png
 	@echo "Installed XClicker"
 
+.PHONY: uninstall
+uninstall:
+	@sudo rm /usr/bin/${BINNAME}
+	@sudo rm /usr/share/applications/xclicker.desktop
+	@sudo rm /usr/share/pixmaps/${BINNAME}.png
+	@echo "Uninstalled XClicker :("
+
 .PHONY: deb
 deb: release
 	@rm -rf ${debpkgdir}
