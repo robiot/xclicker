@@ -548,6 +548,10 @@ void hold_time_check_toggle(GtkToggleButton *self)
  */
 static void main_app_window_init(MainAppWindow *win)
 {
+	GdkPixbuf* pixbuf = gdk_pixbuf_new_from_resource("/res/icon.png", NULL);
+
+	gtk_window_set_icon(win, pixbuf);
+
 	gtk_widget_init_template(GTK_WIDGET(win));
 	config_init();
 	load_start_stop_keybinds();
@@ -590,7 +594,7 @@ static void main_app_window_init(MainAppWindow *win)
  */
 static void main_app_window_class_init(MainAppWindowClass *class)
 {
-	gtk_widget_class_set_template_from_resource(GTK_WIDGET_CLASS(class), "/org/gtk/xclicker/ui/xclicker-window.ui");
+	gtk_widget_class_set_template_from_resource(GTK_WIDGET_CLASS(class), "/res/ui/xclicker-window.ui");
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), insert_handler);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), start_clicked);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), stop_clicked);
