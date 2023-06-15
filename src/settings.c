@@ -215,7 +215,7 @@ void start_button_pressed(GtkButton *self)
 
 void settings_dialog_new()
 {
-    GtkBuilder *builder = gtk_builder_new_from_resource("/org/gtk/xclicker/ui/settings-dialog.ui");
+    GtkBuilder *builder = gtk_builder_new_from_resource("/res/ui/settings-dialog.ui");
     GtkDialog *dialog = GTK_DIALOG(gtk_builder_get_object(builder, "dialog"));
 
     gtk_builder_add_callback_symbol(builder, "safe_mode_changed", safe_mode_changed);

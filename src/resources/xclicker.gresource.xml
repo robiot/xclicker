@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
-  <gresource prefix="/org/gtk/xclicker">
+  <gresource prefix="/res">
     <file preprocess="xml-stripblanks">ui/xclicker-window.ui</file>
     <file preprocess="xml-stripblanks">ui/settings-dialog.ui</file>
+    <file>icon.png</file>
   </gresource>
 </gresources>
