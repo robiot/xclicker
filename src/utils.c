@@ -12,3 +12,10 @@ void xapp_error(const char *when, int code)
 
     exit(code);
 }
+
+void set_window_icon(GtkWindow *window)
+{
+    GdkPixbuf* pixbuf = gdk_pixbuf_new_from_resource("/res/icon.png", NULL);
+
+	gtk_window_set_icon(window, pixbuf);
+}
