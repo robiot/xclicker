@@ -8,6 +8,7 @@
 #include "x11api.h"
 #include "mainwin.h"
 #include "version.h"
+#include "utils.h"
 
 // Default values, later set by config_init
 int button1 = -1;
@@ -217,6 +218,8 @@ void settings_dialog_new()
 {
     GtkBuilder *builder = gtk_builder_new_from_resource("/res/ui/settings-dialog.ui");
     GtkDialog *dialog = GTK_DIALOG(gtk_builder_get_object(builder, "dialog"));
+
+	set_window_icon(dialog);
 
     gtk_builder_add_callback_symbol(builder, "safe_mode_changed", safe_mode_changed);
     gtk_builder_add_callback_symbol(builder, "xevent_switch_changed", xevent_switch_changed);

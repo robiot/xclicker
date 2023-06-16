@@ -548,9 +548,7 @@ void hold_time_check_toggle(GtkToggleButton *self)
  */
 static void main_app_window_init(MainAppWindow *win)
 {
-	GdkPixbuf* pixbuf = gdk_pixbuf_new_from_resource("/res/icon.png", NULL);
-
-	gtk_window_set_icon(win, pixbuf);
+	set_window_icon(win);
 
 	gtk_widget_init_template(GTK_WIDGET(win));
 	config_init();
