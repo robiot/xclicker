@@ -29,7 +29,8 @@ const char *get_config_file_path()
     const char *config_path = g_get_user_config_dir();
     const char *file_name = "/xclicker.conf";
 
-    if (!opendir(config_path)) {
+    if (!opendir(config_path))
+    {
         g_printerr("Could not find any path to get or store the settings in.\n");
         return NULL;
     }
@@ -94,12 +95,12 @@ void load_start_stop_keybinds()
 
 struct set_buttons_entry_struct
 {
-	char *text;
+    char *text;
 };
 
 void set_buttons_entry_text(gpointer *data)
 {
-	struct set_buttons_entry_struct *args = data;
+    struct set_buttons_entry_struct *args = data;
     gtk_entry_set_text(GTK_ENTRY(items.buttons_entry), args->text);
     free(args->text);
     g_free(args);
@@ -121,9 +122,12 @@ void hotkey_finished()
 void get_hotkeys_handler()
 {
     Display *display = get_display();
-    mask_config(display, MASK_KEYBOARD_PRESS);
+    mask_config(display, MASK_KEYBOARD_PRESS | MASK_MOUSE_PRESS);
 
     gboolean hasPreKey = FALSE;
+
+    gboolean isDoubleMouseButton = FALSE;
+
     while (1)
     {
         KeyState keyState;
@@ -131,16 +135,38 @@ void get_hotkeys_handler()
 
         int state = keyState.button;
 
+        // No data or mouse buttons
+        if (state < 4)
+            continue;
+
         // Numlock & caps lock is incredibly buggy and causes memory leaks, pointer errors, free errors...
         if (state == XKeysymToKeycode(display, XK_Num_Lock) || state == XKeysymToKeycode(display, XK_Caps_Lock))
             continue;
 
+        if (state > 3 && state < 10)
+        {
+            if (keyState.evtype == ButtonPress)
+            {
+                isDoubleMouseButton = TRUE;
+                continue;
+            }
+
+            if (isDoubleMouseButton == TRUE)
+            {
+                isDoubleMouseButton = FALSE;
+                continue;
+            }
+            else
+            {
+                isDoubleMouseButton = TRUE;
+            }
+        }
+
+        // From here on, the value is good to use
+        // printf("GOT:%d", state);
+
         // If prekey, ex shift, ctrl
-        if (state == XKeysymToKeycode(display, XK_Shift_L) || state == XKeysymToKeycode(display, XK_Shift_R) 
-            || state == XKeysymToKeycode(display, XK_Alt_L) || state == XKeysymToKeycode(display, XK_Alt_R)
-            || state == XKeysymToKeycode(display, XK_Escape) || state == XKeysymToKeycode(display, XK_Control_L)
-            || state == XKeysymToKeycode(display, XK_Control_R) || state == XKeysymToKeycode(display, XK_ISO_Level3_Shift)
-            || state == XKeysymToKeycode(display, XK_Super_L) || state == XKeysymToKeycode(display, XK_Super_R))
+        if (state > 10 && (state == XKeysymToKeycode(display, XK_Shift_L) || state == XKeysymToKeycode(display, XK_Shift_R) || state == XKeysymToKeycode(display, XK_Alt_L) || state == XKeysymToKeycode(display, XK_Alt_R) || state == XKeysymToKeycode(display, XK_Escape) || state == XKeysymToKeycode(display, XK_Control_L) || state == XKeysymToKeycode(display, XK_Control_R) || state == XKeysymToKeycode(display, XK_ISO_Level3_Shift) || state == XKeysymToKeycode(display, XK_Super_L) || state == XKeysymToKeycode(display, XK_Super_R)))
         {
             hasPreKey = TRUE;
             button1 = state;
@@ -148,17 +174,16 @@ void get_hotkeys_handler()
             const char *plus = " + ";
             char *text = malloc(strlen(key_str) + strlen(plus));
             sprintf(text, "%s%s", key_str, plus);
-            
+
             struct set_buttons_entry_struct *user_data = g_malloc0(sizeof(struct set_buttons_entry_struct));
-		    user_data->text = text;
+            user_data->text = text;
             g_idle_add(set_buttons_entry_text, user_data);
         }
-        else 
+        else
         {
             button2 = state;
             const char *key_str = keycode_to_string(display, state);
             struct set_buttons_entry_struct *user_data = g_malloc0(sizeof(struct set_buttons_entry_struct));
-            
 
             if (hasPreKey == TRUE)
             {
@@ -167,7 +192,7 @@ void get_hotkeys_handler()
                 sprintf(text, "%s%s", buttons_entry_text, key_str);
                 user_data->text = text;
             }
-            else 
+            else
             {
                 button1 = -1;
                 char *text = (char *)malloc(1 + strlen(key_str));
@@ -188,7 +213,6 @@ void get_hotkeys_handler()
     g_key_file_save_to_file(config, configpath, NULL);
     isChoosingHotkey = FALSE;
 }
-
 
 void safe_mode_changed(GtkSwitch *self, gboolean state)
 {

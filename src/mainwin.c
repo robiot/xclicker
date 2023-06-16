@@ -418,7 +418,7 @@ void click_type_entry_changed()
 	gtk_widget_set_sensitive(mainappwindow.hold_time_entry, active);
 }
 
-void toggle_clicking(int evtype)
+void toggle_clicking(int evtype, int button)
 {
 	if (strcmp(gtk_entry_get_text(GTK_ENTRY(mainappwindow.hotkey_type_entry)), "Normal"))
 	{
@@ -431,7 +431,7 @@ void toggle_clicking(int evtype)
 			stop_clicked();
 		}
 	}
-	else if (evtype == KeyPress)
+	else if (evtype == KeyPress || button < 10)
 	{
 		if (isClicking)
 			stop_clicked();
@@ -447,7 +447,7 @@ void toggle_clicking(int evtype)
 void get_start_stop_key_handler()
 {
 	Display *display = get_display();
-	mask_config(display, MASK_KEYBOARD_PRESS | MASK_KEYBOARD_RELEASE);
+	mask_config(display, MASK_KEYBOARD_PRESS | MASK_KEYBOARD_RELEASE | MASK_MOUSE_PRESS);
 
 	gboolean isHolding1 = FALSE;
 	gboolean isHolding2 = FALSE;
@@ -456,23 +456,25 @@ void get_start_stop_key_handler()
 	{
 		KeyState keyState;
 		get_next_key_state(display, &keyState);
+
 		if (isChoosingHotkey == TRUE)
 			continue;
 
 		if (keyState.button == button1 || keyState.button == button2)
 		{
+			printf("Got press! %d\n", keyState.evtype);
 			// Two buttons
 			if (button1 != -1)
 			{
 				if (isHolding1 || isHolding2)
 				{
-					toggle_clicking(keyState.evtype);
+					toggle_clicking(keyState.evtype, keyState.button);
 				}
 			}
 			// One button
 			else
 			{
-				toggle_clicking(keyState.evtype);
+				toggle_clicking(keyState.evtype, keyState.button);
 			}
 
 			isHolding1 = keyState.button == button1 && keyState.evtype == KeyPress;
@@ -548,7 +550,7 @@ void hold_time_check_toggle(GtkToggleButton *self)
  */
 static void main_app_window_init(MainAppWindow *win)
 {
-	GdkPixbuf* pixbuf = gdk_pixbuf_new_from_resource("/res/icon.png", NULL);
+	GdkPixbuf *pixbuf = gdk_pixbuf_new_from_resource("/res/icon.png", NULL);
 
 	gtk_window_set_icon(win, pixbuf);
 

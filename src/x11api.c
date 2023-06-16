@@ -57,7 +57,8 @@ void get_next_key_state(Display *display, KeyState *buffer)
     {
         XIDeviceEvent *event = cookie->data;
 
-        if (!(event->flags & XIKeyRepeat)) {
+        if (!(event->flags & XIKeyRepeat))
+        {
             buffer->evtype = event->evtype;
             buffer->button = event->detail;
         }
@@ -139,6 +140,16 @@ int click(Display *display, int button, int mode, int sleep)
 
 char *keycode_to_string(Display *display, int keycode)
 {
+    if (keycode > 3 && keycode < 10)
+    {
+        char buf[256];
+        snprintf(buf, sizeof(buf), "Mouse%d", keycode);
+
+        char *result = malloc(strlen(buf) + 1);
+        strcpy(result, buf);
+
+        return result;
+    }
     return XKeysymToString(XkbKeycodeToKeysym(display, keycode, 0, 0));
 }
 
