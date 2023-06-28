@@ -1,3 +1,5 @@
+#include <string.h>
+#include <error.h>
 #include <gtk/gtk.h>
 #include <sys/time.h>
 #include "xclicker-app.h"
@@ -473,7 +475,16 @@ void load_preset_clicked()
 {
 	struct click_opts *data = g_malloc0(sizeof(struct click_opts));
 	FILE *preset = fopen(preset_filename, "r");
-	fread(data, sizeof(*data), 1, preset);
+	if (preset == NULL)
+	{
+		fprintf(stderr, "ERROR: %s '%s'\n", strerror(errno), preset_filename);
+		exit(1);
+	}
+	if (!fread(data, sizeof(*data), 1, preset))
+	{
+		fprintf(stderr, "ERROR: can not read '%s'. %s\n", preset_filename, strerror(errno));
+		exit(1);
+	}
 	fclose(preset);
 	set_click_opts(data);
 }
