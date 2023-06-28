@@ -46,6 +46,8 @@ struct _MainAppWindow
 	GtkWidget *stop_button;
 	GtkWidget *settings_button;
 	GtkWidget *get_button;
+	GtkWidget *save_preset_button;
+	GtkWidget *load_preset_button;
 } mainappwindow;
 G_DEFINE_TYPE(MainAppWindow, main_app_window, GTK_TYPE_APPLICATION_WINDOW);
 
@@ -88,6 +90,13 @@ int random_between(int lower, int upper)
 int get_text_to_int(GtkWidget *entry)
 {
 	return atoi(gtk_entry_get_text(GTK_ENTRY(entry)));
+}
+
+void set_text_from_int(GtkWidget *entry, int value)
+{
+	char text[64] = {0};
+	sprintf(text, "%d", value);
+	gtk_entry_set_text(entry, text);
 }
 
 /**
@@ -313,25 +322,73 @@ void open_safe_mode_dialog()
 	gtk_widget_destroy(dialog);
 }
 
-/**
- * Grab click options from ui and pass them to click_opts, then start click_handler.
- * @see click_handler
- */
-void start_clicked()
+void set_click_opts(struct click_opts *data)
 {
-	int sleep = get_text_to_int(mainappwindow.hours_entry) * 3600000 + get_text_to_int(mainappwindow.minutes_entry) * 60000 + get_text_to_int(mainappwindow.seconds_entry) * 1000 + get_text_to_int(mainappwindow.millisecs_entry);
+	/// data->sleep
+	int milliseconds = data->sleep % 1000;
+	int seconds = data->sleep / 1000 % 60;
+	int minutes = data->sleep / (1000 * 60) % 60;
+	int hours = data->sleep / (1000 * 60 * 60);
 
-	if (sleep < 100 && is_safemode())
+	set_text_from_int(mainappwindow.millisecs_entry, milliseconds);
+	set_text_from_int(mainappwindow.seconds_entry, seconds);
+	set_text_from_int(mainappwindow.minutes_entry, minutes);
+	set_text_from_int(mainappwindow.hours_entry, hours);
+
+	/// data->button
+	char *mouse_entry[] = {"not used", "Left", "Middle", "Right"};
+	gtk_entry_set_text(mainappwindow.mouse_entry, mouse_entry[data->button]);
+
+	/// data->click_type
+	char *click_type_entry[] = {"Single", "Double", "Hold"};
+	gtk_entry_set_text(mainappwindow.click_type_entry, click_type_entry[data->click_type]);
+
+	/// data->repeat
+	gtk_toggle_button_set_active(mainappwindow.repeat_only_check, data->repeat);
+	if (data->repeat)
 	{
-		g_idle_add(open_safe_mode_dialog, NULL);
-		return;
+		/// data->repeat_times
+		set_text_from_int(mainappwindow.repeat_entry, data->repeat_times);
 	}
 
-	isClicking = TRUE;
-	toggle_buttons();
+	/// data->custom_location
+	gtk_toggle_button_set_active(mainappwindow.custom_location_check, data->custom_location);
+	if (data->custom_location)
+	{
+		/// data->custom_x
+		set_text_from_int(mainappwindow.x_entry, data->custom_x);
+		/// data->custom_y
+		set_text_from_int(mainappwindow.y_entry, data->custom_y);
+	}
 
+	/// data->random_interval
+	gtk_toggle_button_set_active(mainappwindow.random_interval_check, data->random_interval);
+	if (data->random_interval)
+	{
+		/// data->random_interval_ms
+		set_text_from_int(mainappwindow.random_interval_entry, data->random_interval_ms);
+	}
+
+	/// data->hold_time
+	gtk_toggle_button_set_active(mainappwindow.hold_time_check, data->hold_time);
+	if (data->hold_time)
+	{
+		/// data->hold_time_ms
+		set_text_from_int(mainappwindow.hold_time_entry, data->hold_time_ms);
+	}
+
+	g_free(data);
+}
+
+struct click_opts *get_click_opts()
+{
 	struct click_opts *data = g_malloc0(sizeof(struct click_opts));
 
+	int sleep =
+		get_text_to_int(mainappwindow.hours_entry) * 3600000 +
+		get_text_to_int(mainappwindow.minutes_entry) * 60000 +
+		get_text_to_int(mainappwindow.seconds_entry) * 1000 +
+		get_text_to_int(mainappwindow.millisecs_entry);
 	data->sleep = sleep;
 	const gchar *mousebutton_text = gtk_entry_get_text(GTK_ENTRY(mainappwindow.mouse_entry));
 	if (strcmp(mousebutton_text, "Right") == 0)
@@ -374,6 +431,24 @@ void start_clicked()
 		data->hold_time = FALSE;
 		data->sleep = 0;
 	}
+	return data;
+}
+
+/**
+ * Grab click options from ui and pass them to click_opts, then start click_handler.
+ * @see click_handler
+ */
+void start_clicked()
+{
+	struct click_opts *data = get_click_opts();
+	if (data->sleep < 100 && is_safemode())
+	{
+		g_idle_add(open_safe_mode_dialog, NULL);
+		return;
+	}
+
+	isClicking = TRUE;
+	toggle_buttons();
 
 	g_thread_new("click_handler", click_handler, data);
 }
@@ -382,6 +457,25 @@ void stop_clicked()
 {
 	isClicking = FALSE;
 	toggle_buttons();
+}
+
+const char *preset_filename = "preset.bin";
+
+void save_preset_clicked()
+{
+	struct click_opts* data = get_click_opts();
+	FILE *preset = fopen(preset_filename, "w");
+	fwrite(data, sizeof(*data), 1, preset);
+	fclose(preset);
+}
+
+void load_preset_clicked()
+{
+	struct click_opts *data = g_malloc0(sizeof(struct click_opts));
+	FILE *preset = fopen(preset_filename, "r");
+	fread(data, sizeof(*data), 1, preset);
+	fclose(preset);
+	set_click_opts(data);
 }
 
 void settings_clicked()
@@ -581,6 +675,8 @@ static void main_app_window_init(MainAppWindow *win)
 	mainappwindow.stop_button = win->stop_button;
 	mainappwindow.settings_button = win->settings_button;
 	mainappwindow.get_button = win->get_button;
+	mainappwindow.save_preset_button = win->save_preset_button;
+	mainappwindow.load_preset_button = win->load_preset_button;
 
 	set_start_stop_button_hotkey_text();
 	g_thread_new("get_start_stop_key_handler", get_start_stop_key_handler, NULL);
@@ -594,6 +690,8 @@ static void main_app_window_class_init(MainAppWindowClass *class)
 {
 	gtk_widget_class_set_template_from_resource(GTK_WIDGET_CLASS(class), "/res/ui/xclicker-window.ui");
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), insert_handler);
+	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), save_preset_clicked);
+	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), load_preset_clicked);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), start_clicked);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), stop_clicked);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), click_type_entry_changed);
@@ -629,6 +727,8 @@ static void main_app_window_class_init(MainAppWindowClass *class)
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, stop_button);
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, settings_button);
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, get_button);
+	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, save_preset_button);
+	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, load_preset_button);
 }
 
 /**
