@@ -306,7 +306,7 @@ void preset_write_to_config(struct Preset *preset)
 	g_key_file_set_string (config, PCK_CUSTOM_X, preset->custom_x);
 	g_key_file_set_string (config, PCK_CUSTOM_Y, preset->custom_y);
 	g_key_file_set_boolean(config, PCK_RANDOM_INTERVAL, preset->use_random_interval);
-	g_key_file_set_string (config, PCK_RANDOM_INTERVAL_MS, preset->custom_y);
+	g_key_file_set_string (config, PCK_RANDOM_INTERVAL_MS, preset->random_interval_ms);
 	g_key_file_set_boolean(config, PCK_HOLD_TIME, preset->use_hold_time);
 	g_key_file_set_string (config, PCK_HOLD_TIME_MS, preset->hold_time_ms);
 
@@ -333,7 +333,7 @@ struct Preset *preset_read_from_config()
 	preset->custom_x             = g_key_file_get_string (config, PCK_CUSTOM_X, NULL);
 	preset->custom_y             = g_key_file_get_string (config, PCK_CUSTOM_Y, NULL);
 	preset->use_random_interval  = g_key_file_get_boolean(config, PCK_RANDOM_INTERVAL, NULL);
-	preset->custom_y             = g_key_file_get_string (config, PCK_RANDOM_INTERVAL_MS, NULL);
+	preset->random_interval_ms   = g_key_file_get_string (config, PCK_RANDOM_INTERVAL_MS, NULL);
 	preset->use_hold_time        = g_key_file_get_boolean(config, PCK_HOLD_TIME, NULL);
 	preset->hold_time_ms         = g_key_file_get_string (config, PCK_HOLD_TIME_MS, NULL);
 
