@@ -46,8 +46,6 @@ struct _MainAppWindow
 	GtkWidget *stop_button;
 	GtkWidget *settings_button;
 	GtkWidget *get_button;
-	GtkWidget *save_preset_button;
-	GtkWidget *load_preset_button;
 } mainappwindow;
 G_DEFINE_TYPE(MainAppWindow, main_app_window, GTK_TYPE_APPLICATION_WINDOW);
 
@@ -315,15 +313,25 @@ void open_safe_mode_dialog()
 	gtk_widget_destroy(dialog);
 }
 
-struct click_opts *get_click_opts()
+/**
+ * Grab click options from ui and pass them to click_opts, then start click_handler.
+ * @see click_handler
+ */
+void start_clicked()
 {
+	int sleep = get_text_to_int(mainappwindow.hours_entry) * 3600000 + get_text_to_int(mainappwindow.minutes_entry) * 60000 + get_text_to_int(mainappwindow.seconds_entry) * 1000 + get_text_to_int(mainappwindow.millisecs_entry);
+
+	if (sleep < 100 && is_safemode())
+	{
+		g_idle_add(open_safe_mode_dialog, NULL);
+		return;
+	}
+
+	isClicking = TRUE;
+	toggle_buttons();
+
 	struct click_opts *data = g_malloc0(sizeof(struct click_opts));
 
-	int sleep =
-		get_text_to_int(mainappwindow.hours_entry) * 3600000 +
-		get_text_to_int(mainappwindow.minutes_entry) * 60000 +
-		get_text_to_int(mainappwindow.seconds_entry) * 1000 +
-		get_text_to_int(mainappwindow.millisecs_entry);
 	data->sleep = sleep;
 	const gchar *mousebutton_text = gtk_entry_get_text(GTK_ENTRY(mainappwindow.mouse_entry));
 	if (strcmp(mousebutton_text, "Right") == 0)
@@ -366,24 +374,6 @@ struct click_opts *get_click_opts()
 		data->hold_time = FALSE;
 		data->sleep = 0;
 	}
-	return data;
-}
-
-/**
- * Grab click options from ui and pass them to click_opts, then start click_handler.
- * @see click_handler
- */
-void start_clicked()
-{
-	struct click_opts *data = get_click_opts();
-	if (data->sleep < 100 && is_safemode())
-	{
-		g_idle_add(open_safe_mode_dialog, NULL);
-		return;
-	}
-
-	isClicking = TRUE;
-	toggle_buttons();
 
 	g_thread_new("click_handler", click_handler, data);
 }
@@ -651,8 +641,6 @@ static void main_app_window_init(MainAppWindow *win)
 	mainappwindow.stop_button = win->stop_button;
 	mainappwindow.settings_button = win->settings_button;
 	mainappwindow.get_button = win->get_button;
-	mainappwindow.save_preset_button = win->save_preset_button;
-	mainappwindow.load_preset_button = win->load_preset_button;
 
 	set_start_stop_button_hotkey_text();
 	g_thread_new("get_start_stop_key_handler", get_start_stop_key_handler, NULL);
@@ -666,8 +654,6 @@ static void main_app_window_class_init(MainAppWindowClass *class)
 {
 	gtk_widget_class_set_template_from_resource(GTK_WIDGET_CLASS(class), "/res/ui/xclicker-window.ui");
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), insert_handler);
-	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), save_preset_clicked);
-	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), load_preset_clicked);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), start_clicked);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), stop_clicked);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), click_type_entry_changed);
@@ -703,8 +689,6 @@ static void main_app_window_class_init(MainAppWindowClass *class)
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, stop_button);
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, settings_button);
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, get_button);
-	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, save_preset_button);
-	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, load_preset_button);
 }
 
 /**
