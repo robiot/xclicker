@@ -264,3 +264,78 @@ void settings_dialog_new()
     gtk_dialog_run(dialog);
     gtk_widget_destroy(GTK_WIDGET(dialog));
 }
+
+#define PRESET_CATEGORY_CLICK_INTERVAL "Preset.Click Interval"
+#define PRESET_CATEGORY_OPTIONS        "Preset.Options"
+#define PRESET_CATEGORY_MORE_OPTIONS   "Preset.More Options"
+
+/// PCK stand for preset-category-key. Below set of defines used to prevent typos
+#define PCK_HOURS              PRESET_CATEGORY_CLICK_INTERVAL, "Hours"
+#define PCK_MINUTES            PRESET_CATEGORY_CLICK_INTERVAL, "Minutes"
+#define PCK_SECONDS            PRESET_CATEGORY_CLICK_INTERVAL, "Seconds"
+#define PCK_MILLISECS          PRESET_CATEGORY_CLICK_INTERVAL, "Millisecs"
+
+#define PCK_MOUSE_BUTTON       PRESET_CATEGORY_OPTIONS, "Millisecs"
+#define PCK_CLICK_TYPE         PRESET_CATEGORY_OPTIONS, "Click Type"
+#define PCK_HOTKEY             PRESET_CATEGORY_OPTIONS, "Hotkey"
+#define PCK_REPEAT             PRESET_CATEGORY_OPTIONS, "Use Repeat"
+#define PCK_REPEAT_TIMES       PRESET_CATEGORY_OPTIONS, "Repeat Times"
+
+#define PCK_CUSTOM_LOCATION    PRESET_CATEGORY_MORE_OPTIONS, "Use Custom Location"
+#define PCK_CUSTOM_X           PRESET_CATEGORY_MORE_OPTIONS, "Custom X"
+#define PCK_CUSTOM_Y           PRESET_CATEGORY_MORE_OPTIONS, "Custom Y"
+#define PCK_RANDOM_INTERVAL    PRESET_CATEGORY_MORE_OPTIONS, "Use Random Interval"
+#define PCK_RANDOM_INTERVAL_MS PRESET_CATEGORY_MORE_OPTIONS, "Random Interval ms"
+#define PCK_HOLD_TIME          PRESET_CATEGORY_MORE_OPTIONS, "Use Hold Time"
+#define PCK_HOLD_TIME_MS       PRESET_CATEGORY_MORE_OPTIONS, "Hold Time ms"
+
+void preset_write_to_config(struct Preset *preset)
+{
+	g_key_file_set_string (config, PCK_HOURS, preset->hours);
+	g_key_file_set_string (config, PCK_MINUTES, preset->minutes);
+	g_key_file_set_string (config, PCK_SECONDS, preset->seconds);
+	g_key_file_set_string (config, PCK_MILLISECS, preset->millisecs);
+
+	g_key_file_set_string (config, PCK_MOUSE_BUTTON, preset->mouse_button);
+	g_key_file_set_string (config, PCK_CLICK_TYPE, preset->click_type);
+	g_key_file_set_string (config, PCK_HOTKEY, preset->hotkey);
+	g_key_file_set_boolean(config, PCK_REPEAT, preset->use_repeat);
+	g_key_file_set_string (config, PCK_REPEAT_TIMES, preset->repeat_times);
+
+	g_key_file_set_boolean(config, PCK_CUSTOM_LOCATION, preset->use_custom_location);
+	g_key_file_set_string (config, PCK_CUSTOM_X, preset->custom_x);
+	g_key_file_set_string (config, PCK_CUSTOM_Y, preset->custom_y);
+	g_key_file_set_boolean(config, PCK_RANDOM_INTERVAL, preset->use_random_interval);
+	g_key_file_set_string (config, PCK_RANDOM_INTERVAL_MS, preset->custom_y);
+	g_key_file_set_boolean(config, PCK_HOLD_TIME, preset->use_hold_time);
+	g_key_file_set_string (config, PCK_HOLD_TIME_MS, preset->hold_time_ms);
+
+	g_key_file_save_to_file(config, configpath, NULL);
+	g_free(preset);
+}
+
+struct Preset *preset_read_from_config()
+{
+	struct Preset *preset = g_malloc0(sizeof(*preset));
+
+	preset->hours                = g_key_file_get_string (config, PCK_HOURS, NULL);
+	preset->minutes              = g_key_file_get_string (config, PCK_MINUTES, NULL);
+	preset->seconds              = g_key_file_get_string (config, PCK_SECONDS, NULL);
+	preset->millisecs            = g_key_file_get_string (config, PCK_MILLISECS, NULL);
+
+	preset->mouse_button         = g_key_file_get_string (config, PCK_MOUSE_BUTTON, NULL);
+	preset->click_type           = g_key_file_get_string (config, PCK_CLICK_TYPE, NULL);
+	preset->hotkey               = g_key_file_get_string (config, PCK_HOTKEY, NULL);
+	preset->use_repeat           = g_key_file_get_boolean(config, PCK_REPEAT, NULL);
+	preset->repeat_times         = g_key_file_get_string (config, PCK_REPEAT_TIMES, NULL);
+
+	preset->use_custom_location  = g_key_file_get_boolean(config, PCK_CUSTOM_LOCATION, NULL);
+	preset->custom_x             = g_key_file_get_string (config, PCK_CUSTOM_X, NULL);
+	preset->custom_y             = g_key_file_get_string (config, PCK_CUSTOM_Y, NULL);
+	preset->use_random_interval  = g_key_file_get_boolean(config, PCK_RANDOM_INTERVAL, NULL);
+	preset->custom_y             = g_key_file_get_string (config, PCK_RANDOM_INTERVAL_MS, NULL);
+	preset->use_hold_time        = g_key_file_get_boolean(config, PCK_HOLD_TIME, NULL);
+	preset->hold_time_ms         = g_key_file_get_string (config, PCK_HOLD_TIME_MS, NULL);
+
+	return preset;
+}

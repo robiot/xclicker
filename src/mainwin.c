@@ -324,64 +324,6 @@ void open_safe_mode_dialog()
 	gtk_widget_destroy(dialog);
 }
 
-void set_click_opts(struct click_opts *data)
-{
-	/// data->sleep
-	int milliseconds = data->sleep % 1000;
-	int seconds = data->sleep / 1000 % 60;
-	int minutes = data->sleep / (1000 * 60) % 60;
-	int hours = data->sleep / (1000 * 60 * 60);
-
-	set_text_from_int(mainappwindow.millisecs_entry, milliseconds);
-	set_text_from_int(mainappwindow.seconds_entry, seconds);
-	set_text_from_int(mainappwindow.minutes_entry, minutes);
-	set_text_from_int(mainappwindow.hours_entry, hours);
-
-	/// data->button
-	char *mouse_entry[] = {"not used", "Left", "Middle", "Right"};
-	gtk_entry_set_text(mainappwindow.mouse_entry, mouse_entry[data->button]);
-
-	/// data->click_type
-	char *click_type_entry[] = {"Single", "Double", "Hold"};
-	gtk_entry_set_text(mainappwindow.click_type_entry, click_type_entry[data->click_type]);
-
-	/// data->repeat
-	gtk_toggle_button_set_active(mainappwindow.repeat_only_check, data->repeat);
-	if (data->repeat)
-	{
-		/// data->repeat_times
-		set_text_from_int(mainappwindow.repeat_entry, data->repeat_times);
-	}
-
-	/// data->custom_location
-	gtk_toggle_button_set_active(mainappwindow.custom_location_check, data->custom_location);
-	if (data->custom_location)
-	{
-		/// data->custom_x
-		set_text_from_int(mainappwindow.x_entry, data->custom_x);
-		/// data->custom_y
-		set_text_from_int(mainappwindow.y_entry, data->custom_y);
-	}
-
-	/// data->random_interval
-	gtk_toggle_button_set_active(mainappwindow.random_interval_check, data->random_interval);
-	if (data->random_interval)
-	{
-		/// data->random_interval_ms
-		set_text_from_int(mainappwindow.random_interval_entry, data->random_interval_ms);
-	}
-
-	/// data->hold_time
-	gtk_toggle_button_set_active(mainappwindow.hold_time_check, data->hold_time);
-	if (data->hold_time)
-	{
-		/// data->hold_time_ms
-		set_text_from_int(mainappwindow.hold_time_entry, data->hold_time_ms);
-	}
-
-	g_free(data);
-}
-
 struct click_opts *get_click_opts()
 {
 	struct click_opts *data = g_malloc0(sizeof(struct click_opts));
@@ -461,32 +403,64 @@ void stop_clicked()
 	toggle_buttons();
 }
 
-const char *preset_filename = "preset.bin";
+struct Preset *mainappwindow_export_preset()
+{
+	struct Preset *preset = g_malloc0(sizeof(*preset));
+
+	preset->hours               = gtk_entry_get_text(mainappwindow.hours_entry);
+	preset->minutes             = gtk_entry_get_text(mainappwindow.minutes_entry);
+	preset->seconds             = gtk_entry_get_text(mainappwindow.seconds_entry);
+	preset->millisecs           = gtk_entry_get_text(mainappwindow.millisecs_entry);
+
+	preset->mouse_button        = gtk_entry_get_text(mainappwindow.mouse_entry);
+	preset->click_type          = gtk_entry_get_text(mainappwindow.click_type_entry);
+	preset->hotkey              = gtk_entry_get_text(mainappwindow.hotkey_type_entry);
+	preset->use_repeat          = gtk_toggle_button_get_active(mainappwindow.repeat_only_check);
+	preset->repeat_times        = gtk_entry_get_text(mainappwindow.repeat_entry);
+
+	preset->use_custom_location = gtk_toggle_button_get_active(mainappwindow.custom_location_check);
+	preset->custom_x            = gtk_entry_get_text(mainappwindow.x_entry);
+	preset->custom_y            = gtk_entry_get_text(mainappwindow.y_entry);
+	preset->use_random_interval = gtk_toggle_button_get_active(mainappwindow.random_interval_check);
+	preset->random_interval_ms  = gtk_entry_get_text(mainappwindow.random_interval_entry);
+	preset->use_hold_time       = gtk_toggle_button_get_active(mainappwindow.hold_time_check);
+	preset->hold_time_ms        = gtk_entry_get_text(mainappwindow.hold_time_entry);
+
+	return preset;
+}
 
 void save_preset_clicked()
 {
-	struct click_opts* data = get_click_opts();
-	FILE *preset = fopen(preset_filename, "w");
-	fwrite(data, sizeof(*data), 1, preset);
-	fclose(preset);
+	preset_write_to_config(mainappwindow_export_preset());
+}
+
+void mainappwindow_import_preset(struct Preset *preset)
+{
+	gtk_entry_set_text(mainappwindow.hours_entry, preset->hours);
+	gtk_entry_set_text(mainappwindow.minutes_entry, preset->minutes);
+	gtk_entry_set_text(mainappwindow.seconds_entry, preset->seconds);
+	gtk_entry_set_text(mainappwindow.millisecs_entry, preset->millisecs);
+
+	gtk_entry_set_text(mainappwindow.mouse_entry, preset->mouse_button);
+	gtk_entry_set_text(mainappwindow.click_type_entry, preset->click_type);
+	gtk_entry_set_text(mainappwindow.hotkey_type_entry, preset->hotkey);
+	gtk_toggle_button_set_active(mainappwindow.repeat_only_check, preset->use_repeat);
+	gtk_entry_set_text(mainappwindow.repeat_entry, preset->repeat_times);
+
+	gtk_toggle_button_set_active(mainappwindow.custom_location_check, preset->use_custom_location);
+	gtk_entry_set_text(mainappwindow.x_entry, preset->custom_x);
+	gtk_entry_set_text(mainappwindow.y_entry, preset->custom_y);
+	gtk_toggle_button_set_active(mainappwindow.random_interval_check, preset->use_random_interval);
+	gtk_entry_set_text(mainappwindow.random_interval_entry, preset->random_interval_ms);
+	gtk_toggle_button_set_active(mainappwindow.hold_time_check, preset->use_hold_time);
+	gtk_entry_set_text(mainappwindow.hold_time_entry, preset->hold_time_ms);
+
+	g_free(preset);
 }
 
 void load_preset_clicked()
 {
-	struct click_opts *data = g_malloc0(sizeof(struct click_opts));
-	FILE *preset = fopen(preset_filename, "r");
-	if (preset == NULL)
-	{
-		fprintf(stderr, "ERROR: %s '%s'\n", strerror(errno), preset_filename);
-		exit(1);
-	}
-	if (!fread(data, sizeof(*data), 1, preset))
-	{
-		fprintf(stderr, "ERROR: can not read '%s'. %s\n", preset_filename, strerror(errno));
-		exit(1);
-	}
-	fclose(preset);
-	set_click_opts(data);
+	mainappwindow_import_preset(preset_read_from_config());
 }
 
 void settings_clicked()
