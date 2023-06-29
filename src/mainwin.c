@@ -1,5 +1,3 @@
-#include <string.h>
-#include <error.h>
 #include <gtk/gtk.h>
 #include <sys/time.h>
 #include "xclicker-app.h"
@@ -92,13 +90,6 @@ int random_between(int lower, int upper)
 int get_text_to_int(GtkWidget *entry)
 {
 	return atoi(gtk_entry_get_text(GTK_ENTRY(entry)));
-}
-
-void set_text_from_int(GtkWidget *entry, int value)
-{
-	char text[64] = {0};
-	sprintf(text, "%d", value);
-	gtk_entry_set_text(entry, text);
 }
 
 /**
