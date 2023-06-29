@@ -238,7 +238,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Mouse Button</property>
-                        <property name="xalign">0.20000000298023224</property>
+                        <property name="xalign">0.2</property>
                       </object>
                       <packing>
                         <property name="left-attach">0</property>
@@ -277,7 +277,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Click Type</property>
-                        <property name="xalign">0.07999999821186065</property>
+                        <property name="xalign">0.08</property>
                       </object>
                       <packing>
                         <property name="left-attach">0</property>
@@ -317,7 +317,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Hotkey</property>
-                        <property name="xalign">0.10000000149011612</property>
+                        <property name="xalign">0.1</property>
                       </object>
                       <packing>
                         <property name="left-attach">0</property>
@@ -559,9 +559,6 @@
                         <property name="left-attach">1</property>
                         <property name="top-attach">3</property>
                       </packing>
-                    </child>
-                    <child>
-                      <placeholder/>
                     </child>
                   </object>
                 </child>
