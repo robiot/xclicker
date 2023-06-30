@@ -656,6 +656,8 @@ static void main_app_window_class_init(MainAppWindowClass *class)
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), insert_handler);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), start_clicked);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), stop_clicked);
+	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), load_preset_clicked);
+	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), save_preset_clicked);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), click_type_entry_changed);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), repeat_only_check_toggle);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), settings_clicked);
