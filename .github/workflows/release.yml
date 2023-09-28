@@ -104,10 +104,10 @@ jobs:
 
           run: |
             rm -rf build/
-            make deb TARGET_ARCH=aarch64
+            make deb TARGET_ARCH=arm64
             cp pkg/deb/*.deb outputs/
 
-            make appimg TARGET_ARCH=aarch64
+            make appimg TARGET_ARCH=arm64
             cp pkg/AppImage/*.AppImage outputs/
 
       - name: Create Release
