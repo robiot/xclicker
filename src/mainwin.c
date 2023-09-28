@@ -174,7 +174,7 @@ void click_handler(gpointer *data)
 
 	g_free(data);
 	XCloseDisplay(display);
-	g_idle_add(toggle_buttons, NULL);
+	g_idle_add_once(toggle_buttons, NULL);
 }
 
 /**
@@ -265,14 +265,14 @@ void get_cursor_pos_handler()
 		struct set_coord_args *data = g_malloc0(sizeof(struct set_coord_args));
 		data->coordx = cur_x;
 		data->coordy = cur_y;
-		g_idle_add(set_coords, data);
+		g_idle_add_once(set_coords, data);
 
 		usleep(50000);
 		free(cur_x);
 		free(cur_y);
 	}
 	XCloseDisplay(display);
-	g_idle_add(toggle_get_active, NULL);
+	g_idle_add_once(toggle_get_active, NULL);
 }
 
 /**
@@ -323,7 +323,7 @@ void start_clicked()
 
 	if (sleep < 100 && is_safemode())
 	{
-		g_idle_add(open_safe_mode_dialog, NULL);
+		g_idle_add_once(open_safe_mode_dialog, NULL);
 		return;
 	}
 

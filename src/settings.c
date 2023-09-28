@@ -152,7 +152,7 @@ void get_hotkeys_handler()
             
             struct set_buttons_entry_struct *user_data = g_malloc0(sizeof(struct set_buttons_entry_struct));
 		    user_data->text = text;
-            g_idle_add(set_buttons_entry_text, user_data);
+            g_idle_add_once(set_buttons_entry_text, user_data);
         }
         else 
         {
@@ -176,13 +176,13 @@ void get_hotkeys_handler()
                 user_data->text = text;
             }
             // Text is freed in the set_buttons_entry_text function
-            g_idle_add(set_buttons_entry_text, user_data);
+            g_idle_add_once(set_buttons_entry_text, user_data);
             break;
         }
     }
     XCloseDisplay(display);
-    g_idle_add(enable_start_button, NULL);
-    g_idle_add(hotkey_finished, NULL);
+    g_idle_add_once(enable_start_button, NULL);
+    g_idle_add_once(hotkey_finished, NULL);
 
     g_key_file_set_integer(config, "Options", "BUTTON1", button1);
     g_key_file_set_integer(config, "Options", "BUTTON2", button2);
