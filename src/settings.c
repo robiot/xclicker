@@ -23,25 +23,29 @@ struct _items
 
 struct set_buttons_entry_struct
 {
-	char *text;
+    char *text;
 };
 
-void set_buttons_entry_text(gpointer *data)
+gboolean set_buttons_entry_text(gpointer *data)
 {
-	struct set_buttons_entry_struct *args = data;
+    struct set_buttons_entry_struct *args = data;
     gtk_entry_set_text(GTK_ENTRY(items.buttons_entry), args->text);
     free(args->text);
     g_free(args);
+
+    return FALSE;
 }
 
-void enable_start_button()
+gboolean enable_start_button()
 {
     gtk_widget_set_sensitive(items.start_button, TRUE);
+    return FALSE;
 }
 
-void hotkey_finished()
+gboolean hotkey_finished()
 {
     set_start_stop_button_hotkey_text();
+    return FALSE;
 }
 
 /**
@@ -65,11 +69,7 @@ void get_hotkeys_handler()
             continue;
 
         // If prekey, ex shift, ctrl
-        if (state == XKeysymToKeycode(display, XK_Shift_L) || state == XKeysymToKeycode(display, XK_Shift_R) 
-            || state == XKeysymToKeycode(display, XK_Alt_L) || state == XKeysymToKeycode(display, XK_Alt_R)
-            || state == XKeysymToKeycode(display, XK_Escape) || state == XKeysymToKeycode(display, XK_Control_L)
-            || state == XKeysymToKeycode(display, XK_Control_R) || state == XKeysymToKeycode(display, XK_ISO_Level3_Shift)
-            || state == XKeysymToKeycode(display, XK_Super_L) || state == XKeysymToKeycode(display, XK_Super_R))
+        if (state == XKeysymToKeycode(display, XK_Shift_L) || state == XKeysymToKeycode(display, XK_Shift_R) || state == XKeysymToKeycode(display, XK_Alt_L) || state == XKeysymToKeycode(display, XK_Alt_R) || state == XKeysymToKeycode(display, XK_Escape) || state == XKeysymToKeycode(display, XK_Control_L) || state == XKeysymToKeycode(display, XK_Control_R) || state == XKeysymToKeycode(display, XK_ISO_Level3_Shift) || state == XKeysymToKeycode(display, XK_Super_L) || state == XKeysymToKeycode(display, XK_Super_R))
         {
             hasPreKey = TRUE;
             config->button1 = state;
@@ -77,17 +77,16 @@ void get_hotkeys_handler()
             const char *plus = " + ";
             char *text = malloc(strlen(key_str) + strlen(plus));
             sprintf(text, "%s%s", key_str, plus);
-            
+
             struct set_buttons_entry_struct *user_data = g_malloc0(sizeof(struct set_buttons_entry_struct));
-		    user_data->text = text;
-            g_idle_add_once(set_buttons_entry_text, user_data);
+            user_data->text = text;
+            g_idle_add(set_buttons_entry_text, user_data);
         }
-        else 
+        else
         {
             config->button2 = state;
             const char *key_str = keycode_to_string(display, state);
             struct set_buttons_entry_struct *user_data = g_malloc0(sizeof(struct set_buttons_entry_struct));
-            
 
             if (hasPreKey == TRUE)
             {
@@ -96,7 +95,7 @@ void get_hotkeys_handler()
                 sprintf(text, "%s%s", buttons_entry_text, key_str);
                 user_data->text = text;
             }
-            else 
+            else
             {
                 config->button1 = -1;
                 char *text = (char *)malloc(1 + strlen(key_str));
@@ -104,13 +103,13 @@ void get_hotkeys_handler()
                 user_data->text = text;
             }
             // Text is freed in the set_buttons_entry_text function
-            g_idle_add_once(set_buttons_entry_text, user_data);
+            g_idle_add(set_buttons_entry_text, user_data);
             break;
         }
     }
     XCloseDisplay(display);
-    g_idle_add_once(enable_start_button, NULL);
-    g_idle_add_once(hotkey_finished, NULL);
+    g_idle_add(enable_start_button, NULL);
+    g_idle_add(hotkey_finished, NULL);
 
     g_key_file_set_integer(config_gfile, CFGK_BUTTON_1, config->button1);
     g_key_file_set_integer(config_gfile, CFGK_BUTTON_2, config->button2);
@@ -118,7 +117,6 @@ void get_hotkeys_handler()
     g_key_file_save_to_file(config_gfile, configpath, NULL);
     isChoosingHotkey = FALSE;
 }
-
 
 void safe_mode_changed(GtkSwitch *self, gboolean state)
 {
@@ -152,7 +150,6 @@ void reset_preset_button_pressed()
     g_key_file_remove_group(config_gfile, PRESET_CATEGORY_OPTIONS, NULL);
     g_key_file_remove_group(config_gfile, PRESET_CATEGORY_MORE_OPTIONS, NULL);
 
-
     save_and_populate_config();
     mainappwindow_import_config();
 }
@@ -163,14 +160,14 @@ void settings_dialog_new()
     GtkDialog *dialog = GTK_DIALOG(gtk_builder_get_object(builder, "dialog"));
 
     config_read_from_file();
-	
+
     set_window_icon(dialog);
 
     gtk_builder_add_callback_symbol(builder, "safe_mode_changed", safe_mode_changed);
     gtk_builder_add_callback_symbol(builder, "xevent_switch_changed", xevent_switch_changed);
     gtk_builder_add_callback_symbol(builder, "start_button_pressed", start_button_pressed);
     gtk_builder_add_callback_symbol(builder, "reset_preset_button_pressed", reset_preset_button_pressed);
-    
+
     gtk_builder_connect_signals(builder, NULL);
 
     // Load version
