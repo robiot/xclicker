@@ -9,10 +9,12 @@
 #include <gtk/gtk.h>
 #include <X11/Xlib.h>
 #include "xclicker-app.h"
+#include "config.h"
 
 int main(int argc, char *argv[])
 {
     XInitThreads();
     srand(time(NULL));
+
     return g_application_run(G_APPLICATION(xclicker_app_new()), argc, argv);
 }

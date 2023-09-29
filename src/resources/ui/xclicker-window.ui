@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.40.0 -->
+<!-- Generated with glade 3.38.2 -->
 <interface>
-  <requires lib="gtk+" version="3.22"/>
+  <requires lib="gtk+" version="3.22" />
   <object class="GtkListStore" id="click_type_lstore">
     <columns>
       <!-- column-name gchararray1 -->
-      <column type="gchararray"/>
+      <column type="gchararray" />
     </columns>
     <data>
       <row>
@@ -19,24 +19,10 @@
       </row>
     </data>
   </object>
-  <object class="GtkListStore" id="hotkey_lstore">
-    <columns>
-      <!-- column-name gchararray1 -->
-      <column type="gchararray"/>
-    </columns>
-    <data>
-      <row>
-        <col id="0" translatable="yes">Normal</col>
-      </row>
-      <row>
-        <col id="0" translatable="yes">Hold</col>
-      </row>
-    </data>
-  </object>
   <object class="GtkListStore" id="mouse_button_lstore">
     <columns>
       <!-- column-name gchararray1 -->
-      <column type="gchararray"/>
+      <column type="gchararray" />
     </columns>
     <data>
       <row>
@@ -47,6 +33,20 @@
       </row>
       <row>
         <col id="0" translatable="yes">Middle</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkListStore" id="hotkey_lstore">
+    <columns>
+      <!-- column-name gchararray1 -->
+      <column type="gchararray" />
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">Normal</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Hold</col>
       </row>
     </data>
   </object>
@@ -102,7 +102,8 @@
                     <property name="hexpand">True</property>
                     <property name="max-length">9</property>
                     <property name="width-chars">0</property>
-                    <signal name="insert-text" handler="insert_handler" swapped="no"/>
+                    <signal name="insert-text" handler="insert_handler" swapped="no" />
+                    <signal name="changed" handler="input_changed_save_handler" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left-attach">1</property>
@@ -153,7 +154,8 @@
                     <property name="hexpand">True</property>
                     <property name="max-length">9</property>
                     <property name="width-chars">0</property>
-                    <signal name="insert-text" handler="insert_handler" swapped="no"/>
+                    <signal name="insert-text" handler="insert_handler" swapped="no" />
+                    <signal name="changed" handler="input_changed_save_handler" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left-attach">2</property>
@@ -168,7 +170,8 @@
                     <property name="hexpand">True</property>
                     <property name="max-length">9</property>
                     <property name="width-chars">0</property>
-                    <signal name="insert-text" handler="insert_handler" swapped="no"/>
+                    <signal name="insert-text" handler="insert_handler" swapped="no" />
+                    <signal name="changed" handler="input_changed_save_handler" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left-attach">0</property>
@@ -185,7 +188,8 @@
                     <property name="max-length">9</property>
                     <property name="width-chars">0</property>
                     <property name="text" translatable="yes">100</property>
-                    <signal name="insert-text" handler="insert_handler" swapped="no"/>
+                    <signal name="insert-text" handler="insert_handler" swapped="no" />
+                    <signal name="changed" handler="input_changed_save_handler" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left-attach">3</property>
@@ -223,7 +227,7 @@
                 <property name="label-xalign">0</property>
                 <property name="shadow-type">in</property>
                 <child>
-                  <!-- n-columns=2 n-rows=4 -->
+                  <!-- n-columns=2 n-rows=3 -->
                   <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
@@ -255,7 +259,7 @@
                         <property name="id-column">0</property>
                         <property name="active-id">-1</property>
                         <child>
-                          <object class="GtkCellRendererText"/>
+                          <object class="GtkCellRendererText" />
                         </child>
                         <child internal-child="entry">
                           <object class="GtkEntry" id="mouse_entry">
@@ -266,12 +270,14 @@
                             <property name="caps-lock-warning">False</property>
                           </object>
                         </child>
+                        <signal name="changed" handler="mouse_button_entry_changed" swapped="no" />
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
                         <property name="top-attach">0</property>
                       </packing>
                     </child>
+
                     <child>
                       <object class="GtkLabel">
                         <property name="visible">True</property>
@@ -293,9 +299,8 @@
                         <property name="entry-text-column">0</property>
                         <property name="id-column">0</property>
                         <property name="active-id">-1</property>
-                        <signal name="changed" handler="click_type_entry_changed" swapped="no"/>
                         <child>
-                          <object class="GtkCellRendererText"/>
+                          <object class="GtkCellRendererText" />
                         </child>
                         <child internal-child="entry">
                           <object class="GtkEntry" id="click_type_entry">
@@ -306,12 +311,14 @@
                             <property name="caps-lock-warning">False</property>
                           </object>
                         </child>
+                        <signal name="changed" handler="click_type_entry_changed" swapped="no" />
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
                         <property name="top-attach">1</property>
                       </packing>
                     </child>
+
                     <child>
                       <object class="GtkLabel">
                         <property name="visible">True</property>
@@ -333,9 +340,8 @@
                         <property name="entry-text-column">0</property>
                         <property name="id-column">0</property>
                         <property name="active-id">-1</property>
-                        <signal name="changed" handler="click_type_entry_changed" swapped="no"/>
                         <child>
-                          <object class="GtkCellRendererText"/>
+                          <object class="GtkCellRendererText" />
                         </child>
                         <child internal-child="entry">
                           <object class="GtkEntry" id="hotkey_type_entry">
@@ -346,12 +352,14 @@
                             <property name="caps-lock-warning">False</property>
                           </object>
                         </child>
+                        <signal name="changed" handler="hotkey_type_entry_changed" swapped="no" />
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
                         <property name="top-attach">2</property>
                       </packing>
                     </child>
+
                     <child>
                       <object class="GtkCheckButton" id="repeat_only_check">
                         <property name="label" translatable="yes">Repeat</property>
@@ -360,7 +368,7 @@
                         <property name="focus-on-click">False</property>
                         <property name="receives-default">False</property>
                         <property name="draw-indicator">True</property>
-                        <signal name="toggled" handler="repeat_only_check_toggle" swapped="no"/>
+                        <signal name="toggled" handler="repeat_only_check_toggle" swapped="no" />
                       </object>
                       <packing>
                         <property name="left-attach">0</property>
@@ -369,7 +377,7 @@
                     </child>
                     <child>
                       <object class="GtkEntry" id="repeat_entry">
-                        <property name="name">MinutesEntry</property>
+                        <property name="name">RepeatEntry</property>
                         <property name="width-request">105</property>
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
@@ -379,7 +387,8 @@
                         <property name="max-length">9</property>
                         <property name="width-chars">0</property>
                         <property name="placeholder-text"># of times</property>
-                        <signal name="insert-text" handler="insert_handler" swapped="no"/>
+                        <signal name="insert-text" handler="insert_handler" swapped="no" />
+                        <signal name="changed" handler="input_changed_save_handler" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
@@ -408,7 +417,7 @@
                 <property name="label-xalign">0</property>
                 <property name="shadow-type">in</property>
                 <child>
-                  <!-- n-columns=2 n-rows=4 -->
+                  <!-- n-columns=2 n-rows=3 -->
                   <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
@@ -426,7 +435,7 @@
                         <property name="focus-on-click">False</property>
                         <property name="receives-default">False</property>
                         <property name="draw-indicator">True</property>
-                        <signal name="toggled" handler="custom_location_check_toggle" swapped="no"/>
+                        <signal name="toggled" handler="custom_location_check_toggle" swapped="no" />
                       </object>
                       <packing>
                         <property name="left-attach">0</property>
@@ -442,7 +451,7 @@
                         <property name="focus-on-click">False</property>
                         <property name="receives-default">True</property>
                         <property name="hexpand">True</property>
-                        <signal name="pressed" handler="get_button_clicked" swapped="no"/>
+                        <signal name="pressed" handler="get_button_clicked" swapped="no" />
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
@@ -465,7 +474,8 @@
                             <property name="max-length">9</property>
                             <property name="width-chars">0</property>
                             <property name="placeholder-text" translatable="yes">X</property>
-                            <signal name="insert-text" handler="insert_handler" swapped="no"/>
+                            <signal name="insert-text" handler="insert_handler" swapped="no" />
+                            <signal name="changed" handler="input_changed_save_handler" swapped="no"/>
                           </object>
                           <packing>
                             <property name="left-attach">0</property>
@@ -482,7 +492,8 @@
                             <property name="max-length">9</property>
                             <property name="width-chars">0</property>
                             <property name="placeholder-text" translatable="yes">Y</property>
-                            <signal name="insert-text" handler="insert_handler" swapped="no"/>
+                            <signal name="insert-text" handler="insert_handler" swapped="no" />
+                            <signal name="changed" handler="input_changed_save_handler" swapped="no"/>
                           </object>
                           <packing>
                             <property name="left-attach">1</property>
@@ -495,6 +506,7 @@
                         <property name="top-attach">1</property>
                       </packing>
                     </child>
+
                     <child>
                       <object class="GtkCheckButton" id="random_interval_check">
                         <property name="label" translatable="yes">Random Interval</property>
@@ -504,7 +516,7 @@
                         <property name="receives-default">False</property>
                         <property name="tooltip-text" translatable="yes">Randomize the interval in milliseconds</property>
                         <property name="draw-indicator">True</property>
-                        <signal name="toggled" handler="random_interval_check_toggle" swapped="no"/>
+                        <signal name="toggled" handler="random_interval_check_toggle" swapped="no" />
                       </object>
                       <packing>
                         <property name="left-attach">0</property>
@@ -521,13 +533,15 @@
                         <property name="max-length">6</property>
                         <property name="width-chars">0</property>
                         <property name="placeholder-text" translatable="yes">+/-</property>
-                        <signal name="insert-text" handler="insert_handler" swapped="no"/>
+                        <signal name="insert-text" handler="insert_handler" swapped="no" />
+                        <signal name="changed" handler="input_changed_save_handler" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
                         <property name="top-attach">2</property>
                       </packing>
                     </child>
+
                     <child>
                       <object class="GtkCheckButton" id="hold_time_check">
                         <property name="label" translatable="yes">Hold Time</property>
@@ -536,7 +550,7 @@
                         <property name="focus-on-click">False</property>
                         <property name="receives-default">False</property>
                         <property name="draw-indicator">True</property>
-                        <signal name="toggled" handler="hold_time_check_toggle" swapped="no"/>
+                        <signal name="toggled" handler="hold_time_check_toggle" swapped="no" />
                       </object>
                       <packing>
                         <property name="left-attach">0</property>
@@ -553,13 +567,15 @@
                         <property name="max-length">6</property>
                         <property name="width-chars">0</property>
                         <property name="placeholder-text" translatable="yes">ms</property>
-                        <signal name="insert-text" handler="insert_handler" swapped="no"/>
+                        <signal name="insert-text" handler="insert_handler" swapped="no" />
+                        <signal name="changed" handler="input_changed_save_handler" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
                         <property name="top-attach">3</property>
                       </packing>
                     </child>
+
                   </object>
                 </child>
                 <child type="label">
@@ -583,68 +599,6 @@
           </packing>
         </child>
         <child>
-          <object class="GtkFrame" id="preset_frame">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="margin-start">4</property>
-            <property name="margin-end">4</property>
-            <property name="label-xalign">0</property>
-            <property name="shadow-type">in</property>
-            <child>
-              <!-- n-columns=2 n-rows=1 -->
-              <object class="GtkGrid">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="margin-start">6</property>
-                <property name="margin-end">5</property>
-                <property name="margin-top">5</property>
-                <property name="margin-bottom">5</property>
-                <property name="column-spacing">15</property>
-                <property name="row-homogeneous">True</property>
-                <property name="column-homogeneous">True</property>
-                <child>
-                  <object class="GtkButton" id="save_preset_button">
-                    <property name="label" translatable="yes">Save</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">True</property>
-                    <signal name="pressed" handler="save_preset_clicked" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="left-attach">0</property>
-                    <property name="top-attach">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="load_preset_button">
-                    <property name="label" translatable="yes">Load</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">True</property>
-                    <signal name="pressed" handler="load_preset_clicked" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="left-attach">1</property>
-                    <property name="top-attach">0</property>
-                  </packing>
-                </child>
-              </object>
-            </child>
-            <child type="label">
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Preset</property>
-              </object>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">2</property>
-          </packing>
-        </child>
-        <child>
           <!-- n-columns=3 n-rows=1 -->
           <object class="GtkGrid">
             <property name="visible">True</property>
@@ -661,7 +615,7 @@
                 <property name="focus-on-click">False</property>
                 <property name="receives-default">True</property>
                 <property name="hexpand">True</property>
-                <signal name="pressed" handler="start_clicked" swapped="no"/>
+                <signal name="pressed" handler="start_clicked" swapped="no" />
               </object>
               <packing>
                 <property name="left-attach">0</property>
@@ -677,7 +631,7 @@
                 <property name="focus-on-click">False</property>
                 <property name="receives-default">True</property>
                 <property name="hexpand">True</property>
-                <signal name="pressed" handler="stop_clicked" swapped="no"/>
+                <signal name="pressed" handler="stop_clicked" swapped="no" />
               </object>
               <packing>
                 <property name="left-attach">1</property>
@@ -694,7 +648,7 @@
                 <property name="receives-default">True</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
-                <signal name="pressed" handler="settings_clicked" swapped="no"/>
+                <signal name="pressed" handler="settings_clicked" swapped="no" />
               </object>
               <packing>
                 <property name="left-attach">2</property>
@@ -705,7 +659,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">3</property>
+            <property name="position">2</property>
           </packing>
         </child>
       </object>

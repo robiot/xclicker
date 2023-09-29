@@ -7,6 +7,12 @@
 #define MAIN_APP_WINDOW_TYPE (main_app_window_get_type())
 G_DECLARE_FINAL_TYPE(MainAppWindow, main_app_window, XCLICKER, APP_WINDOW, GtkApplicationWindow)
 
+
+/**
+ * Set corresponding fields to their imported config value
+*/
+void mainappwindow_import_config();
+
 /**
  * Set the Start & Stop button text from configured hotkey
  */
