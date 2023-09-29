@@ -94,10 +94,11 @@ int get_text_to_int(GtkWidget *entry)
 /**
  * Toggle the start and stop buttons
  */
-void toggle_buttons()
+gboolean toggle_buttons()
 {
 	gtk_widget_set_sensitive(GTK_WIDGET(mainappwindow.start_button), !isClicking);
 	gtk_widget_set_sensitive(GTK_WIDGET(mainappwindow.stop_button), isClicking);
+	return FALSE;
 }
 
 /**
@@ -175,7 +176,7 @@ void click_handler(gpointer *data)
 
 	g_free(data);
 	XCloseDisplay(display);
-	g_idle_add_once(toggle_buttons, NULL);
+	g_idle_add(toggle_buttons, NULL);
 }
 
 /**
@@ -196,7 +197,7 @@ struct set_coord_args
 /**
  * Updates the x and y textboxes with the current cursor location.
  */
-void set_coords(gpointer *data)
+gboolean set_coords(gpointer *data)
 {
 	struct set_coord_args *args = data;
 	if (GTK_IS_ENTRY(mainappwindow.x_entry))
@@ -205,6 +206,8 @@ void set_coords(gpointer *data)
 		gtk_entry_set_text(mainappwindow.y_entry, args->coordy);
 
 	g_free(args);
+
+	return FALSE;
 }
 
 /**
@@ -230,7 +233,7 @@ void get_cursor_pos_click_handler()
 /**
  * Toggle "Get button sensitive" and window topmost.
  */
-void toggle_get_active()
+gboolean toggle_get_active()
 {
 	switch (isChoosingLocation)
 	{
@@ -245,6 +248,7 @@ void toggle_get_active()
 		gtk_widget_set_sensitive(mainappwindow.get_button, TRUE);
 		break;
 	}
+	return FALSE;
 }
 
 /**
@@ -267,14 +271,14 @@ void get_cursor_pos_handler()
 		struct set_coord_args *data = g_malloc0(sizeof(struct set_coord_args));
 		data->coordx = cur_x;
 		data->coordy = cur_y;
-		g_idle_add_once(set_coords, data);
+		g_idle_add(set_coords, data);
 
 		usleep(50000);
 		free(cur_x);
 		free(cur_y);
 	}
 	XCloseDisplay(display);
-	g_idle_add_once(toggle_get_active, NULL);
+	g_idle_add(toggle_get_active, NULL);
 }
 
 /**
@@ -359,12 +363,13 @@ void input_changed_save_handler(GtkEditable *editable, struct _MainAppWindow *ma
 	save_and_populate_config();
 }
 
-void open_safe_mode_dialog()
+gboolean open_safe_mode_dialog()
 {
 	GtkDialog *dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "Warning");
 	gtk_message_dialog_format_secondary_text(dialog, "Intervals under 100 milliseconds is restricted because of safe mode.");
 	gtk_dialog_run(dialog);
 	gtk_widget_destroy(dialog);
+	return FALSE;
 }
 
 /**
@@ -377,7 +382,7 @@ void start_clicked()
 
 	if (sleep < 100 && is_safemode())
 	{
-		g_idle_add_once(open_safe_mode_dialog, NULL);
+		g_idle_add(open_safe_mode_dialog, NULL);
 		return;
 	}
 
