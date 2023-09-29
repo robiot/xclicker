@@ -9,6 +9,7 @@ xclicker_resources = gnome.compile_resources(
 executable('xclicker',
     'main.c', 
     'xclicker-app.c',
+    'config.c',
     'mainwin.c',
     'x11api.c',
     'settings.c',

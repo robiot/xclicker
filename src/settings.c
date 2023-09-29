@@ -9,89 +9,17 @@
 #include "mainwin.h"
 #include "version.h"
 #include "utils.h"
-
-// Default values, later set by config_init
-int button1 = -1;
-int button2 = 74;
+#include "config.h"
 
 gboolean isChoosingHotkey = FALSE;
-const char *configpath;
-GKeyFile *config;
 
 struct _items
 {
     GtkWidget *buttons_entry;
     GtkWidget *start_button;
     GtkWidget *xevent_switch;
+    GtkWidget *reset_preset_button;
 } items;
-
-const char *get_config_file_path()
-{
-    const char *config_path = g_get_user_config_dir();
-    const char *file_name = "/xclicker.conf";
-
-    if (!opendir(config_path)) {
-        g_printerr("Could not find any path to get or store the settings in.\n");
-        return NULL;
-    }
-
-    char *config_file_path = malloc(strlen(config_path) + strlen(file_name) + 1);
-    strcpy(config_file_path, config_path);
-    strcat(config_file_path, "/xclicker.conf");
-
-    return config_file_path;
-}
-
-GKeyFile *get_config_keyfile(const char *config_path)
-{
-    GKeyFile *config = g_key_file_new();
-
-    // Reversed boolean
-    if (access(config_path, F_OK) == 0 && !g_key_file_load_from_file(config, config_path, G_KEY_FILE_KEEP_COMMENTS, NULL))
-        g_print("The config file seems to be corrupted.\n");
-
-    return config;
-}
-
-gboolean is_safemode()
-{
-    if (g_key_file_get_boolean(config, "Options", "SAFEMODE", NULL) == TRUE)
-        return TRUE;
-    if (access(configpath, F_OK))
-        return TRUE;
-
-    return FALSE;
-}
-
-gboolean is_using_xevent()
-{
-    return g_key_file_get_boolean(config, "Options", "USE_XEVENT", NULL);
-}
-
-void config_init()
-{
-    Display *display = get_display();
-    button1 = -1;
-    button2 = XKeysymToKeycode(display, XK_F8);
-    configpath = get_config_file_path();
-    config = get_config_keyfile(configpath);
-    XCloseDisplay(display);
-}
-
-void load_start_stop_keybinds()
-{
-    Display *display = get_display();
-    const int button_1 = g_key_file_get_integer(config, "Options", "BUTTON1", NULL);
-    const int button_2 = g_key_file_get_integer(config, "Options", "BUTTON2", NULL);
-
-    if (button_1 != 0 && button_1)
-        button1 = button_1;
-
-    if (button_2 != 0 && button_2)
-        button2 = button_2;
-
-    XCloseDisplay(display);
-}
 
 struct set_buttons_entry_struct
 {
@@ -144,7 +72,7 @@ void get_hotkeys_handler()
             || state == XKeysymToKeycode(display, XK_Super_L) || state == XKeysymToKeycode(display, XK_Super_R))
         {
             hasPreKey = TRUE;
-            button1 = state;
+            config->button1 = state;
             const char *key_str = keycode_to_string(display, state);
             const char *plus = " + ";
             char *text = malloc(strlen(key_str) + strlen(plus));
@@ -156,7 +84,7 @@ void get_hotkeys_handler()
         }
         else 
         {
-            button2 = state;
+            config->button2 = state;
             const char *key_str = keycode_to_string(display, state);
             struct set_buttons_entry_struct *user_data = g_malloc0(sizeof(struct set_buttons_entry_struct));
             
@@ -170,7 +98,7 @@ void get_hotkeys_handler()
             }
             else 
             {
-                button1 = -1;
+                config->button1 = -1;
                 char *text = (char *)malloc(1 + strlen(key_str));
                 strcpy(text, key_str);
                 user_data->text = text;
@@ -184,25 +112,29 @@ void get_hotkeys_handler()
     g_idle_add_once(enable_start_button, NULL);
     g_idle_add_once(hotkey_finished, NULL);
 
-    g_key_file_set_integer(config, "Options", "BUTTON1", button1);
-    g_key_file_set_integer(config, "Options", "BUTTON2", button2);
-    g_key_file_save_to_file(config, configpath, NULL);
+    g_key_file_set_integer(config_gfile, CFGK_BUTTON_1, config->button1);
+    g_key_file_set_integer(config_gfile, CFGK_BUTTON_2, config->button2);
+
+    g_key_file_save_to_file(config_gfile, configpath, NULL);
     isChoosingHotkey = FALSE;
 }
 
 
 void safe_mode_changed(GtkSwitch *self, gboolean state)
 {
-    g_key_file_set_boolean(config, "Options", "SAFEMODE", state);
-    g_key_file_save_to_file(config, configpath, NULL);
+    g_key_file_set_boolean(config_gfile, CFGK_SAFEMODE, state);
+    config->safe_mode_enabled = state;
+
+    g_key_file_save_to_file(config_gfile, configpath, NULL);
     // Hack to make the background color not glitch
     gtk_switch_set_active(self, state);
 }
 
 void xevent_switch_changed(GtkSwitch *self, gboolean state)
 {
-    g_key_file_set_boolean(config, "Options", "USE_XEVENT", state);
-    g_key_file_save_to_file(config, configpath, NULL);
+    g_key_file_set_boolean(config_gfile, CFGK_USE_XEVENT, state);
+
+    save_and_populate_config();
     gtk_switch_set_active(self, state);
 }
 
@@ -214,16 +146,31 @@ void start_button_pressed(GtkButton *self)
     g_thread_new("get_hotkeys_handler", get_hotkeys_handler, NULL);
 }
 
+void reset_preset_button_pressed()
+{
+    g_key_file_remove_group(config_gfile, PRESET_CATEGORY_CLICK_INTERVAL, NULL);
+    g_key_file_remove_group(config_gfile, PRESET_CATEGORY_OPTIONS, NULL);
+    g_key_file_remove_group(config_gfile, PRESET_CATEGORY_MORE_OPTIONS, NULL);
+
+
+    save_and_populate_config();
+    mainappwindow_import_config();
+}
+
 void settings_dialog_new()
 {
     GtkBuilder *builder = gtk_builder_new_from_resource("/res/ui/settings-dialog.ui");
     GtkDialog *dialog = GTK_DIALOG(gtk_builder_get_object(builder, "dialog"));
 
-	set_window_icon(dialog);
+    config_read_from_file();
+	
+    set_window_icon(dialog);
 
     gtk_builder_add_callback_symbol(builder, "safe_mode_changed", safe_mode_changed);
     gtk_builder_add_callback_symbol(builder, "xevent_switch_changed", xevent_switch_changed);
     gtk_builder_add_callback_symbol(builder, "start_button_pressed", start_button_pressed);
+    gtk_builder_add_callback_symbol(builder, "reset_preset_button_pressed", reset_preset_button_pressed);
+    
     gtk_builder_connect_signals(builder, NULL);
 
     // Load version
@@ -236,17 +183,17 @@ void settings_dialog_new()
 
     // Load
     gtk_switch_set_active(GTK_SWITCH(gtk_builder_get_object(builder, "safe_mode_switch")), is_safemode());
-    gtk_switch_set_active(GTK_SWITCH(items.xevent_switch), is_using_xevent());
+    gtk_switch_set_active(GTK_SWITCH(items.xevent_switch), config->use_xevent);
 
     // Load hotkeys
     Display *display = get_display();
-    const char *button_2_key = keycode_to_string(display, button2);
+    const char *button_2_key = keycode_to_string(display, config->button2);
     const char *sep = " + ";
     char *hotkeys;
 
-    if (button1 != -1)
+    if (config->button1 != -1)
     {
-        const char *button_1_key = keycode_to_string(display, button1);
+        const char *button_1_key = keycode_to_string(display, config->button1);
         hotkeys = malloc(strlen(sep) + strlen(button_2_key) + strlen(button_1_key));
         sprintf(hotkeys, "%s%s%s", button_1_key, sep, button_2_key);
     }

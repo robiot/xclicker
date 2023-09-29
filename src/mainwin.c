@@ -5,6 +5,7 @@
 #include "x11api.h"
 #include "settings.h"
 #include "utils.h"
+#include "config.h"
 
 enum ClickTypes
 {
@@ -111,7 +112,7 @@ void click_handler(gpointer *data)
 	int count = 0;
 	gboolean is_holding = FALSE;
 
-	gboolean using_xevent = is_using_xevent();
+	gboolean using_xevent = config->use_xevent;
 
 	int hold_type_ms = args->hold_time == TRUE ? args->hold_time_ms * 1000 : 0;
 
@@ -168,7 +169,7 @@ void click_handler(gpointer *data)
 	// If it was a mouse hold, then release the button
 	if (args->click_type == CLICK_TYPE_HOLD)
 	{
-		if (mouse_event(display, args->button, is_using_xevent(), MOUSE_EVENT_RELEASE) == FALSE)
+		if (mouse_event(display, args->button, config->use_xevent, MOUSE_EVENT_RELEASE) == FALSE)
 			xapp_error("Sending mouse down", -1);
 	}
 
@@ -202,6 +203,7 @@ void set_coords(gpointer *data)
 		gtk_entry_set_text(mainappwindow.x_entry, args->coordx);
 	if (GTK_IS_ENTRY(mainappwindow.y_entry))
 		gtk_entry_set_text(mainappwindow.y_entry, args->coordy);
+
 	g_free(args);
 }
 
@@ -284,6 +286,9 @@ void get_cursor_pos_handler()
 void repeat_only_check_toggle(GtkToggleButton *check)
 {
 	gtk_widget_set_sensitive(mainappwindow.repeat_entry, gtk_toggle_button_get_active(check));
+
+	g_key_file_set_boolean(config_gfile, PCK_REPEAT, gtk_toggle_button_get_active(check));
+	save_and_populate_config();
 }
 
 void custom_location_check_toggle(GtkToggleButton *check)
@@ -292,6 +297,9 @@ void custom_location_check_toggle(GtkToggleButton *check)
 	gtk_widget_set_sensitive(mainappwindow.x_entry, active);
 	gtk_widget_set_sensitive(mainappwindow.y_entry, active);
 	gtk_widget_set_sensitive(mainappwindow.get_button, active);
+
+	g_key_file_set_boolean(config_gfile, PCK_CUSTOM_LOCATION, active);
+	save_and_populate_config();
 }
 
 /**
@@ -303,6 +311,52 @@ void insert_handler(GtkEditable *editable, const gchar *text)
 	{
 		g_signal_stop_emission_by_name(editable, "insert_text");
 	}
+}
+
+// Input change events
+void input_changed_save_handler(GtkEditable *editable, struct _MainAppWindow *mainappwindow)
+{
+	GtkEntry *entry = GTK_ENTRY(editable);
+	const gchar *text = gtk_entry_get_text(entry);
+
+	if (editable == GTK_EDITABLE(mainappwindow->hours_entry))
+	{
+		g_key_file_set_string(config_gfile, PCK_HOURS, text);
+	}
+	else if (editable == GTK_EDITABLE(mainappwindow->minutes_entry))
+	{
+		g_key_file_set_string(config_gfile, PCK_MINUTES, text);
+	}
+	else if (editable == GTK_EDITABLE(mainappwindow->seconds_entry))
+	{
+		g_key_file_set_string(config_gfile, PCK_SECONDS, text);
+	}
+	else if (editable == GTK_EDITABLE(mainappwindow->millisecs_entry))
+	{
+		g_key_file_set_string(config_gfile, PCK_MILLISECS, text);
+	}
+	else if (editable == GTK_EDITABLE(mainappwindow->repeat_entry))
+	{
+		g_key_file_set_string(config_gfile, PCK_REPEAT_TIMES, text);
+	}
+	else if (editable == GTK_EDITABLE(mainappwindow->random_interval_entry))
+	{
+		g_key_file_set_string(config_gfile, PCK_RANDOM_INTERVAL_MS, text);
+	}
+	else if (editable == GTK_EDITABLE(mainappwindow->hold_time_entry))
+	{
+		g_key_file_set_string(config_gfile, PCK_HOLD_TIME_MS, text);
+	}
+	else if (editable == GTK_EDITABLE(mainappwindow->x_entry))
+	{
+		g_key_file_set_string(config_gfile, PCK_CUSTOM_X, text);
+	}
+	else if (editable == GTK_EDITABLE(mainappwindow->y_entry))
+	{
+		g_key_file_set_string(config_gfile, PCK_CUSTOM_Y, text);
+	}
+
+	save_and_populate_config();
 }
 
 void open_safe_mode_dialog()
@@ -384,6 +438,28 @@ void stop_clicked()
 	toggle_buttons();
 }
 
+void mainappwindow_import_config()
+{
+	gtk_entry_set_text_if_not_null(mainappwindow.hours_entry, config->hours);
+	gtk_entry_set_text_if_not_null(mainappwindow.minutes_entry, config->minutes);
+	gtk_entry_set_text_if_not_null(mainappwindow.seconds_entry, config->seconds);
+	gtk_entry_set_text_if_not_null(mainappwindow.millisecs_entry, config->millisecs);
+
+	gtk_entry_set_text_if_not_null(mainappwindow.mouse_entry, config->mouse_button);
+	gtk_entry_set_text_if_not_null(mainappwindow.click_type_entry, config->click_type);
+	gtk_entry_set_text_if_not_null(mainappwindow.hotkey_type_entry, config->hotkey);
+	gtk_toggle_button_set_active(mainappwindow.repeat_only_check, config->use_repeat);
+	gtk_entry_set_text_if_not_null(mainappwindow.repeat_entry, config->repeat_times);
+
+	gtk_toggle_button_set_active(mainappwindow.custom_location_check, config->use_custom_location);
+	gtk_entry_set_text_if_not_null(mainappwindow.x_entry, config->custom_x);
+	gtk_entry_set_text_if_not_null(mainappwindow.y_entry, config->custom_y);
+	gtk_toggle_button_set_active(mainappwindow.random_interval_check, config->use_random_interval);
+	gtk_entry_set_text_if_not_null(mainappwindow.random_interval_entry, config->random_interval_ms);
+	gtk_toggle_button_set_active(mainappwindow.hold_time_check, config->use_hold_time);
+	gtk_entry_set_text_if_not_null(mainappwindow.hold_time_entry, config->hold_time_ms);
+}
+
 void settings_clicked()
 {
 	settings_dialog_new();
@@ -406,6 +482,9 @@ void click_type_entry_changed()
 		active = FALSE;
 	}
 
+	g_key_file_set_string(config_gfile, PCK_CLICK_TYPE, click_type_text);
+	g_key_file_save_to_file(config_gfile, configpath, NULL);
+
 	gtk_widget_set_sensitive(mainappwindow.hours_entry, active);
 	gtk_widget_set_sensitive(mainappwindow.minutes_entry, active);
 	gtk_widget_set_sensitive(mainappwindow.seconds_entry, active);
@@ -416,6 +495,22 @@ void click_type_entry_changed()
 	gtk_widget_set_sensitive(mainappwindow.random_interval_entry, active);
 	gtk_widget_set_sensitive(mainappwindow.hold_time_check, active);
 	gtk_widget_set_sensitive(mainappwindow.hold_time_entry, active);
+}
+
+void hotkey_type_entry_changed()
+{
+	const gchar *hotkey_type_text = gtk_entry_get_text(GTK_ENTRY(mainappwindow.hotkey_type_entry));
+
+	g_key_file_set_string(config_gfile, PCK_HOTKEY, hotkey_type_text);
+	g_key_file_save_to_file(config_gfile, configpath, NULL);
+}
+
+void mouse_button_entry_changed()
+{
+	const gchar *mouse_button_entry_text = gtk_entry_get_text(GTK_ENTRY(mainappwindow.mouse_entry));
+
+	g_key_file_set_string(config_gfile, PCK_MOUSE_BUTTON, mouse_button_entry_text);
+	g_key_file_save_to_file(config_gfile, configpath, NULL);
 }
 
 void toggle_clicking(int evtype)
@@ -459,10 +554,10 @@ void get_start_stop_key_handler()
 		if (isChoosingHotkey == TRUE)
 			continue;
 
-		if (keyState.button == button1 || keyState.button == button2)
+		if (keyState.button == config->button1 || keyState.button == config->button2)
 		{
 			// Two buttons
-			if (button1 != -1)
+			if (config->button1 != -1)
 			{
 				if (isHolding1 || isHolding2)
 				{
@@ -475,8 +570,8 @@ void get_start_stop_key_handler()
 				toggle_clicking(keyState.evtype);
 			}
 
-			isHolding1 = keyState.button == button1 && keyState.evtype == KeyPress;
-			isHolding2 = keyState.button == button2 && keyState.evtype == KeyPress;
+			isHolding1 = keyState.button == config->button1 && keyState.evtype == KeyPress;
+			isHolding2 = keyState.button == config->button2 && keyState.evtype == KeyPress;
 		}
 	}
 
@@ -490,15 +585,15 @@ void set_start_stop_button_hotkey_text()
 	const char *stop_text_1 = "Stop";
 
 	// Button2 should always be defined
-	const char *button_2_key = keycode_to_string(display, button2);
+	const char *button_2_key = keycode_to_string(display, config->button2);
 
 	char *start_text;
 	char *stop_text;
 
 	// If 2 keys
-	if (button1 != -1)
+	if (config->button1 != -1)
 	{
-		const char *button_1_key = keycode_to_string(display, button1);
+		const char *button_1_key = keycode_to_string(display, config->button1);
 		start_text = malloc(strlen(start_text_1) + strlen(button_1_key) + strlen(button_2_key) + 4);
 		stop_text = malloc(strlen(stop_text_1) + strlen(button_1_key) + strlen(button_2_key) + 4);
 		sprintf(start_text, "%s (%s+%s)", start_text_1, button_1_key, button_2_key);
@@ -532,6 +627,9 @@ void set_start_stop_button_hotkey_text()
 void random_interval_check_toggle(GtkToggleButton *self)
 {
 	gtk_widget_set_sensitive(mainappwindow.random_interval_entry, gtk_toggle_button_get_active(self));
+
+	g_key_file_set_boolean(config_gfile, PCK_RANDOM_INTERVAL, gtk_toggle_button_get_active(self));
+	save_and_populate_config();
 }
 
 /**
@@ -540,6 +638,9 @@ void random_interval_check_toggle(GtkToggleButton *self)
 void hold_time_check_toggle(GtkToggleButton *self)
 {
 	gtk_widget_set_sensitive(mainappwindow.hold_time_entry, gtk_toggle_button_get_active(self));
+
+	g_key_file_set_boolean(config_gfile, PCK_HOLD_TIME, gtk_toggle_button_get_active(self));
+	save_and_populate_config();
 }
 
 /**
@@ -552,7 +653,6 @@ static void main_app_window_init(MainAppWindow *win)
 
 	gtk_widget_init_template(GTK_WIDGET(win));
 	config_init();
-	load_start_stop_keybinds();
 
 	mainappwindow.pwin = gtk_widget_get_toplevel(win);
 
@@ -583,6 +683,8 @@ static void main_app_window_init(MainAppWindow *win)
 	mainappwindow.get_button = win->get_button;
 
 	set_start_stop_button_hotkey_text();
+	mainappwindow_import_config();
+
 	g_thread_new("get_start_stop_key_handler", get_start_stop_key_handler, NULL);
 }
 
@@ -597,7 +699,10 @@ static void main_app_window_class_init(MainAppWindowClass *class)
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), start_clicked);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), stop_clicked);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), click_type_entry_changed);
+	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), mouse_button_entry_changed);
+	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), hotkey_type_entry_changed);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), repeat_only_check_toggle);
+	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), input_changed_save_handler);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), settings_clicked);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), custom_location_check_toggle);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), get_button_clicked);
