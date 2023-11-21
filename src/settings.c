@@ -75,7 +75,7 @@ void get_hotkeys_handler()
             config->button1 = state;
             const char *key_str = keycode_to_string(display, state);
             const char *plus = " + ";
-            char *text = malloc(strlen(key_str) + strlen(plus));
+            char *text = malloc(1 + strlen(key_str) + strlen(plus));
             sprintf(text, "%s%s", key_str, plus);
 
             struct set_buttons_entry_struct *user_data = g_malloc0(sizeof(struct set_buttons_entry_struct));
@@ -191,12 +191,12 @@ void settings_dialog_new()
     if (config->button1 != -1)
     {
         const char *button_1_key = keycode_to_string(display, config->button1);
-        hotkeys = malloc(strlen(sep) + strlen(button_2_key) + strlen(button_1_key));
+        hotkeys = malloc(1 + strlen(sep) + strlen(button_2_key) + strlen(button_1_key));
         sprintf(hotkeys, "%s%s%s", button_1_key, sep, button_2_key);
     }
     else
     {
-        hotkeys = malloc(strlen(button_2_key));
+        hotkeys = malloc(1 + strlen(button_2_key));
         sprintf(hotkeys, "%s", button_2_key);
     }
     gtk_entry_set_text(GTK_ENTRY(items.buttons_entry), hotkeys);
