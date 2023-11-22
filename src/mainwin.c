@@ -263,8 +263,11 @@ void get_cursor_pos_handler()
 	{
 		int i_cur_x, i_cur_y;
 		get_cursor_coords(display, &i_cur_x, &i_cur_y);
-		char *cur_x = (char *)malloc(1 + sizeof(i_cur_x));
-		char *cur_y = (char *)malloc(1 + sizeof(i_cur_y));
+		// before allocating, get how long the numbers would be as a string
+		int x_len = snprintf(NULL, 0, "%d", i_cur_x);
+		int y_len = snprintf(NULL, 0, "%d", i_cur_y);
+		char *cur_x = (char *)malloc(1 + x_len);
+		char *cur_y = (char *)malloc(1 + y_len);
 		sprintf(cur_x, "%d", i_cur_x);
 		sprintf(cur_y, "%d", i_cur_y);
 
@@ -599,16 +602,16 @@ void set_start_stop_button_hotkey_text()
 	if (config->button1 != -1)
 	{
 		const char *button_1_key = keycode_to_string(display, config->button1);
-		start_text = malloc(strlen(start_text_1) + strlen(button_1_key) + strlen(button_2_key) + 4);
-		stop_text = malloc(strlen(stop_text_1) + strlen(button_1_key) + strlen(button_2_key) + 4);
+		start_text = malloc(1 + strlen(start_text_1) + strlen(button_1_key) + strlen(button_2_key) + 4);
+		stop_text = malloc(1 + strlen(stop_text_1) + strlen(button_1_key) + strlen(button_2_key) + 4);
 		sprintf(start_text, "%s (%s+%s)", start_text_1, button_1_key, button_2_key);
 		sprintf(stop_text, "%s (%s+%s)", stop_text_1, button_1_key, button_2_key);
 	}
 	// Only one key
 	else
 	{
-		start_text = malloc(strlen(start_text_1) + strlen(button_2_key) + 3);
-		stop_text = malloc(strlen(stop_text_1) + strlen(button_2_key) + 3);
+		start_text = malloc(1 + strlen(start_text_1) + strlen(button_2_key) + 3);
+		stop_text = malloc(1 + strlen(stop_text_1) + strlen(button_2_key) + 3);
 		sprintf(start_text, "%s (%s)", start_text_1, button_2_key);
 		sprintf(stop_text, "%s (%s)", stop_text_1, button_2_key);
 	}
