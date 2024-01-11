@@ -125,6 +125,10 @@ struct Config *config_read_from_file()
     config->use_repeat = g_key_file_get_boolean(config_gfile, PCK_REPEAT, NULL);
     config->repeat_times = g_key_file_get_string(config_gfile, PCK_REPEAT_TIMES, NULL);
 
+    config->use_multiclick= g_key_file_get_boolean(config_gfile, PCK_MULTICLICK, NULL);
+    config->multiclick_times= g_key_file_get_string(config_gfile, PCK_MULTICLICK_TIMES, NULL);
+    config->multiclick_interval= g_key_file_get_string(config_gfile, PCK_MULTICLICK_INTERVAL, NULL);
+
     config->use_custom_location = g_key_file_get_boolean(config_gfile, PCK_CUSTOM_LOCATION, NULL);
     config->custom_x = g_key_file_get_string(config_gfile, PCK_CUSTOM_X, NULL);
     config->custom_y = g_key_file_get_string(config_gfile, PCK_CUSTOM_Y, NULL);
