@@ -12,8 +12,8 @@
 ---
 <h4 align="center">I made a browser extension to save notes for your current page!</h4>
 <p align="center">
-	<a href="https://notan.ax" target="_blank">
-		https://notan.ax
+	<a href="https://getnotan.com" target="_blank">
+		https://getnotan.com
 	</a>
 </p>
 
