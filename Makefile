@@ -1,4 +1,4 @@
-VERSION=1.5.0
+VERSION=1.5.1
 VERSION_HEADER=src/version.h
 
 BUILD_DIR   = build
