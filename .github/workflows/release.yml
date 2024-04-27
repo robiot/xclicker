@@ -24,7 +24,7 @@ jobs:
           make appimg TARGET_ARCH=amd64
           cp pkg/AppImage/*.AppImage outputs/
 
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@v3
         with:
           name: output-artifact
           path: outputs
@@ -37,7 +37,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: output-artifact
           path: outputs
