@@ -394,6 +394,48 @@
                         <property name="left-attach">1</property>
                         <property name="top-attach">3</property>
                       </packing>
+                      </child>
+                      <child>
+                      <object class="GtkCheckButton" id="multiclick_check">
+                        <property name="label" translatable="yes">Multiclick</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">False</property>
+                        <property name="draw-indicator">True</property>
+                        <signal name="toggled" handler="multiclick_check_toggle" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="multiclick_times_entry">
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="can-focus">True</property>
+                        <property name="placeholder-text" translatable="yes"># of times</property>
+                        <signal name="changed" handler="input_changed_save_handler" swapped="no"/>
+                        <signal name="insert-text" handler="insert_handler" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="multiclick_interval_entry">
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="can-focus">True</property>
+                        <property name="placeholder-text" translatable="yes">interval (ms)</property>
+                        <signal name="changed" handler="input_changed_save_handler" swapped="no"/>
+                        <signal name="insert-text" handler="insert_handler" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left-attach">2</property>
+                        <property name="top-attach">4</property>
+                      </packing>
                     </child>
                   </object>
                 </child>

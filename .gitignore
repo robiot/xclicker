@@ -5,3 +5,5 @@ assets/saves/*.png
 assets/saves/*.jpg
 *.ui~
 *.ui#
+compile_commands.json
+.cache
