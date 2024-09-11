@@ -1,4 +1,5 @@
 #include <gtk/gtk.h>
+#include <stdio.h>
 #include <sys/time.h>
 #include "xclicker-app.h"
 #include "mainwin.h"
@@ -35,12 +36,15 @@ struct _MainAppWindow
 	GtkWidget *random_interval_entry;
 	GtkWidget *hotkey_type_entry;
 	GtkWidget *hold_time_entry;
+    GtkWidget *multiclick_times_entry;
+    GtkWidget *multiclick_interval_entry;
 
 	// Checkboxes
 	GtkWidget *repeat_only_check;
 	GtkWidget *custom_location_check;
 	GtkWidget *random_interval_check;
-	GtkWidget *hold_time_check;
+	GtkWidget *hold_time_check;  
+    GtkWidget *multiclick_check;
 
 	// Buttons
 	GtkWidget *start_button;
@@ -70,6 +74,10 @@ struct click_opts
 
 	gboolean hold_time;
 	int hold_time_ms;
+    
+    gboolean multiclick;
+    int multiclick_times;
+    int multiclick_interval;
 };
 
 /**
@@ -124,28 +132,56 @@ void click_handler(gpointer *data)
 
 		switch (args->click_type)
 		{
-		case CLICK_TYPE_SINGLE:
-			if (click(display, args->button, using_xevent, hold_type_ms) == FALSE)
-				xapp_error("Sending click", -1);
-			break;
-		case CLICK_TYPE_DOUBLE:
-			if (click(display, args->button, using_xevent, hold_type_ms) == FALSE)
-				xapp_error("Sending click", -1);
+            case CLICK_TYPE_SINGLE:
+                if (args->multiclick) 
+                {
+                      for (int i = 0; i < (args->multiclick_times); i++) 
+                      {
+                          if (click(display, args->button, using_xevent, hold_type_ms) == FALSE)
+                              xapp_error("Sending click", -1);
+                          usleep((args->multiclick_interval) * 1000);
+                      }
+                } else 
+                {
+                    if (click(display, args->button, using_xevent, hold_type_ms) == FALSE)
+                        xapp_error("Sending click", -1);
+                }
+                break;
+            case CLICK_TYPE_DOUBLE:
+                if (args->multiclick) 
+                {
+                      for (int i = 0; i < (args->multiclick_times); i++) 
+                      {
+                          if (click(display, args->button, using_xevent, hold_type_ms) == FALSE)
+                              xapp_error("Sending click", -1);
 
-			usleep(150000); // 150 milliseconds
+                          usleep(150000); // 150 milliseconds
 
-			if (click(display, args->button, using_xevent, hold_type_ms) == FALSE)
-				xapp_error("Sending click", -1);
-			break;
-		case CLICK_TYPE_HOLD:
-			if (is_holding == FALSE) // Don't re-send mouse_down if already successfully sent
-			{
-				if (mouse_event(display, args->button, using_xevent, MOUSE_EVENT_PRESS))
-					is_holding = TRUE;
-				else
-					xapp_error("Sending mouse down", -1);
-			}
-			break;
+                          if (click(display, args->button, using_xevent, hold_type_ms) == FALSE)
+                              xapp_error("Sending click", -1);
+
+                          usleep((args->multiclick_interval) * 1000);
+                      }
+                } else 
+                {
+                      if (click(display, args->button, using_xevent, hold_type_ms) == FALSE)
+                          xapp_error("Sending click", -1);
+
+                      usleep(150000); // 150 milliseconds
+
+                      if (click(display, args->button, using_xevent, hold_type_ms) == FALSE)
+                          xapp_error("Sending click", -1);
+                }
+                break;
+            case CLICK_TYPE_HOLD:
+                if (is_holding == FALSE) // Don't re-send mouse_down if already successfully sent
+                {
+                    if (mouse_event(display, args->button, using_xevent, MOUSE_EVENT_PRESS))
+                        is_holding = TRUE;
+                    else
+                        xapp_error("Sending mouse down", -1);
+                }
+                break;
 		}
 
 		int sleep = args->sleep * 1000;
@@ -290,6 +326,14 @@ void get_cursor_pos_handler()
  *
  */
 
+void multiclick_check_toggle(GtkToggleButton *check) 
+{
+    gtk_widget_set_sensitive(mainappwindow.multiclick_times_entry, gtk_toggle_button_get_active(check));
+    gtk_widget_set_sensitive(mainappwindow.multiclick_interval_entry, gtk_toggle_button_get_active(check));
+
+    g_key_file_set_boolean(config_gfile, PCK_MULTICLICK, gtk_toggle_button_get_active(check));
+    save_and_populate_config();
+}
 void repeat_only_check_toggle(GtkToggleButton *check)
 {
 	gtk_widget_set_sensitive(mainappwindow.repeat_entry, gtk_toggle_button_get_active(check));
@@ -361,7 +405,15 @@ void input_changed_save_handler(GtkEditable *editable, struct _MainAppWindow *ma
 	else if (editable == GTK_EDITABLE(mainappwindow->y_entry))
 	{
 		g_key_file_set_string(config_gfile, PCK_CUSTOM_Y, text);
-	}
+	} 
+    else if (editable == GTK_EDITABLE(mainappwindow->multiclick_times_entry)) 
+    {
+        g_key_file_set_string(config_gfile, PCK_MULTICLICK_TIMES, text);
+    }
+    else if (editable == GTK_EDITABLE(mainappwindow->multiclick_interval_entry)) 
+    {
+        g_key_file_set_string(config_gfile, PCK_MULTICLICK_INTERVAL, text);
+    }
 
 	save_and_populate_config();
 }
@@ -405,16 +457,31 @@ void start_clicked()
 
 	const gchar *click_type_text = gtk_entry_get_text(GTK_ENTRY(mainappwindow.click_type_entry));
 	if (strcmp(click_type_text, "Single") == 0)
+    {
+        gtk_widget_set_sensitive(mainappwindow.multiclick_check, TRUE);
 		data->click_type = CLICK_TYPE_SINGLE;
-	else if (strcmp(click_type_text, "Double") == 0)
-		data->click_type = CLICK_TYPE_DOUBLE;
-	else if (strcmp(click_type_text, "Hold") == 0)
-		data->click_type = CLICK_TYPE_HOLD;
+    }
+	else if (strcmp(click_type_text, "Double") == 0) 
+    {
+        gtk_widget_set_sensitive(mainappwindow.multiclick_check, TRUE);
+        data->click_type = CLICK_TYPE_DOUBLE;
+    }
+	else if (strcmp(click_type_text, "Hold") == 0) 
+    {
+        gtk_widget_set_sensitive(mainappwindow.multiclick_check, TRUE);
+        data->click_type = CLICK_TYPE_HOLD;
+    }
 	else
 		xapp_error("Getting the click type", 1);
 
 	if ((data->repeat = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(mainappwindow.repeat_only_check))))
 		data->repeat_times = get_text_to_int(mainappwindow.repeat_entry);
+
+    if ((data->multiclick = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(mainappwindow.multiclick_check)))) 
+    {
+        data->multiclick_times = get_text_to_int(mainappwindow.multiclick_times_entry);
+        data->multiclick_interval = get_text_to_int(mainappwindow.multiclick_interval_entry);
+    }
 
 	if ((data->custom_location = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(mainappwindow.custom_location_check))))
 	{
@@ -458,6 +525,11 @@ void mainappwindow_import_config()
 	gtk_entry_set_text_if_not_null(mainappwindow.hotkey_type_entry, config->hotkey);
 	gtk_toggle_button_set_active(mainappwindow.repeat_only_check, config->use_repeat);
 	gtk_entry_set_text_if_not_null(mainappwindow.repeat_entry, config->repeat_times);
+    gtk_toggle_button_set_active(mainappwindow.multiclick_check, config->use_multiclick);
+    gtk_entry_set_text_if_not_null(mainappwindow.multiclick_times_entry, config->multiclick_times);
+    gtk_entry_set_text_if_not_null(mainappwindow.multiclick_interval_entry, config->multiclick_interval);
+
+
 
 	gtk_toggle_button_set_active(mainappwindow.custom_location_check, config->use_custom_location);
 	gtk_entry_set_text_if_not_null(mainappwindow.x_entry, config->custom_x);
@@ -503,6 +575,10 @@ void click_type_entry_changed()
 	gtk_widget_set_sensitive(mainappwindow.random_interval_entry, active);
 	gtk_widget_set_sensitive(mainappwindow.hold_time_check, active);
 	gtk_widget_set_sensitive(mainappwindow.hold_time_entry, active);
+    gtk_widget_set_sensitive(mainappwindow.hold_time_entry, active);
+    gtk_widget_set_sensitive(mainappwindow.multiclick_check, active);
+    gtk_widget_set_sensitive(mainappwindow.multiclick_times_entry, active);
+    gtk_widget_set_sensitive(mainappwindow.multiclick_interval_entry, active);
 }
 
 void hotkey_type_entry_changed()
@@ -677,12 +753,15 @@ static void main_app_window_init(MainAppWindow *win)
 	mainappwindow.random_interval_entry = win->random_interval_entry;
 	mainappwindow.hotkey_type_entry = win->hotkey_type_entry;
 	mainappwindow.hold_time_entry = win->hold_time_entry;
+    mainappwindow.multiclick_times_entry = win->multiclick_times_entry;
+    mainappwindow.multiclick_interval_entry = win->multiclick_interval_entry;
 
 	// Checkboxes
 	mainappwindow.repeat_only_check = win->repeat_only_check;
 	mainappwindow.custom_location_check = win->custom_location_check;
 	mainappwindow.random_interval_check = win->random_interval_check;
 	mainappwindow.hold_time_check = win->hold_time_check;
+    mainappwindow.multiclick_check = win->multiclick_check;
 
 	// Buttons
 	mainappwindow.start_button = win->start_button;
@@ -716,6 +795,7 @@ static void main_app_window_class_init(MainAppWindowClass *class)
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), get_button_clicked);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), random_interval_check_toggle);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), hold_time_check_toggle);
+    gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), multiclick_check_toggle);
 
 	// Entries
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, hours_entry);
@@ -730,12 +810,15 @@ static void main_app_window_class_init(MainAppWindowClass *class)
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, random_interval_entry);
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, hotkey_type_entry);
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, hold_time_entry);
+    gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, multiclick_times_entry);
+    gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, multiclick_interval_entry);
 
 	// Checkboxes
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, repeat_only_check);
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, custom_location_check);
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, random_interval_check);
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, hold_time_check);
+    gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, multiclick_check);
 
 	// Buttons
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, start_button);
