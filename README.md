@@ -13,7 +13,7 @@
 <h4 align="center">Oh hey, I'm on Twitter too if you'd like to follow more about what I'm up to. Hopefully I'll see you there! 😊</h4>
 <p align="center">
 	<a href="https://twitter.com/robiotz" target="_blank">
-		https://twitter.com/robiotz
+		https://twitter.com/robiot
 	</a>
 </p>
 
