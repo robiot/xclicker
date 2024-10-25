@@ -28,6 +28,9 @@ struct Config
 	const char *hotkey;
 	gboolean use_repeat;
 	const char *repeat_times;
+    gboolean use_multiclick;
+    const char *multiclick_times;
+    const char *multiclick_interval;
 
 	/// more options
 	gboolean use_custom_location;
@@ -65,6 +68,9 @@ extern struct Config *config;
 #define PCK_HOTKEY PRESET_CATEGORY_OPTIONS, "Hotkey"
 #define PCK_REPEAT PRESET_CATEGORY_OPTIONS, "Use Repeat"
 #define PCK_REPEAT_TIMES PRESET_CATEGORY_OPTIONS, "Repeat Times"
+#define PCK_MULTICLICK PRESET_CATEGORY_OPTIONS, "Use Multiclick"
+#define PCK_MULTICLICK_TIMES PRESET_CATEGORY_OPTIONS, "Multiclick Times"
+#define PCK_MULTICLICK_INTERVAL PRESET_CATEGORY_OPTIONS, "Multiclick Interval"
 
 #define PCK_CUSTOM_LOCATION PRESET_CATEGORY_MORE_OPTIONS, "Use Custom Location"
 #define PCK_CUSTOM_X PRESET_CATEGORY_MORE_OPTIONS, "Custom X"
