@@ -122,6 +122,12 @@ struct Config *config_read_from_file()
         config->hotkey = "Normal";
     }
 
+    config->holdtime_type = g_key_file_get_string(config_gfile, PCK_HOLD_TIME_TYPE, NULL);
+    if (!config->holdtime_type)
+    {
+        config->holdtime_type = "Constant";
+    }
+
     config->use_repeat = g_key_file_get_boolean(config_gfile, PCK_REPEAT, NULL);
     config->repeat_times = g_key_file_get_string(config_gfile, PCK_REPEAT_TIMES, NULL);
 

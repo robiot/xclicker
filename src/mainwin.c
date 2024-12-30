@@ -14,6 +14,12 @@ enum ClickTypes
 	CLICK_TYPE_HOLD,
 };
 
+enum HoldTimeTypes
+{
+	HOLDTIME_TYPE_CONSTANT,
+	HOLDTIME_TYPE_RANDOM,
+};
+
 gboolean isClicking = FALSE;
 gboolean isChoosingLocation = FALSE;
 
@@ -35,6 +41,7 @@ struct _MainAppWindow
 	GtkWidget *random_interval_entry;
 	GtkWidget *hotkey_type_entry;
 	GtkWidget *hold_time_entry;
+	GtkWidget *holdtime_type_entry;
 
 	// Checkboxes
 	GtkWidget *repeat_only_check;
@@ -70,6 +77,7 @@ struct click_opts
 
 	gboolean hold_time;
 	int hold_time_ms;
+	int	holdtime_type;
 };
 
 /**
@@ -115,12 +123,22 @@ void click_handler(gpointer *data)
 
 	gboolean using_xevent = config->use_xevent;
 
-	int hold_type_ms = args->hold_time == TRUE ? args->hold_time_ms * 1000 : 0;
+	int hold_type_ms = 0;
+	if (args->hold_time == TRUE)
+	{
+		hold_type_ms=args->hold_time_ms* 1000 ;
+	}
 
 	while (isClicking)
 	{
 		if (args->custom_location)
 			move_to(display, args->custom_x, args->custom_y);
+
+		// reassigning a new hold time
+		if (args->hold_time == TRUE && args->holdtime_type==HOLDTIME_TYPE_RANDOM)
+		{
+			hold_type_ms=random_between(0, args->hold_time_ms)* 1000 ;
+		}
 
 		switch (args->click_type)
 		{
@@ -425,6 +443,14 @@ void start_clicked()
 	if ((data->random_interval = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(mainappwindow.random_interval_check))))
 		data->random_interval_ms = get_text_to_int(mainappwindow.random_interval_entry);
 
+	const gchar *holdtime_type_text = gtk_entry_get_text(GTK_ENTRY(mainappwindow.holdtime_type_entry));
+	if (strcmp(holdtime_type_text, "Constant") == 0)
+		data->holdtime_type = HOLDTIME_TYPE_CONSTANT;
+	else if (strcmp(holdtime_type_text, "Random") == 0)
+		data->holdtime_type = HOLDTIME_TYPE_RANDOM;
+	else
+		xapp_error("Getting the hold time type", 1);
+
 	if ((data->hold_time = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(mainappwindow.hold_time_check))))
 		data->hold_time_ms = get_text_to_int(mainappwindow.hold_time_entry);
 
@@ -466,6 +492,7 @@ void mainappwindow_import_config()
 	gtk_entry_set_text_if_not_null(mainappwindow.random_interval_entry, config->random_interval_ms);
 	gtk_toggle_button_set_active(mainappwindow.hold_time_check, config->use_hold_time);
 	gtk_entry_set_text_if_not_null(mainappwindow.hold_time_entry, config->hold_time_ms);
+	gtk_entry_set_text_if_not_null(mainappwindow.holdtime_type_entry, config->holdtime_type);
 }
 
 void settings_clicked()
@@ -646,11 +673,19 @@ void random_interval_check_toggle(GtkToggleButton *self)
 void hold_time_check_toggle(GtkToggleButton *self)
 {
 	gtk_widget_set_sensitive(mainappwindow.hold_time_entry, gtk_toggle_button_get_active(self));
+	gtk_widget_set_sensitive(mainappwindow.holdtime_type_entry, gtk_toggle_button_get_active(self));
 
 	g_key_file_set_boolean(config_gfile, PCK_HOLD_TIME, gtk_toggle_button_get_active(self));
 	save_and_populate_config();
 }
 
+void holdtime_type_entry_changed()
+{
+	const gchar *holdtime_type_text = gtk_entry_get_text(GTK_ENTRY(mainappwindow.holdtime_type_entry));
+
+	g_key_file_set_string(config_gfile, PCK_HOLD_TIME_TYPE, holdtime_type_text);
+	g_key_file_save_to_file(config_gfile, configpath, NULL);
+}
 /**
  * Loads template, configuration, keybinds.
  * Sets all mainappwindow values to binded win values.
@@ -677,6 +712,7 @@ static void main_app_window_init(MainAppWindow *win)
 	mainappwindow.random_interval_entry = win->random_interval_entry;
 	mainappwindow.hotkey_type_entry = win->hotkey_type_entry;
 	mainappwindow.hold_time_entry = win->hold_time_entry;
+	mainappwindow.holdtime_type_entry = win->holdtime_type_entry;
 
 	// Checkboxes
 	mainappwindow.repeat_only_check = win->repeat_only_check;
@@ -716,6 +752,7 @@ static void main_app_window_class_init(MainAppWindowClass *class)
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), get_button_clicked);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), random_interval_check_toggle);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), hold_time_check_toggle);
+	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), holdtime_type_entry_changed);
 
 	// Entries
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, hours_entry);
@@ -730,6 +767,7 @@ static void main_app_window_class_init(MainAppWindowClass *class)
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, random_interval_entry);
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, hotkey_type_entry);
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, hold_time_entry);
+	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, holdtime_type_entry);
 
 	// Checkboxes
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, repeat_only_check);
