@@ -37,6 +37,7 @@ struct Config
 	const char *random_interval_ms;
 	gboolean use_hold_time;
 	const char *hold_time_ms;
+	const char *holdtime_type;
 };
 
 extern const char *configpath;
@@ -73,6 +74,7 @@ extern struct Config *config;
 #define PCK_RANDOM_INTERVAL_MS PRESET_CATEGORY_MORE_OPTIONS, "Random Interval ms"
 #define PCK_HOLD_TIME PRESET_CATEGORY_MORE_OPTIONS, "Use Hold Time"
 #define PCK_HOLD_TIME_MS PRESET_CATEGORY_MORE_OPTIONS, "Hold Time ms"
+#define PCK_HOLD_TIME_TYPE PRESET_CATEGORY_MORE_OPTIONS, "Hold Time Type"
 
 void config_init();
 

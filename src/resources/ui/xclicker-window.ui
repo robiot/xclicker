@@ -19,6 +19,19 @@
       </row>
     </data>
   </object>
+  <object class="GtkListStore" id="holdtimetype_lstore">
+    <columns>
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">Constant</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Random</col>
+      </row>
+    </data>
+  </object>
   <object class="GtkListStore" id="mouse_button_lstore">
     <columns>
       <!-- column-name gchararray1 -->
@@ -543,14 +556,54 @@
                     </child>
 
                     <child>
-                      <object class="GtkCheckButton" id="hold_time_check">
-                        <property name="label" translatable="yes">Hold Time</property>
+                      <!-- n-columns=2 n-rows=1 -->
+                      <object class="GtkGrid">
                         <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="focus-on-click">False</property>
-                        <property name="receives-default">False</property>
-                        <property name="draw-indicator">True</property>
-                        <signal name="toggled" handler="hold_time_check_toggle" swapped="no" />
+                        <property name="can-focus">False</property>
+                        <property name="column-spacing">10</property>
+                        <child>
+                          <object class="GtkCheckButton" id="hold_time_check">
+                            <property name="label" translatable="yes">Hold</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="focus-on-click">False</property>
+                            <property name="receives-default">False</property>
+                            <property name="draw-indicator">True</property>
+                            <signal name="toggled" handler="hold_time_check_toggle" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                        <object class="GtkComboBox">
+                         <property name="visible">True</property> 
+                         <property name="width-request">130</property> 
+                            <property name="model">holdtimetype_lstore</property>
+                            <property name="has-entry">True</property>
+                            <property name="entry-text-column">0</property>
+                            <property name="id-column">0</property>
+                            <property name="active-id">-1</property>
+                            <signal name="changed" handler="holdtime_type_entry_changed" swapped="no"/>
+                            <child>
+                              <object class="GtkCellRendererText"/>
+                            </child>
+                            <child internal-child="entry">
+                              <object class="GtkEntry" id="holdtime_type_entry">
+                                <property name="can-focus">True</property>
+                                <property name="editable">False</property>
+                                <property name="width-chars">0</property>
+                                <property name="text" translatable="yes">Constant</property>
+                                <property name="caps-lock-warning">False</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="left-attach">1</property>
+                            <property name="top-attach">0</property>
+                          </packing>
+                        </child>
                       </object>
                       <packing>
                         <property name="left-attach">0</property>
