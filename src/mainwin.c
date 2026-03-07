@@ -20,7 +20,7 @@ enum HoldTimeTypes
 	HOLDTIME_TYPE_RANDOM,
 };
 
-gboolean isClicking = FALSE;
+volatile gint isClicking = FALSE;
 gboolean isChoosingLocation = FALSE;
 
 struct _MainAppWindow
@@ -77,7 +77,7 @@ struct click_opts
 
 	gboolean hold_time;
 	int hold_time_ms;
-	int	holdtime_type;
+	int holdtime_type;
 };
 
 /**
@@ -116,85 +116,94 @@ gboolean toggle_buttons()
  */
 void click_handler(gpointer *data)
 {
-	struct click_opts *args = data;
-	Display *display = get_display();
-	int count = 0;
-	gboolean is_holding = FALSE;
+    struct click_opts *args = data;
+    Display *display = get_display();
+    int count = 0;
+    gboolean is_holding = FALSE;
 
-	gboolean using_xevent = config->use_xevent;
+    gboolean using_xevent = config->use_xevent;
 
-	int hold_type_ms = 0;
-	if (args->hold_time == TRUE)
-	{
-		hold_type_ms=args->hold_time_ms* 1000 ;
-	}
+    int hold_type_ms = 0;
+    if (args->hold_time == TRUE)
+    {
+        hold_type_ms = args->hold_time_ms * 1000;
+    }
 
-	while (isClicking)
-	{
-		if (args->custom_location)
-			move_to(display, args->custom_x, args->custom_y);
+    srand(time(NULL) ^ (unsigned long)data);
 
-		// reassigning a new hold time
-		if (args->hold_time == TRUE && args->holdtime_type==HOLDTIME_TYPE_RANDOM)
-		{
-			hold_type_ms=random_between(0, args->hold_time_ms)* 1000 ;
-		}
+    while (g_atomic_int_get(&isClicking))
+    {
+        if (args->custom_location)
+            move_to(display, args->custom_x, args->custom_y);
 
-		switch (args->click_type)
-		{
-		case CLICK_TYPE_SINGLE:
-			if (click(display, args->button, using_xevent, hold_type_ms) == FALSE)
-				xapp_error("Sending click", -1);
-			break;
-		case CLICK_TYPE_DOUBLE:
-			if (click(display, args->button, using_xevent, hold_type_ms) == FALSE)
-				xapp_error("Sending click", -1);
+        if (args->hold_time == TRUE && args->holdtime_type == HOLDTIME_TYPE_RANDOM)
+        {
+            hold_type_ms = random_between(0, args->hold_time_ms) * 1000;
+        }
 
-			usleep(150000); // 150 milliseconds
+        switch (args->click_type)
+        {
+        case CLICK_TYPE_SINGLE:
+            if (click(display, args->button, using_xevent, hold_type_ms) == FALSE)
+                xapp_error("Sending click", -1);
+            break;
+        case CLICK_TYPE_DOUBLE:
+            if (click(display, args->button, using_xevent, hold_type_ms) == FALSE)
+                xapp_error("Sending click", -1);
 
-			if (click(display, args->button, using_xevent, hold_type_ms) == FALSE)
-				xapp_error("Sending click", -1);
-			break;
-		case CLICK_TYPE_HOLD:
-			if (is_holding == FALSE) // Don't re-send mouse_down if already successfully sent
-			{
-				if (mouse_event(display, args->button, using_xevent, MOUSE_EVENT_PRESS))
-					is_holding = TRUE;
-				else
-					xapp_error("Sending mouse down", -1);
-			}
-			break;
-		}
+            int double_click_delay = 150000 + (rand() % 20000);
+            usleep(double_click_delay);
 
-		int sleep = args->sleep * 1000;
-		if (args->random_interval)
-		{
-			int random_interval_ms = args->random_interval_ms * 1000;
-			int lower = sleep - random_interval_ms;
-			usleep(random_between((lower > 0) ? lower : 0, sleep + random_interval_ms));
-		}
-		else
-			usleep(sleep);
+            if (click(display, args->button, using_xevent, hold_type_ms) == FALSE)
+                xapp_error("Sending click", -1);
+            break;
+        case CLICK_TYPE_HOLD:
+            if (is_holding == FALSE)
+            {
+                if (mouse_event(display, args->button, using_xevent, MOUSE_EVENT_PRESS))
+                    is_holding = TRUE;
+                else
+                    xapp_error("Sending mouse down", -1);
+            }
+            break;
+        }
 
-		if (args->repeat)
-		{
-			if (count >= args->repeat_times)
-				isClicking = FALSE;
-			else
-				count++;
-		}
-	}
+        int sleep = args->sleep * 1000;
+        if (args->random_interval)
+        {
+            int random_interval_ms = args->random_interval_ms * 1000;
+            int lower = sleep - random_interval_ms;
+            usleep(random_between((lower > 0) ? lower : 0, sleep + random_interval_ms));
+        }
+        else
+        {
+            int micro_variance = (rand() % 10000) - 5000;
+            int final_sleep = sleep + micro_variance;
 
-	// If it was a mouse hold, then release the button
-	if (args->click_type == CLICK_TYPE_HOLD)
-	{
-		if (mouse_event(display, args->button, config->use_xevent, MOUSE_EVENT_RELEASE) == FALSE)
-			xapp_error("Sending mouse down", -1);
-	}
+            if (final_sleep < 0) 
+                final_sleep = 0;
 
-	g_free(data);
-	XCloseDisplay(display);
-	g_idle_add(toggle_buttons, NULL);
+            usleep(final_sleep);
+        }
+
+        if (args->repeat)
+        {
+            if (count >= args->repeat_times)
+                g_atomic_int_set(&isClicking, FALSE);
+            else
+                count++;
+        }
+    }
+
+    if (args->click_type == CLICK_TYPE_HOLD)
+    {
+        if (mouse_event(display, args->button, config->use_xevent, MOUSE_EVENT_RELEASE) == FALSE)
+            xapp_error("Sending mouse down", -1);
+    }
+
+    g_free(data);
+    XCloseDisplay(display);
+    g_idle_add(toggle_buttons, NULL);
 }
 
 /**
@@ -208,8 +217,8 @@ void click_handler(gpointer *data)
  */
 struct set_coord_args
 {
-	const char *coordx;
-	const char *coordy;
+	char *coordx;
+	char *coordy;
 };
 
 /**
@@ -222,6 +231,12 @@ gboolean set_coords(gpointer *data)
 		gtk_entry_set_text(mainappwindow.x_entry, args->coordx);
 	if (GTK_IS_ENTRY(mainappwindow.y_entry))
 		gtk_entry_set_text(mainappwindow.y_entry, args->coordy);
+
+	// we must check if the pointers are not null before freeing,
+	// because if the user clicks "Get" and then immediately clicks it again,
+	// the first thread will still be trying to update the textboxes while the second thread has already freed the memory, which causes a crash.
+	free(args->coordx);
+	free(args->coordy);
 
 	g_free(args);
 
@@ -295,8 +310,8 @@ void get_cursor_pos_handler()
 		g_idle_add(set_coords, data);
 
 		usleep(50000);
-		free(cur_x);
-		free(cur_y);
+		// free(cur_x);
+		// free(cur_y);
 	}
 	XCloseDisplay(display);
 	g_idle_add(toggle_get_active, NULL);
@@ -407,7 +422,7 @@ void start_clicked()
 		return;
 	}
 
-	isClicking = TRUE;
+	g_atomic_int_set(&isClicking, TRUE);
 	toggle_buttons();
 
 	struct click_opts *data = g_malloc0(sizeof(struct click_opts));
@@ -468,7 +483,7 @@ void start_clicked()
 
 void stop_clicked()
 {
-	isClicking = FALSE;
+	g_atomic_int_set(&isClicking, FALSE);
 	toggle_buttons();
 }
 
@@ -563,7 +578,7 @@ void toggle_clicking(int evtype)
 	}
 	else if (evtype == KeyPress)
 	{
-		if (isClicking)
+		if (g_atomic_int_get(&isClicking))
 			stop_clicked();
 		else
 			start_clicked();
@@ -576,41 +591,42 @@ void toggle_clicking(int evtype)
  */
 void get_start_stop_key_handler()
 {
-	Display *display = get_display();
-	mask_config(display, MASK_KEYBOARD_PRESS | MASK_KEYBOARD_RELEASE);
+    Display *display = get_display();
+    mask_config(display, MASK_KEYBOARD_PRESS | MASK_KEYBOARD_RELEASE);
 
-	gboolean isHolding1 = FALSE;
-	gboolean isHolding2 = FALSE;
+    gboolean isHolding1 = FALSE;
+    gboolean isHolding2 = FALSE;
 
-	while (1)
-	{
-		KeyState keyState;
-		get_next_key_state(display, &keyState);
-		if (isChoosingHotkey == TRUE)
-			continue;
+    while (1)
+    {
+        KeyState keyState;
+        get_next_key_state(display, &keyState);
 
-		if (keyState.button == config->button1 || keyState.button == config->button2)
-		{
-			// Two buttons
-			if (config->button1 != -1)
-			{
-				if (isHolding1 || isHolding2)
-				{
-					toggle_clicking(keyState.evtype);
-				}
-			}
-			// One button
-			else
-			{
-				toggle_clicking(keyState.evtype);
-			}
+        if (isChoosingHotkey == TRUE)
+            continue;
 
-			isHolding1 = keyState.button == config->button1 && keyState.evtype == KeyPress;
-			isHolding2 = keyState.button == config->button2 && keyState.evtype == KeyPress;
-		}
-	}
+        if (keyState.button == config->button1 || keyState.button == config->button2)
+        {
+            // Two buttons
+            if (config->button1 != -1)
+            {
+                if (isHolding1 || isHolding2)
+                {
+                    toggle_clicking(keyState.evtype);
+                }
+            }
+            // One button
+            else
+            {
+                toggle_clicking(keyState.evtype);
+            }
 
-	XCloseDisplay(display);
+            isHolding1 = keyState.button == config->button1 && keyState.evtype == KeyPress;
+            isHolding2 = keyState.button == config->button2 && keyState.evtype == KeyPress;
+        }
+    }
+
+    XCloseDisplay(display);
 }
 
 void set_start_stop_button_hotkey_text()
@@ -622,6 +638,9 @@ void set_start_stop_button_hotkey_text()
 	// Button2 should always be defined
 	const char *button_2_key = keycode_to_string(display, config->button2);
 
+	if (button_2_key == NULL)
+		button_2_key = "Unknown";
+
 	char *start_text;
 	char *stop_text;
 
@@ -629,6 +648,10 @@ void set_start_stop_button_hotkey_text()
 	if (config->button1 != -1)
 	{
 		const char *button_1_key = keycode_to_string(display, config->button1);
+
+		if (button_1_key == NULL)
+			button_1_key = "Unknown";
+
 		start_text = malloc(1 + strlen(start_text_1) + strlen(button_1_key) + strlen(button_2_key) + 4);
 		stop_text = malloc(1 + strlen(stop_text_1) + strlen(button_1_key) + strlen(button_2_key) + 4);
 		sprintf(start_text, "%s (%s+%s)", start_text_1, button_1_key, button_2_key);
