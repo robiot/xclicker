@@ -1,0 +1,40 @@
+app-id: xyz.xclicker.xclicker
+runtime: org.freedesktop.Platform
+runtime-version: "24.08"
+sdk: org.freedesktop.Sdk
+command: xclicker
+finish-args:
+  - --share=ipc
+  - --socket=x11
+  - --socket=pulseaudio
+
+modules:
+  - name: xclicker
+    buildsystem: meson
+    build-commands:
+      - install -Dm 0755 src/xclicker "${FLATPAK_DEST}/bin/xclicker"
+
+    post-install:
+      # Exit out of ninja dir
+      - |
+        cd ..
+        install -Dm 0644 assets/xclicker.desktop "${FLATPAK_DEST}/share/applications/${FLATPAK_ID}.desktop"
+        install -Dm 644 "assets/${FLATPAK_ID}.metainfo.xml" "${FLATPAK_DEST}/share/metainfo/${FLATPAK_ID}.metainfo.xml"
+        install -Dm 644 assets/icon.png "${FLATPAK_DEST}/share/icons/hicolor/256x256/apps/${FLATPAK_ID}.png"
+
+        desktop-file-edit --set-key="Icon" --set-value="${FLATPAK_ID}" "${FLATPAK_DEST}/share/applications/${FLATPAK_ID}.desktop"
+
+      - |
+        set -e
+        VERSION=$(git describe --tags --always | sed 's/^[vV]//')
+        DATE=$(date -d @$(git show -s --format=%ct) +'%Y-%m-%d')
+        sed \
+          -e "s/@VERSION@/${VERSION}/g" \
+          -e "s/@DATE@/${DATE}/g" \
+          -i "${FLATPAK_DEST}/share/metainfo/${FLATPAK_ID}.metainfo.xml"
+
+    sources:
+      - type: git
+        url: https://github.com/robiot/xclicker.git
+        depth: 1
+        tag: v1.5.0
