@@ -31,6 +31,7 @@
             <property name="position">0</property>
           </packing>
         </child>
+        <!-- Safe mode -->
         <child>
           <object class="GtkFrame">
             <property name="visible">True</property>
@@ -92,6 +93,7 @@ milliseconds interval.</property>
             <property name="position">0</property>
           </packing>
         </child>
+        <!-- Use XEvent -->
         <child>
           <object class="GtkFrame">
             <property name="visible">True</property>
@@ -154,6 +156,7 @@ gtk applications.</property>
             <property name="position">1</property>
           </packing>
         </child>
+        <!-- Start/Stop Hotkey -->
         <child>
           <object class="GtkFrame">
             <property name="visible">True</property>
@@ -213,6 +216,69 @@ gtk applications.</property>
             <property name="position">2</property>
           </packing>
         </child>
+        <!-- Window Close Behavior (moved before Reset) -->
+        <child>
+          <object class="GtkFrame">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label-xalign">0</property>
+            <property name="shadow-type">in</property>
+            <child>
+              <object class="GtkBox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="margin-start">5</property>
+                <property name="margin-end">5</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
+                <property name="spacing">10</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">When closing the window:</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkComboBoxText" id="close_behavior_combo">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="active">0</property>
+                    <items>
+                      <item id="Minimize" translatable="yes">Minimize to tray</item>
+                      <item id="Close" translatable="yes">Close application</item>
+                    </items>
+                    <signal name="changed" handler="close_behavior_changed" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="padding">5</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+            </child>
+            <child type="label">
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Window Close Behavior</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">4</property>
+          </packing>
+        </child>
+        <!-- Reset -->
         <child>
           <object class="GtkFrame">
             <property name="visible">True</property>
@@ -256,9 +322,10 @@ gtk applications.</property>
           <packing>
             <property name="expand">False</property>
             <property name="fill">False</property>
-            <property name="position">3</property>
+            <property name="position">5</property>
           </packing>
         </child>
+        <!-- Version and Link -->
         <child>
           <!-- n-columns=1 n-rows=2 -->
           <object class="GtkGrid">
@@ -294,7 +361,7 @@ gtk applications.</property>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">4</property>
+            <property name="position">6</property>
           </packing>
         </child>
       </object>

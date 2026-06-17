@@ -7,6 +7,9 @@
 #include "utils.h"
 #include "config.h"
 
+// Forward declaration
+static gboolean on_window_delete_event(GtkWidget *widget);
+
 enum ClickTypes
 {
 	CLICK_TYPE_SINGLE,
@@ -77,7 +80,7 @@ struct click_opts
 
 	gboolean hold_time;
 	int hold_time_ms;
-	int	holdtime_type;
+	int holdtime_type;
 };
 
 /**
@@ -126,7 +129,7 @@ void click_handler(gpointer *data)
 	int hold_type_ms = 0;
 	if (args->hold_time == TRUE)
 	{
-		hold_type_ms=args->hold_time_ms* 1000 ;
+		hold_type_ms = args->hold_time_ms * 1000;
 	}
 
 	while (isClicking)
@@ -135,9 +138,9 @@ void click_handler(gpointer *data)
 			move_to(display, args->custom_x, args->custom_y);
 
 		// reassigning a new hold time
-		if (args->hold_time == TRUE && args->holdtime_type==HOLDTIME_TYPE_RANDOM)
+		if (args->hold_time == TRUE && args->holdtime_type == HOLDTIME_TYPE_RANDOM)
 		{
-			hold_type_ms=random_between(0, args->hold_time_ms)* 1000 ;
+			hold_type_ms = random_between(0, args->hold_time_ms) * 1000;
 		}
 
 		switch (args->click_type)
@@ -699,6 +702,9 @@ static void main_app_window_init(MainAppWindow *win)
 
 	mainappwindow.pwin = gtk_widget_get_toplevel(win);
 
+	// Connect delete event to hide window
+	g_signal_connect(win, "delete-event", G_CALLBACK(on_window_delete_event), NULL);
+
 	// Entries
 	mainappwindow.hours_entry = win->hours_entry;
 	mainappwindow.minutes_entry = win->minutes_entry;
@@ -788,4 +794,25 @@ static void main_app_window_class_init(MainAppWindowClass *class)
 MainAppWindow *main_app_window_new(XClickerApp *app)
 {
 	return g_object_new(MAIN_APP_WINDOW_TYPE, "application", app, NULL);
+}
+
+/**
+ * Handle window close event(hide window)
+ */
+static gboolean on_window_delete_event(GtkWidget *widget)
+{
+	if (config && config->close_behavior && strcmp(config->close_behavior, "Close application") == 0)
+	{
+		// Close the whole application
+		XClickerApp *app = XCLICKER_APP(gtk_window_get_application(GTK_WINDOW(widget)));
+		if (app)
+			xclicker_app_quit(app);
+		return TRUE;
+	}
+	else
+	{
+		// Hide to system tray
+		gtk_widget_hide(widget);
+		return TRUE;
+	}
 }

@@ -38,6 +38,7 @@ struct Config
 	gboolean use_hold_time;
 	const char *hold_time_ms;
 	const char *holdtime_type;
+	const char *close_behavior;
 };
 
 extern const char *configpath;
@@ -75,6 +76,7 @@ extern struct Config *config;
 #define PCK_HOLD_TIME PRESET_CATEGORY_MORE_OPTIONS, "Use Hold Time"
 #define PCK_HOLD_TIME_MS PRESET_CATEGORY_MORE_OPTIONS, "Hold Time ms"
 #define PCK_HOLD_TIME_TYPE PRESET_CATEGORY_MORE_OPTIONS, "Hold Time Type"
+#define PCK_CLOSE_BEHAVIOR CONFIG_CATEGORY_OPTIONS, "Close Behavior"
 
 void config_init();
 

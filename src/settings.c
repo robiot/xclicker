@@ -154,6 +154,17 @@ void reset_preset_button_pressed()
     mainappwindow_import_config();
 }
 
+void close_behavior_changed(GtkComboBoxText *combo_box)
+{
+    const gchar *selected_behavior = gtk_combo_box_text_get_active_text(combo_box);
+    if (selected_behavior)
+    {
+        g_key_file_set_string(config_gfile, PCK_CLOSE_BEHAVIOR, selected_behavior);
+        g_key_file_save_to_file(config_gfile, configpath, NULL);
+        config->close_behavior = selected_behavior;
+    }
+}
+
 void settings_dialog_new()
 {
     GtkBuilder *builder = gtk_builder_new_from_resource("/res/ui/settings-dialog.ui");
@@ -167,6 +178,7 @@ void settings_dialog_new()
     gtk_builder_add_callback_symbol(builder, "xevent_switch_changed", xevent_switch_changed);
     gtk_builder_add_callback_symbol(builder, "start_button_pressed", start_button_pressed);
     gtk_builder_add_callback_symbol(builder, "reset_preset_button_pressed", reset_preset_button_pressed);
+    gtk_builder_add_callback_symbol(builder, "close_behavior_changed", close_behavior_changed);
 
     gtk_builder_connect_signals(builder, NULL);
 
@@ -181,6 +193,16 @@ void settings_dialog_new()
     // Load
     gtk_switch_set_active(GTK_SWITCH(gtk_builder_get_object(builder, "safe_mode_switch")), is_safemode());
     gtk_switch_set_active(GTK_SWITCH(items.xevent_switch), config->use_xevent);
+
+    // Load close behavior
+    GtkWidget *close_behavior_combo = gtk_builder_get_object(builder, "close_behavior_combo");
+    if (config->close_behavior)
+    {
+        if (strcmp(config->close_behavior, "Close application") == 0)
+            gtk_combo_box_set_active(GTK_COMBO_BOX(close_behavior_combo), 1);
+        else
+            gtk_combo_box_set_active(GTK_COMBO_BOX(close_behavior_combo), 0); // Minimize to tray default
+    }
 
     // Load hotkeys
     Display *display = get_display();
