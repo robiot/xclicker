@@ -80,10 +80,8 @@ void get_cursor_coords(Display *display, int *x, int *y)
 
 void move_to(Display *display, int x, int y)
 {
-    int cur_x, cur_y;
-    get_cursor_coords(display, &cur_x, &cur_y);
-    XWarpPointer(display, None, None, 0, 0, 0, 0, -cur_x, -cur_y); // For absolute position
-    XWarpPointer(display, None, None, 0, 0, 0, 0, x, y);
+    Window root = DefaultRootWindow(display);
+    XWarpPointer(display, None, root, 0, 0, 0, 0, x, y);
     usleep(DEFAULT_MICRO_SLEEP);
 }
 
