@@ -21,19 +21,22 @@ struct _items
     GtkWidget *reset_preset_button;
 } items;
 
-struct set_buttons_entry_struct
+gboolean set_buttons_entry_text(gpointer data)
 {
-    char *text;
-};
+    char *text = data;
 
-gboolean set_buttons_entry_text(gpointer *data)
-{
-    struct set_buttons_entry_struct *args = data;
-    gtk_entry_set_text(GTK_ENTRY(items.buttons_entry), args->text);
-    free(args->text);
-    g_free(args);
+    gtk_entry_set_text(GTK_ENTRY(items.buttons_entry), text);
+    g_free(text);
 
     return FALSE;
+}
+
+/**
+ * Shows the given text in the hotkey entry. Takes ownership of `text`.
+ */
+void set_buttons_entry_text_async(char *text)
+{
+    g_idle_add(set_buttons_entry_text, text);
 }
 
 gboolean enable_start_button()
@@ -49,70 +52,119 @@ gboolean hotkey_finished()
 }
 
 /**
- * Gets the keys pressed when setting hotkey.
+ * Compares a keycode against a keysym.
+ * A keysym that is not in the current layout resolves to keycode 0, which must
+ * not be treated as a match, otherwise every unmapped keysym in the lists
+ * below matches whatever else happens to be 0.
+ */
+gboolean keycode_is(Display *display, int keycode, KeySym keysym)
+{
+    const KeyCode mapped = XKeysymToKeycode(display, keysym);
+
+    return mapped != 0 && keycode == mapped;
+}
+
+/**
+ * Keys that are skipped instead of being bound.
+ * Numlock & caps lock is incredibly buggy and causes memory leaks, pointer errors, free errors...
+ */
+gboolean is_ignored_key(Display *display, int keycode)
+{
+    return keycode_is(display, keycode, XK_Num_Lock) || keycode_is(display, keycode, XK_Caps_Lock);
+}
+
+/**
+ * Keys that only make up the first half of a combination, ex shift, ctrl.
+ */
+gboolean is_prekey(Display *display, int keycode)
+{
+    static const KeySym prekeys[] = {
+        XK_Shift_L, XK_Shift_R, XK_Alt_L, XK_Alt_R, XK_Escape,
+        XK_Control_L, XK_Control_R, XK_ISO_Level3_Shift, XK_Super_L, XK_Super_R};
+
+    for (gsize i = 0; i < G_N_ELEMENTS(prekeys); i++)
+    {
+        if (keycode_is(display, keycode, prekeys[i]))
+            return TRUE;
+    }
+
+    return FALSE;
+}
+
+/**
+ * Gets the keys or mouse buttons pressed when setting hotkey.
  */
 void get_hotkeys_handler()
 {
     Display *display = get_display();
-    mask_config(display, MASK_KEYBOARD_PRESS);
+    mask_config(display, MASK_KEYBOARD_PRESS | MASK_MOUSE_PRESS);
 
-    gboolean hasPreKey = FALSE;
+    // Clicks xclicker sends itself are not the user choosing a hotkey,
+    // which matters because settings can be opened while it is clicking.
+    const int xtest_pointer = get_xtest_pointer_deviceid(display);
+
+    int prekey = -1;
+
     while (1)
     {
         KeyState keyState;
-        get_next_key_state(display, &keyState);
 
-        int state = keyState.button;
-
-        // Numlock & caps lock is incredibly buggy and causes memory leaks, pointer errors, free errors...
-        if (state == XKeysymToKeycode(display, XK_Num_Lock) || state == XKeysymToKeycode(display, XK_Caps_Lock))
+        /*
+         * Anything that is not an actual press is skipped. Without this a
+         * keymap change or an auto-repeat gets decoded as keycode 0 and stored
+         * as the hotkey, so the loop ends before the user ever pressed a key.
+         */
+        if (!get_next_key_state(display, &keyState) || !keyState.pressed)
             continue;
 
-        // If prekey, ex shift, ctrl
-        if (state == XKeysymToKeycode(display, XK_Shift_L) || state == XKeysymToKeycode(display, XK_Shift_R) || state == XKeysymToKeycode(display, XK_Alt_L) || state == XKeysymToKeycode(display, XK_Alt_R) || state == XKeysymToKeycode(display, XK_Escape) || state == XKeysymToKeycode(display, XK_Control_L) || state == XKeysymToKeycode(display, XK_Control_R) || state == XKeysymToKeycode(display, XK_ISO_Level3_Shift) || state == XKeysymToKeycode(display, XK_Super_L) || state == XKeysymToKeycode(display, XK_Super_R))
-        {
-            hasPreKey = TRUE;
-            config->button1 = state;
-            const char *key_str = keycode_to_string(display, state);
-            const char *plus = " + ";
-            char *text = malloc(1 + strlen(key_str) + strlen(plus));
-            sprintf(text, "%s%s", key_str, plus);
+        if (keyState.type == INPUT_TYPE_BUTTON && keyState.sourceid == xtest_pointer)
+            continue;
 
-            struct set_buttons_entry_struct *user_data = g_malloc0(sizeof(struct set_buttons_entry_struct));
-            user_data->text = text;
-            g_idle_add(set_buttons_entry_text, user_data);
+        if (keyState.type == INPUT_TYPE_KEY && is_ignored_key(display, keyState.button))
+            continue;
+
+        if (keyState.type == INPUT_TYPE_KEY && is_prekey(display, keyState.button))
+        {
+            prekey = keyState.button;
+
+            char *prekey_str = input_to_string(display, prekey, INPUT_TYPE_KEY);
+            set_buttons_entry_text_async(g_strdup_printf("%s + ", prekey_str));
+            g_free(prekey_str);
+
+            continue;
+        }
+
+        // Anything else finishes the hotkey
+        config->button1 = prekey;
+        config->button1_type = INPUT_TYPE_KEY;
+        config->button2 = keyState.button;
+        config->button2_type = keyState.type;
+
+        char *key_str = input_to_string(display, keyState.button, keyState.type);
+
+        if (prekey != -1)
+        {
+            char *prekey_str = input_to_string(display, prekey, INPUT_TYPE_KEY);
+            set_buttons_entry_text_async(g_strdup_printf("%s + %s", prekey_str, key_str));
+            g_free(prekey_str);
         }
         else
         {
-            config->button2 = state;
-            const char *key_str = keycode_to_string(display, state);
-            struct set_buttons_entry_struct *user_data = g_malloc0(sizeof(struct set_buttons_entry_struct));
-
-            if (hasPreKey == TRUE)
-            {
-                const char *buttons_entry_text = gtk_entry_get_text(GTK_ENTRY(items.buttons_entry));
-                char *text = malloc(1 + strlen(buttons_entry_text) + strlen(key_str));
-                sprintf(text, "%s%s", buttons_entry_text, key_str);
-                user_data->text = text;
-            }
-            else
-            {
-                config->button1 = -1;
-                char *text = (char *)malloc(1 + strlen(key_str));
-                strcpy(text, key_str);
-                user_data->text = text;
-            }
-            // Text is freed in the set_buttons_entry_text function
-            g_idle_add(set_buttons_entry_text, user_data);
-            break;
+            set_buttons_entry_text_async(g_strdup(key_str));
         }
+
+        g_free(key_str);
+        break;
     }
+
     XCloseDisplay(display);
     g_idle_add(enable_start_button, NULL);
     g_idle_add(hotkey_finished, NULL);
 
     g_key_file_set_integer(config_gfile, CFGK_BUTTON_1, config->button1);
     g_key_file_set_integer(config_gfile, CFGK_BUTTON_2, config->button2);
+    g_key_file_set_integer(config_gfile, CFGK_BUTTON_1_TYPE, config->button1_type);
+    g_key_file_set_integer(config_gfile, CFGK_BUTTON_2_TYPE, config->button2_type);
 
     g_key_file_save_to_file(config_gfile, configpath, NULL);
     isChoosingHotkey = FALSE;
@@ -140,7 +192,7 @@ void start_button_pressed(GtkButton *self)
 {
     isChoosingHotkey = TRUE;
     gtk_widget_set_sensitive(GTK_WIDGET(self), FALSE);
-    gtk_entry_set_text(GTK_ENTRY(items.buttons_entry), "Press Desired Keys");
+    gtk_entry_set_text(GTK_ENTRY(items.buttons_entry), "Press Desired Keys or Mouse Buttons");
     g_thread_new("get_hotkeys_handler", get_hotkeys_handler, NULL);
 }
 
@@ -184,24 +236,23 @@ void settings_dialog_new()
 
     // Load hotkeys
     Display *display = get_display();
-    const char *button_2_key = keycode_to_string(display, config->button2);
-    const char *sep = " + ";
+    char *button_2_key = input_to_string(display, config->button2, config->button2_type);
     char *hotkeys;
 
     if (config->button1 != -1)
     {
-        const char *button_1_key = keycode_to_string(display, config->button1);
-        hotkeys = malloc(1 + strlen(sep) + strlen(button_2_key) + strlen(button_1_key));
-        sprintf(hotkeys, "%s%s%s", button_1_key, sep, button_2_key);
+        char *button_1_key = input_to_string(display, config->button1, config->button1_type);
+        hotkeys = g_strdup_printf("%s + %s", button_1_key, button_2_key);
+        g_free(button_1_key);
     }
     else
     {
-        hotkeys = malloc(1 + strlen(button_2_key));
-        sprintf(hotkeys, "%s", button_2_key);
+        hotkeys = g_strdup(button_2_key);
     }
     gtk_entry_set_text(GTK_ENTRY(items.buttons_entry), hotkeys);
 
-    free(hotkeys);
+    g_free(button_2_key);
+    g_free(hotkeys);
     XCloseDisplay(display);
 
     // Run

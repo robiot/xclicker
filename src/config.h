@@ -1,6 +1,7 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 #include <gtk/gtk.h>
+#include "x11api.h"
 
 /**
  * Represents all options you can see when starting xclicker.
@@ -13,6 +14,9 @@ struct Config
 	/// options
 	int button1;
 	int button2;
+	/// Whether button1/button2 are keyboard keys or mouse buttons
+	enum InputType button1_type;
+	enum InputType button2_type;
 	gboolean safe_mode_enabled;
 	gboolean use_xevent;
 
@@ -52,6 +56,8 @@ extern struct Config *config;
 // config keys
 #define CFGK_BUTTON_1 CONFIG_CATEGORY_OPTIONS, "BUTTON1"
 #define CFGK_BUTTON_2 CONFIG_CATEGORY_OPTIONS, "BUTTON2"
+#define CFGK_BUTTON_1_TYPE CONFIG_CATEGORY_OPTIONS, "BUTTON1_TYPE"
+#define CFGK_BUTTON_2_TYPE CONFIG_CATEGORY_OPTIONS, "BUTTON2_TYPE"
 #define CFGK_USE_XEVENT CONFIG_CATEGORY_OPTIONS, "USE_XEVENT"
 #define CFGK_SAFEMODE CONFIG_CATEGORY_OPTIONS, "SAFEMODE"
 

@@ -1,6 +1,7 @@
 #ifndef __X11_H
 #define __X11_H
 
+#include <glib.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
@@ -8,7 +9,8 @@ enum MaskFlags
 {
     MASK_KEYBOARD_PRESS = 1 << 0,
     MASK_KEYBOARD_RELEASE = 1 << 1,
-    MASK_MOUSE_PRESS = 1 << 2
+    MASK_MOUSE_PRESS = 1 << 2,
+    MASK_MOUSE_RELEASE = 1 << 3
 };
 
 enum ClickModes
@@ -28,9 +30,20 @@ enum MouseEvents
 };
 
 /**
+ * @brief Whether an input refers to a keyboard key or a mouse button.
+ * Needed because a keycode and a button number are both plain ints,
+ * so ex. keycode 9 (Escape) and mouse button 9 have to be told apart.
+ */
+enum InputType
+{
+    INPUT_TYPE_KEY,
+    INPUT_TYPE_BUTTON
+};
+
+/**
  * Configure XInput masks for the given display.
  * @param display The display to configure, get with get_display()
- * @param mode The mode to configure for [MASK_CONFIG_MOUSE/MASK_CONFIG_KEYBOARD]
+ * @param flags Any combination of MaskFlags
  * @see get_display
  */
 void mask_config(Display *display, enum MaskFlags flags);
@@ -41,15 +54,26 @@ void mask_config(Display *display, enum MaskFlags flags);
  */
 typedef struct _KeyState
 {
+    /// Keycode when type is INPUT_TYPE_KEY, button number when INPUT_TYPE_BUTTON
     int button;
+    /// The XI2 event type the state was decoded from
     int evtype;
+    /// Whether `button` is a keyboard key or a mouse button
+    enum InputType type;
+    /// TRUE for a press, FALSE for a release
+    gboolean pressed;
+    /// The device the input came from, compare with get_xtest_pointer_deviceid()
+    int sourceid;
 } KeyState;
 
 /**
- * Waits until key pressed.
- * @returns The KeyState in the buffer given
+ * Waits for the next event and decodes it into the given buffer.
+ * Not every X event is an input event (keymap changes, auto-repeat, events
+ * from other extensions, ...), so the return value has to be checked before
+ * the buffer is used, otherwise unrelated events get mistaken for key presses.
+ * @returns TRUE when a key or button state was decoded into the buffer
  */
-void get_next_key_state(Display *display, KeyState *buffer);
+gboolean get_next_key_state(Display *display, KeyState *buffer);
 
 /**
  * Get the cursors current location.
@@ -83,10 +107,18 @@ int mouse_event(Display *display, int button, int mode, enum MouseEvents event_t
 int click(Display *display, int button, int mode, int sleep);
 
 /**
- * Converts a given x11 keycode to a string
- * which is not always just one character (ex shift).
+ * Converts a keycode or a mouse button number into a name to show the user,
+ * ex. "a", "Shift_L" or "Mouse 9".
+ * @returns A newly allocated string, never NULL. Free with g_free().
  */
-char *keycode_to_string(Display *display, int keycode);
+char *input_to_string(Display *display, int code, enum InputType type);
+
+/**
+ * Device id of the XTEST virtual pointer, or -1 when there is none.
+ * The clicks xclicker sends itself are reported as coming from this device,
+ * so hotkey handling can tell them apart from real ones.
+ */
+int get_xtest_pointer_deviceid(Display *display);
 
 /**
  * Gets a new display.
