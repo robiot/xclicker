@@ -65,6 +65,18 @@ gboolean is_safemode()
     return FALSE;
 }
 
+/**
+ * Reads a stored InputType. Configs written before mouse buttons could be
+ * bound have no such key, and those hotkeys were always keyboard keys.
+ */
+enum InputType load_input_type(const char *group, const char *key)
+{
+    if (g_key_file_get_integer(config_gfile, group, key, NULL) == INPUT_TYPE_BUTTON)
+        return INPUT_TYPE_BUTTON;
+
+    return INPUT_TYPE_KEY;
+}
+
 void load_start_stop_keybinds(struct Config *config)
 {
     Display *display = get_display();
@@ -74,12 +86,20 @@ void load_start_stop_keybinds(struct Config *config)
     // Initial values
     config->button1 = -1;
     config->button2 = XKeysymToKeycode(display, XK_F8);
+    config->button1_type = INPUT_TYPE_KEY;
+    config->button2_type = INPUT_TYPE_KEY;
 
     if (button_1 != 0 && button_1)
+    {
         config->button1 = button_1;
+        config->button1_type = load_input_type(CFGK_BUTTON_1_TYPE);
+    }
 
     if (button_2 != 0 && button_2)
+    {
         config->button2 = button_2;
+        config->button2_type = load_input_type(CFGK_BUTTON_2_TYPE);
+    }
 
     XCloseDisplay(display);
 }

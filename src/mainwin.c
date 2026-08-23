@@ -240,9 +240,10 @@ void get_cursor_pos_click_handler()
 	while (isChoosingLocation)
 	{
 		KeyState keyState;
-		get_next_key_state(display, &keyState);
+		if (!get_next_key_state(display, &keyState))
+			continue;
 
-		if (keyState.button == Button1) // 1 = Mouse1
+		if (keyState.type == INPUT_TYPE_BUTTON && keyState.button == Button1 && keyState.pressed)
 			isChoosingLocation = FALSE;
 	}
 	XCloseDisplay(display);
@@ -548,11 +549,11 @@ void mouse_button_entry_changed()
 	g_key_file_save_to_file(config_gfile, configpath, NULL);
 }
 
-void toggle_clicking(int evtype)
+void toggle_clicking(gboolean pressed)
 {
 	if (strcmp(gtk_entry_get_text(GTK_ENTRY(mainappwindow.hotkey_type_entry)), "Normal"))
 	{
-		if (evtype == KeyPress)
+		if (pressed)
 		{
 			start_clicked();
 		}
@@ -561,7 +562,7 @@ void toggle_clicking(int evtype)
 			stop_clicked();
 		}
 	}
-	else if (evtype == KeyPress)
+	else if (pressed)
 	{
 		if (isClicking)
 			stop_clicked();
@@ -577,7 +578,11 @@ void toggle_clicking(int evtype)
 void get_start_stop_key_handler()
 {
 	Display *display = get_display();
-	mask_config(display, MASK_KEYBOARD_PRESS | MASK_KEYBOARD_RELEASE);
+	mask_config(display, MASK_KEYBOARD_PRESS | MASK_KEYBOARD_RELEASE | MASK_MOUSE_PRESS | MASK_MOUSE_RELEASE);
+
+	// The clicks xclicker sends itself arrive here too, and would re-trigger a
+	// mouse button hotkey over and over as soon as clicking starts.
+	const int xtest_pointer = get_xtest_pointer_deviceid(display);
 
 	gboolean isHolding1 = FALSE;
 	gboolean isHolding2 = FALSE;
@@ -585,28 +590,41 @@ void get_start_stop_key_handler()
 	while (1)
 	{
 		KeyState keyState;
-		get_next_key_state(display, &keyState);
+		if (!get_next_key_state(display, &keyState))
+			continue;
+
 		if (isChoosingHotkey == TRUE)
 			continue;
 
-		if (keyState.button == config->button1 || keyState.button == config->button2)
+		if (keyState.type == INPUT_TYPE_BUTTON && keyState.sourceid == xtest_pointer)
+			continue;
+
+		// The type has to match as well, a keycode and a button number are both
+		// plain ints so ex. keycode 9 (Escape) would collide with mouse button 9.
+		const gboolean is_button1 = config->button1 != -1 &&
+									keyState.button == config->button1 &&
+									keyState.type == config->button1_type;
+		const gboolean is_button2 = keyState.button == config->button2 &&
+									keyState.type == config->button2_type;
+
+		if (is_button1 || is_button2)
 		{
 			// Two buttons
 			if (config->button1 != -1)
 			{
 				if (isHolding1 || isHolding2)
 				{
-					toggle_clicking(keyState.evtype);
+					toggle_clicking(keyState.pressed);
 				}
 			}
 			// One button
 			else
 			{
-				toggle_clicking(keyState.evtype);
+				toggle_clicking(keyState.pressed);
 			}
 
-			isHolding1 = keyState.button == config->button1 && keyState.evtype == KeyPress;
-			isHolding2 = keyState.button == config->button2 && keyState.evtype == KeyPress;
+			isHolding1 = is_button1 && keyState.pressed;
+			isHolding2 = is_button2 && keyState.pressed;
 		}
 	}
 
@@ -616,11 +634,9 @@ void get_start_stop_key_handler()
 void set_start_stop_button_hotkey_text()
 {
 	Display *display = get_display();
-	const char *start_text_1 = "Start";
-	const char *stop_text_1 = "Stop";
 
 	// Button2 should always be defined
-	const char *button_2_key = keycode_to_string(display, config->button2);
+	char *button_2_key = input_to_string(display, config->button2, config->button2_type);
 
 	char *start_text;
 	char *stop_text;
@@ -628,31 +644,24 @@ void set_start_stop_button_hotkey_text()
 	// If 2 keys
 	if (config->button1 != -1)
 	{
-		const char *button_1_key = keycode_to_string(display, config->button1);
-		start_text = malloc(1 + strlen(start_text_1) + strlen(button_1_key) + strlen(button_2_key) + 4);
-		stop_text = malloc(1 + strlen(stop_text_1) + strlen(button_1_key) + strlen(button_2_key) + 4);
-		sprintf(start_text, "%s (%s+%s)", start_text_1, button_1_key, button_2_key);
-		sprintf(stop_text, "%s (%s+%s)", stop_text_1, button_1_key, button_2_key);
+		char *button_1_key = input_to_string(display, config->button1, config->button1_type);
+		start_text = g_strdup_printf("Start (%s+%s)", button_1_key, button_2_key);
+		stop_text = g_strdup_printf("Stop (%s+%s)", button_1_key, button_2_key);
+		g_free(button_1_key);
 	}
 	// Only one key
 	else
 	{
-		start_text = malloc(1 + strlen(start_text_1) + strlen(button_2_key) + 3);
-		stop_text = malloc(1 + strlen(stop_text_1) + strlen(button_2_key) + 3);
-		sprintf(start_text, "%s (%s)", start_text_1, button_2_key);
-		sprintf(stop_text, "%s (%s)", stop_text_1, button_2_key);
+		start_text = g_strdup_printf("Start (%s)", button_2_key);
+		stop_text = g_strdup_printf("Stop (%s)", button_2_key);
 	}
 
 	gtk_button_set_label(GTK_BUTTON(mainappwindow.start_button), start_text);
 	gtk_button_set_label(GTK_BUTTON(mainappwindow.stop_button), stop_text);
-	/*
-	With this free you can either get
-	"corrupted size vs. prev_size" or "free(): invalid next size (fast)""
-	if you use Shift + Numpad as keys.
-	This is why numpad is disabled.
-	*/
-	free(start_text);
-	free(stop_text);
+
+	g_free(button_2_key);
+	g_free(start_text);
+	g_free(stop_text);
 	XCloseDisplay(display);
 }
 
