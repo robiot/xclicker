@@ -8,7 +8,8 @@ enum MaskFlags
 {
     MASK_KEYBOARD_PRESS = 1 << 0,
     MASK_KEYBOARD_RELEASE = 1 << 1,
-    MASK_MOUSE_PRESS = 1 << 2
+    MASK_MOUSE_PRESS = 1 << 2,
+    MASK_MOUSE_RAW_PRESS = 1 << 3
 };
 
 enum ClickModes

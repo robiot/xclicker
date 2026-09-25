@@ -1,5 +1,7 @@
 #include <gtk/gtk.h>
 #include <sys/time.h>
+#include <poll.h>
+#include <X11/extensions/XInput2.h>
 #include "xclicker-app.h"
 #include "mainwin.h"
 #include "x11api.h"
@@ -22,6 +24,16 @@ enum HoldTimeTypes
 
 gboolean isClicking = FALSE;
 gboolean isChoosingLocation = FALSE;
+gboolean isRecordArmed = FALSE;
+gboolean isRecording = FALSE;
+GArray *recorded_targets = NULL;
+
+struct click_target
+{
+	int x;
+	int y;
+	int delay_ms;
+};
 
 struct _MainAppWindow
 {
@@ -54,6 +66,10 @@ struct _MainAppWindow
 	GtkWidget *stop_button;
 	GtkWidget *settings_button;
 	GtkWidget *get_button;
+	GtkWidget *record_button;
+
+	GtkWidget *multi_target_check;
+	GtkWidget *record_status_label;
 } mainappwindow;
 G_DEFINE_TYPE(MainAppWindow, main_app_window, GTK_TYPE_APPLICATION_WINDOW);
 
@@ -78,6 +94,9 @@ struct click_opts
 	gboolean hold_time;
 	int hold_time_ms;
 	int	holdtime_type;
+
+	gboolean multi_target;
+	GArray *targets;
 };
 
 /**
@@ -106,6 +125,9 @@ gboolean toggle_buttons()
 {
 	gtk_widget_set_sensitive(GTK_WIDGET(mainappwindow.start_button), !isClicking);
 	gtk_widget_set_sensitive(GTK_WIDGET(mainappwindow.stop_button), isClicking);
+	gtk_widget_set_sensitive(GTK_WIDGET(mainappwindow.record_button),
+		!isClicking && !isRecording &&
+		gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(mainappwindow.multi_target_check)));
 	return FALSE;
 }
 
@@ -131,50 +153,68 @@ void click_handler(gpointer *data)
 
 	while (isClicking)
 	{
-		if (args->custom_location)
-			move_to(display, args->custom_x, args->custom_y);
-
-		// reassigning a new hold time
-		if (args->hold_time == TRUE && args->holdtime_type==HOLDTIME_TYPE_RANDOM)
+		if (args->multi_target)
 		{
-			hold_type_ms=random_between(0, args->hold_time_ms)* 1000 ;
-		}
-
-		switch (args->click_type)
-		{
-		case CLICK_TYPE_SINGLE:
-			if (click(display, args->button, using_xevent, hold_type_ms) == FALSE)
-				xapp_error("Sending click", -1);
-			break;
-		case CLICK_TYPE_DOUBLE:
-			if (click(display, args->button, using_xevent, hold_type_ms) == FALSE)
-				xapp_error("Sending click", -1);
-
-			usleep(150000); // 150 milliseconds
-
-			if (click(display, args->button, using_xevent, hold_type_ms) == FALSE)
-				xapp_error("Sending click", -1);
-			break;
-		case CLICK_TYPE_HOLD:
-			if (is_holding == FALSE) // Don't re-send mouse_down if already successfully sent
+			for (guint i = 0; i < args->targets->len && isClicking; i++)
 			{
-				if (mouse_event(display, args->button, using_xevent, MOUSE_EVENT_PRESS))
-					is_holding = TRUE;
-				else
-					xapp_error("Sending mouse down", -1);
-			}
-			break;
-		}
+				struct click_target *target = &g_array_index(args->targets, struct click_target, i);
 
-		int sleep = args->sleep * 1000;
-		if (args->random_interval)
-		{
-			int random_interval_ms = args->random_interval_ms * 1000;
-			int lower = sleep - random_interval_ms;
-			usleep(random_between((lower > 0) ? lower : 0, sleep + random_interval_ms));
+				usleep(target->delay_ms * 1000);
+				if (!isClicking)
+					break;
+
+				move_to(display, target->x, target->y);
+				if (click(display, args->button, using_xevent, hold_type_ms) == FALSE)
+					xapp_error("Sending click", -1);
+			}
 		}
 		else
-			usleep(sleep);
+		{
+			if (args->custom_location)
+				move_to(display, args->custom_x, args->custom_y);
+
+			// reassigning a new hold time
+			if (args->hold_time == TRUE && args->holdtime_type==HOLDTIME_TYPE_RANDOM)
+			{
+				hold_type_ms=random_between(0, args->hold_time_ms)* 1000 ;
+			}
+
+			switch (args->click_type)
+			{
+			case CLICK_TYPE_SINGLE:
+				if (click(display, args->button, using_xevent, hold_type_ms) == FALSE)
+					xapp_error("Sending click", -1);
+				break;
+			case CLICK_TYPE_DOUBLE:
+				if (click(display, args->button, using_xevent, hold_type_ms) == FALSE)
+					xapp_error("Sending click", -1);
+
+				usleep(150000); // 150 milliseconds
+
+				if (click(display, args->button, using_xevent, hold_type_ms) == FALSE)
+					xapp_error("Sending click", -1);
+				break;
+			case CLICK_TYPE_HOLD:
+				if (is_holding == FALSE) // Don't re-send mouse_down if already successfully sent
+				{
+					if (mouse_event(display, args->button, using_xevent, MOUSE_EVENT_PRESS))
+						is_holding = TRUE;
+					else
+						xapp_error("Sending mouse down", -1);
+				}
+				break;
+			}
+
+			int sleep = args->sleep * 1000;
+			if (args->random_interval)
+			{
+				int random_interval_ms = args->random_interval_ms * 1000;
+				int lower = sleep - random_interval_ms;
+				usleep(random_between((lower > 0) ? lower : 0, sleep + random_interval_ms));
+			}
+			else
+				usleep(sleep);
+		}
 
 		if (args->repeat)
 		{
@@ -192,6 +232,8 @@ void click_handler(gpointer *data)
 			xapp_error("Sending mouse down", -1);
 	}
 
+	if (args->targets)
+		g_array_free(args->targets, TRUE);
 	g_free(data);
 	XCloseDisplay(display);
 	g_idle_add(toggle_buttons, NULL);
@@ -300,6 +342,137 @@ void get_cursor_pos_handler()
 	}
 	XCloseDisplay(display);
 	g_idle_add(toggle_get_active, NULL);
+}
+
+/**
+ *
+ * Multiple Targets
+ *
+ */
+
+gboolean update_recording_count(gpointer *data)
+{
+	char text[64];
+	snprintf(text, sizeof(text), "Recording... %d clicks", GPOINTER_TO_INT(data));
+	gtk_label_set_text(GTK_LABEL(mainappwindow.record_status_label), text);
+	return FALSE;
+}
+
+gboolean recording_started(gpointer *data)
+{
+	gtk_label_set_text(GTK_LABEL(mainappwindow.record_status_label), "Recording... 0 clicks");
+	gtk_button_set_label(GTK_BUTTON(mainappwindow.record_button), "Recording");
+	gtk_widget_set_sensitive(mainappwindow.record_button, FALSE);
+	return FALSE;
+}
+
+gboolean recording_finished(gpointer *data)
+{
+	char text[64];
+	snprintf(text, sizeof(text), "%d clicks recorded", GPOINTER_TO_INT(data));
+	gtk_label_set_text(GTK_LABEL(mainappwindow.record_status_label), text);
+	gtk_button_set_label(GTK_BUTTON(mainappwindow.record_button), "Record");
+	gtk_widget_set_sensitive(mainappwindow.record_button, TRUE);
+	return FALSE;
+}
+
+/**
+ * Records every left mouse click along with the cursor position and
+ * how long it took since the previous click, until isRecording is unset.
+ */
+void record_handler()
+{
+	Display *display = get_display();
+	mask_config(display, MASK_MOUSE_RAW_PRESS);
+	int fd = ConnectionNumber(display);
+
+	gint64 last = g_get_monotonic_time();
+	while (isRecording)
+	{
+		struct pollfd pfd = {fd, POLLIN, 0};
+		if (!XPending(display) && poll(&pfd, 1, 100) <= 0)
+			continue;
+
+		KeyState keyState;
+		get_next_key_state(display, &keyState);
+
+		if (keyState.button == Button1 && keyState.evtype == XI_RawButtonPress)
+		{
+			gint64 now = g_get_monotonic_time();
+			int x, y;
+			get_cursor_coords(display, &x, &y);
+
+			struct click_target target = {x, y, (int)((now - last) / 1000)};
+			g_array_append_val(recorded_targets, target);
+			last = now;
+
+			g_idle_add(update_recording_count, GINT_TO_POINTER(recorded_targets->len));
+		}
+	}
+
+	XCloseDisplay(display);
+	g_idle_add(recording_finished, GINT_TO_POINTER(recorded_targets->len));
+}
+
+void toggle_recording()
+{
+	if (isRecordArmed)
+	{
+		isRecordArmed = FALSE;
+		isRecording = TRUE;
+
+		if (recorded_targets)
+			g_array_free(recorded_targets, TRUE);
+		recorded_targets = g_array_new(FALSE, FALSE, sizeof(struct click_target));
+
+		g_idle_add(recording_started, NULL);
+		g_thread_new("record_handler", record_handler, NULL);
+	}
+	else if (isRecording)
+	{
+		isRecording = FALSE;
+	}
+}
+
+void record_button_clicked()
+{
+	if (isRecording)
+		return;
+
+	if (isRecordArmed)
+	{
+		isRecordArmed = FALSE;
+		gtk_button_set_label(GTK_BUTTON(mainappwindow.record_button), "Record");
+		gtk_label_set_text(GTK_LABEL(mainappwindow.record_status_label), "");
+		return;
+	}
+
+	isRecordArmed = TRUE;
+	gtk_button_set_label(GTK_BUTTON(mainappwindow.record_button), "Cancel");
+
+	char text[64];
+	Display *display = get_display();
+	const char *button_2_key = keycode_to_string(display, config->button2);
+	if (config->button1 != -1)
+	{
+		const char *button_1_key = keycode_to_string(display, config->button1);
+		snprintf(text, sizeof(text), "Press %s+%s to start recording", button_1_key, button_2_key);
+	}
+	else
+		snprintf(text, sizeof(text), "Press %s to start recording", button_2_key);
+	XCloseDisplay(display);
+
+	gtk_label_set_text(GTK_LABEL(mainappwindow.record_status_label), text);
+}
+
+void multi_target_check_toggle(GtkToggleButton *check)
+{
+	gboolean active = gtk_toggle_button_get_active(check);
+	gtk_widget_set_sensitive(mainappwindow.record_button, active && !isRecordArmed && !isRecording);
+	gtk_widget_set_sensitive(mainappwindow.record_status_label, active);
+
+	g_key_file_set_boolean(config_gfile, PCK_MULTI_TARGET, active);
+	save_and_populate_config();
 }
 
 /**
@@ -454,6 +627,21 @@ void start_clicked()
 	if ((data->hold_time = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(mainappwindow.hold_time_check))))
 		data->hold_time_ms = get_text_to_int(mainappwindow.hold_time_entry);
 
+	if ((data->multi_target = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(mainappwindow.multi_target_check))))
+	{
+		if (!recorded_targets || recorded_targets->len == 0)
+		{
+			isClicking = FALSE;
+			toggle_buttons();
+			g_free(data);
+			gtk_label_set_text(GTK_LABEL(mainappwindow.record_status_label), "Record some clicks first");
+			return;
+		}
+
+		data->targets = g_array_sized_new(FALSE, FALSE, sizeof(struct click_target), recorded_targets->len);
+		g_array_append_vals(data->targets, recorded_targets->data, recorded_targets->len);
+	}
+
 	// If holding, ignore interval and repeat as it makes no sense.
 	if (data->click_type == CLICK_TYPE_HOLD)
 	{
@@ -493,6 +681,7 @@ void mainappwindow_import_config()
 	gtk_toggle_button_set_active(mainappwindow.hold_time_check, config->use_hold_time);
 	gtk_entry_set_text_if_not_null(mainappwindow.hold_time_entry, config->hold_time_ms);
 	gtk_entry_set_text_if_not_null(mainappwindow.holdtime_type_entry, config->holdtime_type);
+	gtk_toggle_button_set_active(mainappwindow.multi_target_check, config->use_multi_target);
 }
 
 void settings_clicked()
@@ -570,6 +759,17 @@ void toggle_clicking(int evtype)
 	}
 }
 
+void hotkey_pressed(int evtype)
+{
+	if (isRecordArmed || isRecording)
+	{
+		if (evtype == KeyPress)
+			toggle_recording();
+		return;
+	}
+	toggle_clicking(evtype);
+}
+
 /**
  * Gets if configured hotkey is pressed, if so
  * toggle clicking.
@@ -596,13 +796,13 @@ void get_start_stop_key_handler()
 			{
 				if (isHolding1 || isHolding2)
 				{
-					toggle_clicking(keyState.evtype);
+					hotkey_pressed(keyState.evtype);
 				}
 			}
 			// One button
 			else
 			{
-				toggle_clicking(keyState.evtype);
+				hotkey_pressed(keyState.evtype);
 			}
 
 			isHolding1 = keyState.button == config->button1 && keyState.evtype == KeyPress;
@@ -725,6 +925,9 @@ static void main_app_window_init(MainAppWindow *win)
 	mainappwindow.stop_button = win->stop_button;
 	mainappwindow.settings_button = win->settings_button;
 	mainappwindow.get_button = win->get_button;
+	mainappwindow.record_button = win->record_button;
+	mainappwindow.multi_target_check = win->multi_target_check;
+	mainappwindow.record_status_label = win->record_status_label;
 
 	set_start_stop_button_hotkey_text();
 	mainappwindow_import_config();
@@ -753,6 +956,8 @@ static void main_app_window_class_init(MainAppWindowClass *class)
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), random_interval_check_toggle);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), hold_time_check_toggle);
 	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), holdtime_type_entry_changed);
+	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), multi_target_check_toggle);
+	gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(class), record_button_clicked);
 
 	// Entries
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, hours_entry);
@@ -780,6 +985,9 @@ static void main_app_window_class_init(MainAppWindowClass *class)
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, stop_button);
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, settings_button);
 	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, get_button);
+	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, record_button);
+	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, multi_target_check);
+	gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(class), MainAppWindow, record_status_label);
 }
 
 /**
