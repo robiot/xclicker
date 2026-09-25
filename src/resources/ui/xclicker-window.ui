@@ -629,6 +629,52 @@
                       </packing>
                     </child>
 
+                    <child>
+                      <object class="GtkCheckButton" id="multi_target_check">
+                        <property name="label" translatable="yes">Multiple Targets</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="focus-on-click">False</property>
+                        <property name="receives-default">False</property>
+                        <property name="tooltip-text" translatable="yes">Record clicks at multiple positions and replay them</property>
+                        <property name="draw-indicator">True</property>
+                        <signal name="toggled" handler="multi_target_check_toggle" swapped="no" />
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="record_button">
+                        <property name="label" translatable="yes">Record</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="can-focus">True</property>
+                        <property name="focus-on-click">False</property>
+                        <property name="receives-default">True</property>
+                        <property name="hexpand">True</property>
+                        <signal name="pressed" handler="record_button_clicked" swapped="no" />
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="record_status_label">
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="can-focus">False</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">5</property>
+                        <property name="width">2</property>
+                      </packing>
+                    </child>
+
                   </object>
                 </child>
                 <child type="label">
